@@ -82,9 +82,9 @@ pub async fn get_installed_versions(game_dir: String) -> Result<Vec<String>, Str
 }
 
 #[tauri::command]
-pub async fn apply_profile_mods(game_dir: String, mods_enabled: Vec<String>) -> Result<(), String> {
+pub async fn apply_profile_mods(game_dir: String, profile_id: String, mods_enabled: Vec<String>) -> Result<(), String> {
     if mods_enabled.is_empty() { return Ok(()); }
-    let mods_path = PathBuf::from(format!("{}\\mods", game_dir));
+    let mods_path = PathBuf::from(format!("{}\\profiles\\{}\\mods", game_dir, profile_id));
     if !mods_path.exists() { return Ok(()); }
 
     for entry in std::fs::read_dir(&mods_path).map_err(|e| e.to_string())?.flatten() {
@@ -177,7 +177,24 @@ pub async fn launch_with_profile(
 
 #[tauri::command]
 pub fn get_instance_dir(game_dir: String, profile_id: String) -> String {
-    format!("{}\\instances\\{}", game_dir, profile_id)
+    format!("{}\\profiles\\{}", game_dir, profile_id)
+}
+
+#[tauri::command]
+pub async fn get_profile_mod_files(game_dir: String, profile_id: String) -> Result<Vec<String>, String> {
+    let mods_path = PathBuf::from(format!("{}\\profiles\\{}\\mods", game_dir, profile_id));
+    if !mods_path.exists() { return Ok(vec![]); }
+    let mut files = vec![];
+    if let Ok(entries) = std::fs::read_dir(&mods_path) {
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().to_string();
+            if name.ends_with(".jar") || name.ends_with(".disabled") {
+                files.push(name);
+            }
+        }
+    }
+    files.sort();
+    Ok(files)
 }
 
 #[tauri::command]

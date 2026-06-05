@@ -32,6 +32,7 @@ fn main() {
             launcher::set_game_directory,
             launcher::get_installed_versions,
             launcher::get_mod_files,
+            launcher::get_profile_mod_files,
             launcher::apply_profile_mods,
             launcher::launch_minecraft,
             launcher::launch_with_profile,

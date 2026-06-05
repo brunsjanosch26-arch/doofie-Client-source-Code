@@ -117,6 +117,7 @@
         launchError = 'Aktiviere Mods...'
         await invoke('apply_profile_mods', {
           gameDir: $gameDir,
+          profileId: p.id,
           modsEnabled: p.mods_enabled,
         })
       }
@@ -125,7 +126,7 @@
       await invoke('launch_with_profile', {
         version: versionToUse,
         gameDir: $gameDir,
-        instanceDir: `${$gameDir}\\instances\\${p.id}`,
+        instanceDir: `${$gameDir}\\profiles\\${p.id}`,
         javaPath,
         username: $activeAccount.username,
         uuid: $activeAccount.uuid ?? '',
@@ -140,9 +141,12 @@
     setTimeout(() => isLaunching = false, 3000)
   }
 
-  // ── Open game folder ───────────────────────────────────────────────────────
+  // ── Open profile folder ────────────────────────────────────────────────────
   async function openFolder() {
-    await invoke('open_game_folder', { path: $gameDir }).catch(() => {})
+    const path = selectedProfile
+      ? `${$gameDir}\\profiles\\${selectedProfile.id}`
+      : $gameDir
+    await invoke('open_game_folder', { path }).catch(() => {})
   }
 
   // ── Profile detail — Modrinth mod search ──────────────────────────────────
@@ -185,7 +189,7 @@
       if (!file) throw new Error('Keine Datei')
       const bytes = new Uint8Array(await (await fetch(file.url)).arrayBuffer())
       const { writeFile, mkdir } = await import('@tauri-apps/plugin-fs')
-      const modsDir = `${$gameDir}\\mods`
+      const modsDir = `${$gameDir}\\profiles\\${selectedProfile.id}\\mods`
       await mkdir(modsDir, { recursive: true }).catch(() => {})
       await writeFile(`${modsDir}\\${file.filename}`, bytes)
       modMsg[mod.project_id] = '✓ Installiert'
@@ -203,7 +207,8 @@
   let localMods: string[] = []
 
   async function loadLocalProfileMods() {
-    localMods = await invoke<string[]>('get_mod_files', { gameDir: $gameDir }).catch(() => [])
+    if (!selectedProfile) return
+    localMods = await invoke<string[]>('get_profile_mod_files', { gameDir: $gameDir, profileId: selectedProfile.id }).catch(() => [])
   }
 
   async function toggleMod(filename: string) {

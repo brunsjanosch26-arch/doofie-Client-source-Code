@@ -27,6 +27,12 @@ pub async fn create_profile(profile: GameProfile, game_dir: String) -> Result<St
     let json = serde_json::to_string_pretty(&profiles).map_err(|e| e.to_string())?;
     std::fs::write(&profiles_path, json).map_err(|e| e.to_string())?;
 
+    // Create per-profile folder structure
+    let profile_dir = PathBuf::from(format!("{}\\profiles\\{}", game_dir, profile.id));
+    for subdir in &["mods", "saves", "resourcepacks", "shaderpacks", "screenshots"] {
+        std::fs::create_dir_all(profile_dir.join(subdir)).map_err(|e| e.to_string())?;
+    }
+
     Ok(profile.id)
 }
 
@@ -45,6 +51,12 @@ pub async fn delete_profile(profile_id: String, game_dir: String) -> Result<(), 
 
     let json = serde_json::to_string_pretty(&profiles).map_err(|e| e.to_string())?;
     std::fs::write(&profiles_path, json).map_err(|e| e.to_string())?;
+
+    // Remove the profile folder
+    let profile_dir = PathBuf::from(format!("{}\\profiles\\{}", game_dir, profile_id));
+    if profile_dir.exists() {
+        std::fs::remove_dir_all(&profile_dir).ok();
+    }
 
     Ok(())
 }
