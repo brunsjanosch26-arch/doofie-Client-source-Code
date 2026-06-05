@@ -1,0 +1,94 @@
+.shader-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+.path-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.path-value {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-primary);
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shader-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.shader-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s;
+}
+
+.shader-card:hover {
+  border-color: var(--border-light);
+}
+
+.shader-preview {
+  position: relative;
+  height: 80px;
+  background: linear-gradient(135deg, #0a1830, #0d1f3a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.shader-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(61, 127, 240, 0.15) 0%, transparent 70%);
+}
+
+.shader-icon {
+  font-size: 28px;
+  color: #7ab0ff;
+  filter: drop-shadow(0 0 10px rgba(61, 127, 240, 0.6));
+  position: relative;
+  z-index: 1;
+}
+
+.shader-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 4px;
+  flex: 1;
+}
+
+.shader-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.shader-type {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.shader-card .btn {
+  margin: 8px 12px 12px;
+  align-self: flex-start;
+}
