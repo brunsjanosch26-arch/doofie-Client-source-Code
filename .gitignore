@@ -23,3 +23,8 @@ Thumbs.db
 # Build
 /target
 Cargo.lock
+
+# Mod build caches
+doofie-mod/.gradle/
+doofie-mod/build/
+"Client Mod/"

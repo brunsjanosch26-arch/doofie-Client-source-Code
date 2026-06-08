@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "doofie_client",
+  "version": "1.0.0",
+  "name": "Doofie Client",
+  "description": "In-game ESC menu, Keystrokes HUD und Skin Glow fuer den Doofie Client",
+  "authors": ["DoofieClient"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["de.doofie.DoofieClientMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "minecraft": ">=1.21",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

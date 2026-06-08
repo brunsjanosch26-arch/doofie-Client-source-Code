@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "de.doofie.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

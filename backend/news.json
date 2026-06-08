@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "tag": "NORISK DIMENSIONS",
+    "title": "WRONG DIMENSION?",
+    "subtitle": "Explore the new dimension update",
+    "emoji": "🌀",
+    "gradient": "linear-gradient(135deg, #1a0a30, #2a1050)",
+    "accentColor": "#9040ff"
+  },
+  {
+    "id": 2,
+    "tag": "CHALLENGES & TOURS",
+    "title": "Some cities are tough",
+    "subtitle": "New parkour challenges released",
+    "emoji": "🏙️",
+    "gradient": "linear-gradient(135deg, #0a1a30, #102040)",
+    "accentColor": "#3d7ff0"
+  },
+  {
+    "id": 3,
+    "tag": "EASTER COLLECTION 2025",
+    "title": "Heaven's Collection",
+    "subtitle": "Limited seasonal items",
+    "emoji": "🐰",
+    "gradient": "linear-gradient(135deg, #2a0a18, #1a0a28)",
+    "accentColor": "#f05080"
+  },
+  {
+    "id": 4,
+    "tag": "HEAVEN COLLECTION DROP",
+    "title": "Heaven Collection",
+    "subtitle": "New exclusive cosmetics",
+    "emoji": "☁️",
+    "gradient": "linear-gradient(135deg, #0a1830, #0a1020)",
+    "accentColor": "#40a0f0"
+  }
+]
