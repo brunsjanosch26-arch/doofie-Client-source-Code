@@ -195,22 +195,32 @@
       background: linear-gradient(180deg, transparent, rgba(61,127,240,.06), transparent);
       border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
     }
-    .download-card {
-      display: inline-flex; flex-direction: column; align-items: center;
-      background: var(--bg3); border: 1px solid rgba(61,127,240,.25);
-      border-radius: 20px; padding: 48px 56px; gap: 20px;
-      box-shadow: 0 0 60px rgba(61,127,240,.08);
-      max-width: 520px; width: 100%;
+    .download-cards {
+      display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+      max-width: 1000px; margin: 0 auto;
     }
-    .download-icon { font-size: 48px; filter: drop-shadow(0 0 20px var(--accent)); }
-    .download-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.5px; }
+    .download-card {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--bg3); border: 1px solid rgba(61,127,240,.25);
+      border-radius: 20px; padding: 36px 40px; gap: 16px;
+      box-shadow: 0 0 60px rgba(61,127,240,.08);
+      flex: 1; min-width: 240px; max-width: 300px;
+      transition: border-color .2s, transform .2s;
+    }
+    .download-card:hover { border-color: rgba(61,127,240,.5); transform: translateY(-3px); }
+    .download-card.windows { border-color: rgba(0,188,212,.25); }
+    .download-card.linux   { border-color: rgba(251,146,60,.25); }
+    .download-card.macos   { border-color: rgba(168,85,247,.25); }
+    .download-icon { font-size: 40px; }
+    .download-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -.5px; }
+    .download-sub { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.5; }
     .download-meta { font-size: 12px; color: var(--muted); }
     .download-meta span { color: var(--green); font-weight: 600; }
     .btn-download {
-      display: inline-flex; align-items: center; gap: 12px;
+      display: inline-flex; align-items: center; gap: 10px;
       background: linear-gradient(135deg, var(--accent), #2563eb);
-      color: #fff; font-size: 15px; font-weight: 800; letter-spacing: .5px;
-      padding: 16px 40px; border-radius: 10px; border: none; cursor: pointer;
+      color: #fff; font-size: 13px; font-weight: 800; letter-spacing: .5px;
+      padding: 13px 28px; border-radius: 10px; border: none; cursor: pointer;
       box-shadow: 0 8px 32px rgba(61,127,240,.35);
       transition: all .2s; text-decoration: none; width: 100%; justify-content: center;
     }
@@ -219,10 +229,16 @@
       box-shadow: 0 14px 40px rgba(61,127,240,.5);
       text-decoration: none; color: #fff;
     }
+    .btn-download.win { background: linear-gradient(135deg, #0078d4, #005a9e); box-shadow: 0 8px 32px rgba(0,120,212,.35); }
+    .btn-download.win:hover { box-shadow: 0 14px 40px rgba(0,120,212,.5); }
+    .btn-download.lnx { background: linear-gradient(135deg, #f97316, #c2410c); box-shadow: 0 8px 32px rgba(249,115,22,.35); }
+    .btn-download.lnx:hover { box-shadow: 0 14px 40px rgba(249,115,22,.5); }
+    .btn-download.mac { background: linear-gradient(135deg, #a855f7, #7c3aed); box-shadow: 0 8px 32px rgba(168,85,247,.35); }
+    .btn-download.mac:hover { box-shadow: 0 14px 40px rgba(168,85,247,.5); }
     .download-note { font-size: 11px; color: var(--muted); }
     .req-list {
       display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
-      margin-top: 28px;
+      margin-top: 36px;
     }
     .req-item {
       display: flex; align-items: center; gap: 6px;
@@ -379,30 +395,60 @@
 <div class="download-section" id="download">
   <div class="section-tag" style="margin-bottom:14px">Kostenlos & Open Source</div>
   <h2 style="margin-bottom:8px">Jetzt herunterladen</h2>
-  <p style="color:var(--muted);margin-bottom:36px;font-size:15px">Für Windows 10 & 11 · 64-Bit · ca. 4 MB</p>
+  <p style="color:var(--muted);margin-bottom:36px;font-size:15px">Windows · Linux · macOS · 64-Bit · Kostenlos</p>
 
-  <div style="display:flex;justify-content:center">
-    <div class="download-card">
-      <div class="download-icon">🐾</div>
-      <div class="download-title">Doofie Client</div>
-      <div class="download-meta">
-        Version <span>2.0.0</span> · Windows x64 · NSIS Installer
-      </div>
-      <a class="btn-download"
+  <div class="download-cards">
+
+    <!-- Windows -->
+    <div class="download-card windows">
+      <div class="download-icon">🪟</div>
+      <div class="download-title">Windows</div>
+      <div class="download-sub">Windows 10 & 11<br>NSIS Installer · x64</div>
+      <div class="download-meta">Version <span>2.0.0</span></div>
+      <a class="btn-download win"
          href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/Doofie.Client_2.0.0_x64-setup.exe">
-        ⬇ Installer herunterladen (.exe)
+        ⬇ .exe herunterladen
       </a>
-      <div class="download-note">
-        Alternativ: <a href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest" target="_blank">Alle Release-Dateien auf GitHub</a>
-      </div>
     </div>
+
+    <!-- Linux -->
+    <div class="download-card linux">
+      <div class="download-icon">🐧</div>
+      <div class="download-title">Linux</div>
+      <div class="download-sub">Ubuntu 22.04+, Debian<br>.deb Paket · x64</div>
+      <div class="download-meta">Version <span>2.0.0</span></div>
+      <a class="btn-download lnx"
+         href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/doofie-client_2.0.0_amd64.deb">
+        ⬇ .deb herunterladen
+      </a>
+    </div>
+
+    <!-- macOS -->
+    <div class="download-card macos">
+      <div class="download-icon">🍎</div>
+      <div class="download-title">macOS</div>
+      <div class="download-sub">macOS 12 Monterey+<br>DMG · Apple Silicon & x64</div>
+      <div class="download-meta">Version <span>2.0.0</span></div>
+      <a class="btn-download mac"
+         href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/Doofie.Client_2.0.0_x64.dmg">
+        ⬇ .dmg herunterladen
+      </a>
+    </div>
+
+  </div>
+
+  <div style="margin-top:20px">
+    <a href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest" target="_blank"
+       style="font-size:12px;color:var(--muted)">
+      📦 Alle Release-Dateien auf GitHub ansehen
+    </a>
   </div>
 
   <div class="req-list">
-    <div class="req-item">Windows 10 oder 11</div>
     <div class="req-item">Java 21 (wird automatisch gesucht)</div>
     <div class="req-item">Internetverbindung</div>
     <div class="req-item">Minecraft-Account (Microsoft oder Offline)</div>
+    <div class="req-item">64-Bit Betriebssystem</div>
   </div>
 </div>
 
