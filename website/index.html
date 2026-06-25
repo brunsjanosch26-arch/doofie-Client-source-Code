@@ -195,32 +195,22 @@
       background: linear-gradient(180deg, transparent, rgba(61,127,240,.06), transparent);
       border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
     }
-    .download-cards {
-      display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
-      max-width: 1000px; margin: 0 auto;
-    }
     .download-card {
-      display: flex; flex-direction: column; align-items: center;
+      display: inline-flex; flex-direction: column; align-items: center;
       background: var(--bg3); border: 1px solid rgba(61,127,240,.25);
-      border-radius: 20px; padding: 36px 40px; gap: 16px;
+      border-radius: 20px; padding: 48px 56px; gap: 20px;
       box-shadow: 0 0 60px rgba(61,127,240,.08);
-      flex: 1; min-width: 240px; max-width: 300px;
-      transition: border-color .2s, transform .2s;
+      max-width: 520px; width: 100%;
     }
-    .download-card:hover { border-color: rgba(61,127,240,.5); transform: translateY(-3px); }
-    .download-card.windows { border-color: rgba(0,188,212,.25); }
-    .download-card.linux   { border-color: rgba(251,146,60,.25); }
-    .download-card.macos   { border-color: rgba(168,85,247,.25); }
-    .download-icon { font-size: 40px; }
-    .download-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -.5px; }
-    .download-sub { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.5; }
+    .download-icon { font-size: 48px; filter: drop-shadow(0 0 20px var(--accent)); }
+    .download-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.5px; }
     .download-meta { font-size: 12px; color: var(--muted); }
     .download-meta span { color: var(--green); font-weight: 600; }
     .btn-download {
-      display: inline-flex; align-items: center; gap: 10px;
+      display: inline-flex; align-items: center; gap: 12px;
       background: linear-gradient(135deg, var(--accent), #2563eb);
-      color: #fff; font-size: 13px; font-weight: 800; letter-spacing: .5px;
-      padding: 13px 28px; border-radius: 10px; border: none; cursor: pointer;
+      color: #fff; font-size: 15px; font-weight: 800; letter-spacing: .5px;
+      padding: 16px 40px; border-radius: 10px; border: none; cursor: pointer;
       box-shadow: 0 8px 32px rgba(61,127,240,.35);
       transition: all .2s; text-decoration: none; width: 100%; justify-content: center;
     }
@@ -229,12 +219,6 @@
       box-shadow: 0 14px 40px rgba(61,127,240,.5);
       text-decoration: none; color: #fff;
     }
-    .btn-download.win { background: linear-gradient(135deg, #0078d4, #005a9e); box-shadow: 0 8px 32px rgba(0,120,212,.35); }
-    .btn-download.win:hover { box-shadow: 0 14px 40px rgba(0,120,212,.5); }
-    .btn-download.lnx { background: linear-gradient(135deg, #f97316, #c2410c); box-shadow: 0 8px 32px rgba(249,115,22,.35); }
-    .btn-download.lnx:hover { box-shadow: 0 14px 40px rgba(249,115,22,.5); }
-    .btn-download.mac { background: linear-gradient(135deg, #a855f7, #7c3aed); box-shadow: 0 8px 32px rgba(168,85,247,.35); }
-    .btn-download.mac:hover { box-shadow: 0 14px 40px rgba(168,85,247,.5); }
     .download-note { font-size: 11px; color: var(--muted); }
     .req-list {
       display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
@@ -376,7 +360,12 @@
     <div class="feature-card">
       <div class="feature-icon">🎨</div>
       <h3>Custom Backgrounds</h3>
-      <p>Wähle zwischen Retro-Grid, Partikel, Matrix, Schnee oder Nebula als Hintergrundanimation.</p>
+      <p>Minecraft-Foto, eigenes Bild hochladen oder eine von 9 Animationen — Retro-Grid, Matrix, Nebula und mehr.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🕺</div>
+      <h3>Skin-Posen</h3>
+      <p>10 verschiedene Posen für deinen Skin — stehend, kniend, winkend, fliegend, und mehr. Vier davon animiert.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">⚡</div>
@@ -388,6 +377,11 @@
       <h3>Resource Pack Manager</h3>
       <p>Installiere und verwalte Resource Packs direkt aus dem Launcher heraus.</p>
     </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Offline-Modus</h3>
+      <p>Spielen auch ohne Microsoft-Account. Offline-Profile werden vollständig unterstützt — keine Einschränkungen.</p>
+    </div>
   </div>
 </section>
 
@@ -395,60 +389,39 @@
 <div class="download-section" id="download">
   <div class="section-tag" style="margin-bottom:14px">Kostenlos & Open Source</div>
   <h2 style="margin-bottom:8px">Jetzt herunterladen</h2>
-  <p style="color:var(--muted);margin-bottom:36px;font-size:15px">Windows · Linux · macOS · 64-Bit · Kostenlos</p>
+  <p style="color:var(--muted);margin-bottom:36px;font-size:15px">Für Windows 10 & 11 · 64-Bit · ca. 85 MB</p>
 
-  <div class="download-cards">
-
-    <!-- Windows -->
-    <div class="download-card windows">
-      <div class="download-icon">🪟</div>
-      <div class="download-title">Windows</div>
-      <div class="download-sub">Windows 10 & 11<br>NSIS Installer · x64</div>
-      <div class="download-meta">Version <span>2.0.0</span></div>
-      <a class="btn-download win"
-         href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/Doofie.Client_2.0.0_x64-setup.exe">
-        ⬇ .exe herunterladen
+  <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap">
+    <div class="download-card">
+      <div class="download-icon">🐾</div>
+      <div class="download-title">Doofie Client</div>
+      <div class="download-meta">
+        Version <span>2.0.0</span> · Windows x64 · NSIS Installer
+      </div>
+      <a class="btn-download"
+         href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/Doofieclient%20Setup_2.0.0_x64-setup.exe"
+         download="Doofieclient-Setup-2.0.0.exe">
+        ⬇ Installer herunterladen (.exe)
       </a>
+      <div class="download-note">Windows 10 &amp; 11 · 64-Bit · Kostenlos</div>
+      <div style="margin-top:8px;display:flex;gap:12px;justify-content:center">
+        <a href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest" target="_blank"
+           style="font-size:11px;color:var(--muted);text-decoration:none;border:1px solid rgba(255,255,255,.1);padding:4px 10px;border-radius:5px;">
+          📋 Alle Releases
+        </a>
+        <a href="https://github.com/brunsjanosch26-arch/doofie-client-code" target="_blank"
+           style="font-size:11px;color:var(--muted);text-decoration:none;border:1px solid rgba(255,255,255,.1);padding:4px 10px;border-radius:5px;">
+          GitHub Source
+        </a>
+      </div>
     </div>
-
-    <!-- Linux -->
-    <div class="download-card linux">
-      <div class="download-icon">🐧</div>
-      <div class="download-title">Linux</div>
-      <div class="download-sub">Ubuntu 22.04+, Debian<br>.deb Paket · x64</div>
-      <div class="download-meta">Version <span>2.0.0</span></div>
-      <a class="btn-download lnx"
-         href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/doofie-client_2.0.0_amd64.deb">
-        ⬇ .deb herunterladen
-      </a>
-    </div>
-
-    <!-- macOS -->
-    <div class="download-card macos">
-      <div class="download-icon">🍎</div>
-      <div class="download-title">macOS</div>
-      <div class="download-sub">macOS 12 Monterey+<br>DMG · Apple Silicon & x64</div>
-      <div class="download-meta">Version <span>2.0.0</span></div>
-      <a class="btn-download mac"
-         href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/Doofie.Client_2.0.0_x64.dmg">
-        ⬇ .dmg herunterladen
-      </a>
-    </div>
-
-  </div>
-
-  <div style="margin-top:20px">
-    <a href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest" target="_blank"
-       style="font-size:12px;color:var(--muted)">
-      📦 Alle Release-Dateien auf GitHub ansehen
-    </a>
   </div>
 
   <div class="req-list">
+    <div class="req-item">Windows 10 oder 11</div>
     <div class="req-item">Java 21 (wird automatisch gesucht)</div>
     <div class="req-item">Internetverbindung</div>
     <div class="req-item">Minecraft-Account (Microsoft oder Offline)</div>
-    <div class="req-item">64-Bit Betriebssystem</div>
   </div>
 </div>
 
@@ -461,7 +434,27 @@
   <ul class="changelog">
     <li class="cl-item">
       <span class="cl-badge new">Neu</span>
-      <div class="cl-text"><strong>Profil-Ordner-System</strong> — Jedes Profil bekommt einen eigenen Ordner unter <code style="font-size:12px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px">AppData\Roaming\DoofieClient\profiles\{id}\</code> mit Unterordnern für Mods, Saves, Resourcepacks, Shaderpacks und Screenshots.</div>
+      <div class="cl-text"><strong>10 Skin-Posen</strong> — Wähle in den Einstellungen unter "Posen" wie dein Skin auf dem Startbildschirm posiert. Walking, Running, Flying und Idle sind animiert.</div>
+    </li>
+    <li class="cl-item">
+      <span class="cl-badge new">Neu</span>
+      <div class="cl-text"><strong>Eigenes Hintergrundbild</strong> — Lade ein eigenes Bild als Launcher-Hintergrund hoch (PNG, JPG, WebP, GIF). Wähle es unter Einstellungen → Aussehen → Eigenes Bild.</div>
+    </li>
+    <li class="cl-item">
+      <span class="cl-badge new">Neu</span>
+      <div class="cl-text"><strong>Minecraft-Foto-Hintergrund</strong> — Neuer fotorealistischer Minecraft-Hintergrund als Standard statt SVG-Pixelart.</div>
+    </li>
+    <li class="cl-item">
+      <span class="cl-badge new">Neu</span>
+      <div class="cl-text"><strong>News-Sidebar ausblendbar</strong> — Klappe die News-Seite per Klick ein und aus. Der Status wird gespeichert.</div>
+    </li>
+    <li class="cl-item">
+      <span class="cl-badge fix">Fix</span>
+      <div class="cl-text"><strong>Offline-Account funktioniert</strong> — NRC-Mods die ein Doofie-Token benötigen werden beim Offline-Start übersprungen. Minecraft startet zuverlässig ohne Login.</div>
+    </li>
+    <li class="cl-item">
+      <span class="cl-badge new">Neu</span>
+      <div class="cl-text"><strong>Profil-Ordner-System</strong> — Jedes Profil bekommt einen eigenen Ordner unter <code style="font-size:12px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px">AppData\Roaming\DoofieClient\profiles\{id}\</code> mit Unterordnern für Mods, Saves, Resourcepacks und Screenshots.</div>
     </li>
     <li class="cl-item">
       <span class="cl-badge new">Neu</span>
@@ -472,24 +465,12 @@
       <div class="cl-text"><strong>Live-Konsole</strong> — Alle Minecraft-Logs direkt im Launcher sichtbar. Erscheint automatisch beim Start, maximierbar.</div>
     </li>
     <li class="cl-item">
-      <span class="cl-badge new">Neu</span>
-      <div class="cl-text"><strong>Asset-Auto-Download</strong> — Fehlende Asset-Objekte werden beim ersten Start automatisch nachgeladen (32 parallel).</div>
-    </li>
-    <li class="cl-item">
-      <span class="cl-badge fix">Fix</span>
-      <div class="cl-text"><strong>Fabric ClassNotFoundException</strong> — Fabric-Libraries werden jetzt über Maven-Koordinaten korrekt in den Classpath aufgenommen.</div>
-    </li>
-    <li class="cl-item">
       <span class="cl-badge fix">Fix</span>
       <div class="cl-text"><strong>Kein Terminal-Fenster</strong> — Java-Prozess läuft vollständig im Hintergrund (CREATE_NO_WINDOW).</div>
     </li>
     <li class="cl-item">
       <span class="cl-badge imp">Imp</span>
-      <div class="cl-text"><strong>Auto-Download vor Launch</strong> — Vanilla-Versionen werden jetzt automatisch heruntergeladen wenn noch nicht installiert.</div>
-    </li>
-    <li class="cl-item">
-      <span class="cl-badge imp">Imp</span>
-      <div class="cl-text"><strong>arguments.jvm Parsing</strong> — JVM-Argumente aus version.json werden vollständig mit Variablensubstitution und OS-Rules ausgewertet.</div>
+      <div class="cl-text"><strong>Skin-Viewer vergrößert</strong> — Der Skin-Viewer auf dem Startbildschirm ist breiter — kein Abschneiden beim Rotieren mehr.</div>
     </li>
   </ul>
 </section>
