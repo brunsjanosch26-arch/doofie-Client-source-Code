@@ -2,9 +2,8 @@ name: Build & Release
 
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    branches:
+      - master
 
 jobs:
   build:
@@ -14,13 +13,10 @@ jobs:
         include:
           - platform: windows-latest
             label: Windows
-            artifact: "*.exe"
           - platform: ubuntu-22.04
             label: Linux
-            artifact: "*.deb"
           - platform: macos-latest
             label: macOS
-            artifact: "*.dmg"
 
     runs-on: ${{ matrix.platform }}
 
@@ -54,6 +50,9 @@ jobs:
             libssl-dev \
             pkg-config
 
+      - name: Set version
+        run: node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json','utf8')); c.version='2.0.${{ github.run_number }}'; fs.writeFileSync('src-tauri/tauri.conf.json',JSON.stringify(c,null,2));"
+
       - name: Install frontend dependencies
         run: npm ci
 
@@ -61,11 +60,13 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "Doofie Client ${{ github.ref_name }}"
+          tagName: v2.0.${{ github.run_number }}
+          releaseName: "Doofie Client v2.0.${{ github.run_number }}"
           releaseBody: |
-            ## Doofie Client ${{ github.ref_name }}
+            ## Doofie Client v2.0.${{ github.run_number }}
 
             ### Downloads
             - **Windows**: `Doofie.Client_*_x64-setup.exe`
@@ -78,3 +79,4 @@ jobs:
             - Microsoft Minecraft-Account oder Offline-Modus
           releaseDraft: false
           prerelease: false
+          updaterJsonKeepUniversal: true
