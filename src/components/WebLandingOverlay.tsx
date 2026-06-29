@@ -130,7 +130,7 @@ export function WebLandingOverlay() {
 
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
               <a
-                href="/Doofieclient_2.0.0_x64-setup.exe"
+                href="https://github.com/brunsjanosch26-arch/doofie-client-code/releases/download/v2.0.0/Doofieclient_2.0.0_x64-setup.exe"
                 download="Doofieclient_2.0.0_x64-setup.exe"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 10,
