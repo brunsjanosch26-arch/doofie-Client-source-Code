@@ -82,7 +82,7 @@ impl FriendsWebSocket {
                 );
 
                 let ws_key = tokio_tungstenite::tungstenite::handshake::client::generate_key();
-                let host = if is_experimental { "api-staging.doofie.gg" } else { "api.doofie.gg" };
+                let host = "doofie-client-backend-production.up.railway.app";
 
                 let request = tokio_tungstenite::tungstenite::http::Request::builder()
                     .uri(&url)

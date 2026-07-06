@@ -1,22 +1,22 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '../../lib/utils';
-import { SkinViewer } from './SkinViewer';
+import { SkinView3DWrapper } from '../common/SkinView3DWrapper';
 import { MainLaunchButton } from './MainLaunchButton';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useSkinStore } from '../../store/useSkinStore';
 import { MinecraftSkinService } from '../../services/minecraft-skin-service';
-import type { GetStarlightSkinRenderPayload } from '../../types/localSkin';
-import { convertFileSrc } from '@tauri-apps/api/core';
+import { useMinecraftAuthStore } from '../../store/minecraft-auth-store';
+import * as skinview3d from 'skinview3d';
 import { Icon } from '@iconify/react';
-// DISABLED: ProfileCardV2 was used for featured profile mode
-// import { ProfileCardV2 } from '../profiles/ProfileCardV2';
 import { ServerLaunchCard } from './ServerLaunchCard';
 import { useProfileStore } from '../../store/profile-store';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { usePoseStore, POSES } from '../../store/usePoseStore';
+import { usePlaytimeStore } from '../../store/usePlaytimeStore';
 
 const DEFAULT_FALLBACK_SKIN_URL = "/skins/default_steve_full.png"; // Defined constant for fallback URL
 
@@ -56,9 +56,16 @@ export function PlayerActionsDisplay({
   const accentColor = useThemeStore((state) => state.accentColor);
   const featureMode = useThemeStore((state) => state.featureMode);
   const setFeatureMode = useThemeStore((state) => state.setFeatureMode);
-  const [resolvedSkinUrl, setResolvedSkinUrl] = useState<string>(DEFAULT_FALLBACK_SKIN_URL);
-  const skinRevision = useSkinStore((state) => state.skinRevision);
+  const { selectedPoseId } = usePoseStore();
+  const { startSession, endSession } = usePlaytimeStore();
+  const skinViewerRef = useRef<skinview3d.SkinViewer | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseRotationRef = useRef<number>(0);
+  const animFrameRef = useRef<number>(0);
+  const [skinUrl, setSkinUrl] = useState<string | null>(null);
+const skinRevision = useSkinStore((state) => state.skinRevision);
   const navigate = useNavigate();
+  const activeAccount = useMinecraftAuthStore((state) => state.activeAccount);
 
   const { profiles } = useProfileStore();
 
@@ -93,53 +100,68 @@ export function PlayerActionsDisplay({
   };
 
   useEffect(() => {
-    const fetchAndSetSkin = async () => {
-      if (playerName) {
-        try {
-          const activeSkin = await MinecraftSkinService.getActiveSkin().catch(() => null);
-          const payload: GetStarlightSkinRenderPayload = {
-            player_name: playerName,
-            render_type: "default",
-            render_view: "full",
-            base64_skin_data: activeSkin?.base64_data ?? null,
-          };
-          console.log("[PlayerActionsDisplay] Fetching skin for:", playerName, "custom:", !!activeSkin);
-          const localPath = await MinecraftSkinService.getStarlightSkinRender(payload);
-          console.log("[PlayerActionsDisplay] Fetched local path:", localPath);
-          if (localPath) { // Check if path is not empty or null
-            setResolvedSkinUrl(convertFileSrc(localPath));
-          } else {
-            console.warn("[PlayerActionsDisplay] Received empty path from service, using fallback.");
-            setResolvedSkinUrl(DEFAULT_FALLBACK_SKIN_URL);
-          }
-        } catch (error) {
-          console.error("[PlayerActionsDisplay] Failed to fetch starlight skin render:", error);
-          setResolvedSkinUrl(DEFAULT_FALLBACK_SKIN_URL); // Fallback on error
+    const loadSkin = async () => {
+      try {
+        const activeSkin = await MinecraftSkinService.getActiveSkin().catch(() => null);
+        if (activeSkin?.base64_data) {
+          setSkinUrl(`data:image/png;base64,${activeSkin.base64_data}`);
+        } else if (activeAccount?.id) {
+          setSkinUrl(`https://api.mineatar.com/skin/${activeAccount.id}`);
+        } else {
+          setSkinUrl('https://api.mineatar.com/skin/Steve');
         }
-      } else {
-        console.log("[PlayerActionsDisplay] No player name, using default fallback skin.");
-        setResolvedSkinUrl(DEFAULT_FALLBACK_SKIN_URL);
+      } catch {
+        setSkinUrl('https://api.mineatar.com/skin/Steve');
       }
     };
+    loadSkin();
+  }, [playerName, skinRevision, activeAccount?.id]);
 
-    fetchAndSetSkin();
-  }, [playerName, skinRevision]);
+  const applySelectedPose = useCallback((viewer: skinview3d.SkinViewer) => {
+    viewer.renderer.setClearColor(0x000000, 0);
+    viewer.controls.enabled = false;
+    skinViewerRef.current = viewer;
+    const pose = POSES.find(p => p.id === selectedPoseId) ?? POSES[0];
+    pose.apply(viewer);
+  }, [selectedPoseId]);
+
+  // Mouse-reactive skin rotation
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const relX = (e.clientX - centerX) / (rect.width / 2);
+      mouseRotationRef.current = relX * 0.6;
+    };
+
+    const animate = () => {
+      if (skinViewerRef.current?.playerObject) {
+        const target = mouseRotationRef.current;
+        const current = skinViewerRef.current.playerObject.rotation.y;
+        skinViewerRef.current.playerObject.rotation.y += (target - current) * 0.08;
+      }
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    container.addEventListener("mousemove", onMouseMove);
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      container.removeEventListener("mousemove", onMouseMove);
+      cancelAnimationFrame(animFrameRef.current);
+    };
+  }, []);
 
   const dropShadowX = '2px';
   const dropShadowY = '4px';
   const dropShadowBlur = '6px';
   const commonDropShadowStyle = `drop-shadow(${dropShadowX} ${dropShadowY} ${dropShadowBlur} ${accentColor.value})`;
   
-  const skinViewerDisplayHeight = 450;
-  const skinViewerMaxDisplayWidth = 225;
-
-  const skinViewerStyles: React.CSSProperties = {
-    filter: 'drop-shadow(5px 10px 5px rgba(0,0,0,0.75))',
-    WebkitBoxReflect: 'below 0px linear-gradient(to bottom, transparent, rgba(0,0,0,0.05))',
-    height: `${skinViewerDisplayHeight}px`,
-    width: 'auto',
-    maxWidth: `${skinViewerMaxDisplayWidth}px`,
-  };
+  const skinViewerDisplayHeight = 500;
+  const skinViewerMaxDisplayWidth = 380;
 
   const selectedVersionLabel = launchButtonVersions.find(v => v.id === launchButtonDefaultVersion)?.label;
 
@@ -166,14 +188,16 @@ export function PlayerActionsDisplay({
         "relative w-full max-w-[500px] flex flex-col items-center",
         displayMode === 'logo' && "z-10"
       )}>
-        <SkinViewer
-          skinUrl={resolvedSkinUrl} 
-          playerName={playerName?.toString()} 
-          width={skinViewerMaxDisplayWidth} 
-          height={skinViewerDisplayHeight} 
-          className="bg-transparent flex-shrink-0"
-          style={skinViewerStyles}
-        />
+
+        <div ref={containerRef} style={{ filter: 'drop-shadow(5px 10px 5px rgba(0,0,0,0.75))', height: `${skinViewerDisplayHeight}px`, width: `${skinViewerMaxDisplayWidth}px`, flexShrink: 0 }}>
+          <SkinView3DWrapper
+            skinUrl={skinUrl}
+            width={skinViewerMaxDisplayWidth}
+            height={skinViewerDisplayHeight}
+            zoom={0.9}
+            onViewerReady={applySelectedPose}
+          />
+        </div>
 
         {/* Don't render launch button while profiles are still loading to prevent flicker */}
         {!isLoadingProfiles && (

@@ -2,7 +2,52 @@
 use once_cell::sync::Lazy;
 use reqwest::Client;
 use std::path::PathBuf;
-use std::sync::RwLock;
+use std::sync::{OnceLock, RwLock};
+
+/// Path to bundled app resources (set once at startup from the Tauri AppHandle).
+pub static RESOURCE_DIR: OnceLock<PathBuf> = OnceLock::new();
+
+/// Names of JARs that are bundled with the launcher and should be auto-installed
+/// into every Fabric/Forge profile's mods folder before launch.
+pub const BUNDLED_MODS: &[&str] = &[
+    "doofie-client-1.0.0.jar",
+    "nrc-client.jar",
+    "nrc-compat.jar",
+    "nrc-cosmetics.jar",
+    "nrc-friends.jar",
+    "nrc-mcreal.jar",
+    "nrc-minigames.jar",
+    "nrc-owolib.jar",
+    "nrc-voicechat.jar",
+    "fabric-language-kotlin.jar",
+    "cloth-config.jar",
+    "yacl.jar",
+    "modmenu.jar",
+    "simple-voice-chat.jar",
+    "sodium.jar",
+    "iris.jar",
+    "lithium.jar",
+    "ferritecore.jar",
+    "immediatelyfast.jar",
+    "entityculling.jar",
+    "moreculling.jar",
+    "dynamic-fps.jar",
+    "skinlayers3d.jar",
+    "zoomify.jar",
+    "appleskin.jar",
+    "mousetweaks.jar",
+    "status-effect-bars.jar",
+];
+
+/// NRC mods that require a valid Doofie token — skipped for offline accounts.
+pub const NRC_AUTH_MODS: &[&str] = &[
+    "nrc-client.jar",
+    "nrc-cosmetics.jar",
+    "nrc-friends.jar",
+    "nrc-mcreal.jar",
+    "nrc-minigames.jar",
+    "nrc-voicechat.jar",
+];
 
 pub static LAUNCHER_DIRECTORY: Lazy<ProjectDirs> =
     Lazy::new(

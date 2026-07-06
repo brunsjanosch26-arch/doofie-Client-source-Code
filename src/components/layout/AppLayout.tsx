@@ -24,9 +24,22 @@ import { NebulaLightning } from ".././effects/NebulaLightning";
 import { NebulaLiquidChrome } from ".././effects/NebulaLiquidChrome";
 import { RetroGridEffect } from "../effects/RetroGridEffect";
 import PlainBackground from "../effects/PlainBackground";
+import { MinecraftBackground } from "../effects/MinecraftBackground";
+import { CustomImageBackground } from "../effects/CustomImageBackground";
+import { AuroraEffect } from "../effects/AuroraEffect";
+import { CyberpunkEffect } from "../effects/CyberpunkEffect";
+import { GalaxyEffect } from "../effects/GalaxyEffect";
+import { BloodMoonEffect } from "../effects/BloodMoonEffect";
+import { IceEffect } from "../effects/IceEffect";
 import { Snowfall } from "../../features/snow-effect/Snowfall";
 import { useSnowEffectStore } from "../../store/snow-effect-store";
 import { useLauncherTheme } from "../../hooks/useLauncherTheme";
+import { AchievementUnlock } from "../achievements/AchievementUnlock";
+import { MouseTracker } from "../effects/MouseTracker";
+import { CinematicLaunchScreen } from "../launch/CinematicLaunchScreen";
+import { useCinematicLaunchStore } from "../../store/cinematic-launch-store";
+import { useSeasonalEvents } from "../../hooks/useSeasonalEvents";
+import { useAchievementStore } from "../../store/achievement-store";
 import * as ConfigService from "../../services/launcher-config-service";
 import { SocialsModal } from "../modals/SocialsModal";
 import { FriendsSidebar } from "../friends/FriendsSidebar";
@@ -67,7 +80,7 @@ export function AppLayout({
   const minimizeRef = useRef<HTMLDivElement>(null);
   const maximizeRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLDivElement>(null);
-  const { currentEffect } = useBackgroundEffectStore();
+  const { currentEffect, customImagePath } = useBackgroundEffectStore();
 
   const navItems = [
     { id: "play", icon: "solar:play-bold", label: t("nav.play") },
@@ -75,14 +88,18 @@ export function AppLayout({
     { id: "mods", icon: "solar:widget-bold", label: t("nav.mods") },
     { id: "skins", icon: "solar:emoji-funny-circle-bold", label: t("nav.skins") },
     { id: "capes", icon: "solar:shop-bold", label: t("nav.capes") },
-    // DISABLED: Advent Calendar (seasonal feature)
-    // { id: "advent-calendar", icon: "solar:gift-bold", label: t("nav.advent") },
+    { id: "performance", icon: "solar:cpu-bolt-bold", label: "Performance" },
+    { id: "dashboard", icon: "solar:chart-bold", label: "Dashboard" },
+    { id: "achievements", icon: "solar:cup-star-bold", label: "Achievements" },
     { id: "settings", icon: "solar:settings-bold", label: t("nav.settings") },
   ];
   const { qualityLevel } = useQualitySettingsStore();
-  const { isBackgroundAnimationEnabled, accentColor: themeAccentColor, accentColor } = useThemeStore();
+  const { isBackgroundAnimationEnabled, accentColor: themeAccentColor, accentColor, isMouseTrackerEnabled } = useThemeStore();
   const { isEnabled: isSnowEnabled } = useSnowEffectStore();
   const { selectedTheme, isThemeActive } = useLauncherTheme();
+  const { active: cinematicActive, profileName: cinematicProfile, hide: hideCinematic } = useCinematicLaunchStore();
+  const { unlock } = useAchievementStore();
+  useSeasonalEvents();
   const { connectWebSocket, loadCurrentUser, loadFriends } = useFriendsStore();
   const { loadChats } = useChatStore();
 
@@ -302,6 +319,20 @@ export function AppLayout({
         );
       case BACKGROUND_EFFECTS.PLAIN_BACKGROUND:
         return <PlainBackground accentColorValue={themeAccentColor.value} />;
+      case BACKGROUND_EFFECTS.MINECRAFT:
+        return <MinecraftBackground />;
+      case BACKGROUND_EFFECTS.CUSTOM_IMAGE:
+        return customImagePath ? <CustomImageBackground imagePath={customImagePath} /> : <MinecraftBackground />;
+      case BACKGROUND_EFFECTS.AURORA:
+        return <AuroraEffect opacity={qualityParams.opacity * 1.2} speed={qualityParams.speed} />;
+      case BACKGROUND_EFFECTS.CYBERPUNK:
+        return <CyberpunkEffect opacity={qualityParams.opacity} speed={qualityParams.speed} color={themeAccentColor.value} />;
+      case BACKGROUND_EFFECTS.GALAXY:
+        return <GalaxyEffect opacity={qualityParams.opacity * 1.2} speed={qualityParams.speed} />;
+      case BACKGROUND_EFFECTS.BLOOD_MOON:
+        return <BloodMoonEffect opacity={qualityParams.opacity * 1.2} speed={qualityParams.speed} />;
+      case BACKGROUND_EFFECTS.ICE:
+        return <IceEffect opacity={qualityParams.opacity * 1.1} speed={qualityParams.speed} />;
       default:
         return (
           <div className="absolute inset-0 bg-red-500/20">
@@ -357,6 +388,18 @@ export function AppLayout({
       <ProfileSettingsModal />
       <ProfileDuplicateModal />
       <FriendsSidebar />
+
+      {/* Achievement unlock popup */}
+      <AchievementUnlock />
+
+      {/* Mouse tracker glow effect */}
+      {isMouseTrackerEnabled && <MouseTracker />}
+
+      {/* Cinematic launch screen */}
+      {cinematicActive && (
+        <CinematicLaunchScreen profileName={cinematicProfile} onDone={hideCinematic} />
+      )}
+
     </div>
   );
 }

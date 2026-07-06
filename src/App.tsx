@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { DoofieSplashScreen } from "./components/launch/DoofieSplashScreen";
 import {
   Outlet,
   useLocation,
@@ -21,6 +22,7 @@ import {
 } from "./types/events";
 import { GlobalCrashReportModal } from "./components/modals/GlobalCrashReportModal";
 import { TermsOfServiceModal, AnalyticsConsentBanner } from "./components/modals/TermsOfServiceModal";
+import { ChangelogModal } from "./components/modals/ChangelogModal";
 import { GlobalModalPortal } from "./components/ui/GlobalModalPortal";
 import { useCrashModalStore } from "./store/crash-modal-store";
 import { useThemeStore } from "./store/useThemeStore";
@@ -50,6 +52,8 @@ import { NotificationModal } from "./components/modals/NotificationModal";
 import { useNotificationStore } from "./store/notification-store";
 import { useMinecraftAuthStore } from "./store/minecraft-auth-store";
 import { useSkinStore } from "./store/useSkinStore";
+import { usePlaytimeStore } from "./store/usePlaytimeStore";
+import { useProfileStore } from "./store/profile-store";
 import { hasPermission, refreshPermissions } from "./services/permission-service";
 import {
   fetchTesterQueueCount,
@@ -66,6 +70,11 @@ export function App() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem("doofie-splash-shown"));
+  const handleSplashDone = useCallback(() => {
+    sessionStorage.setItem("doofie-splash-shown", "1");
+    setShowSplash(false);
+  }, []);
   const { openCrashModal } = useCrashModalStore();
   const {
     hasAcceptedTermsOfService,
@@ -150,6 +159,21 @@ export function App() {
             return;
           }
           if (
+              event.payload.event_type === FrontendEventType.LaunchSuccessful
+          ) {
+            const profileId = event.payload.target_id;
+            if (profileId) {
+              usePlaytimeStore.getState().startSession(profileId);
+              const profiles = useProfileStore.getState().profiles;
+              const profile = profiles.find(p => p.id === profileId);
+              if (profile) {
+                import("./utils/discordRpc").then(({ setDiscordState }) => {
+                  setDiscordState(`Playing ${profile.name}`);
+                });
+              }
+            }
+          }
+          if (
               event.payload.event_type === FrontendEventType.MinecraftProcessExited
           ) {
             try {
@@ -160,6 +184,9 @@ export function App() {
                   "[App.tsx] Global MinecraftProcessExited event:",
                   exitPayload,
               );
+              if (exitPayload.profile_id) {
+                usePlaytimeStore.getState().endSession(exitPayload.profile_id);
+              }
               if (!exitPayload.success) {
                 const crashMsg = `Minecraft crashed (Exit Code: ${exitPayload.exit_code ?? "N/A"}). See crash report for details.`;
                 toast.error(crashMsg, { duration: 10000 });
@@ -530,12 +557,14 @@ export function App() {
   return (
     <FlagsmithProvider flagsmith={flagsmith}>
       <div className="flex flex-col h-screen w-screen overflow-hidden">
+        {showSplash && <DoofieSplashScreen onDone={handleSplashDone} />}
         <ThemeInitializer />
         <ScrollbarProvider />
         <GlobalToaster />
         <LauncherNoticeBanner />
         <GlobalCrashReportModal />
         <TermsOfServiceModal isOpen={!hasAcceptedTermsOfService} />
+        <ChangelogModal />
         <GlobalModalPortal />
         <ChildProtectionModal />
         <NotificationModal />

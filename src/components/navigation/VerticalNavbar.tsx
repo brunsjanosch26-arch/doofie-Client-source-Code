@@ -123,7 +123,7 @@ export function VerticalNavbar({
       <div
         ref={navRef}
         className={cn(
-          "flex flex-col items-center py-6 w-24 backdrop-blur-lg",
+          "flex flex-col items-center py-4 w-20 backdrop-blur-lg",
           className,
         )}
         style={{
@@ -132,11 +132,11 @@ export function VerticalNavbar({
           borderLeft: `2px solid ${accentColor.value}60`,
           boxShadow: `0 0 10px ${accentColor.value}30 inset`,
         }}
-      >        <div className="mb-12">
+      >        <div className="mb-6">
           <Logo size="sm" onClick={() => setShowCreditsModal(true)} />
         </div>
 
-        <div className="flex-1 flex flex-col items-center space-y-4 min-h-[400px]">
+        <div className="flex-1 flex flex-col items-center space-y-2 overflow-y-auto no-scrollbar">
           {items.map((item) => (
             <div
               key={item.id}
@@ -144,7 +144,7 @@ export function VerticalNavbar({
               ref={(el) => (buttonRefs.current[item.id] = el)}
             >
               <NavButton
-                icon={<Icon icon={item.icon} className="w-8 h-8" />}
+                icon={<Icon icon={item.icon} className="w-6 h-6" />}
                 isActive={active === item.id}
                 onClick={() => handleItemClick(item.id)}
                 onMouseEnter={() => handleMouseEnter(item.id)}

@@ -291,17 +291,17 @@ export function ModpackVersionsModal({
 - Performance improvements`,
             `## What's New in ${version.version_number}
 
-### ✨ Features
+### Features
 - Added new shader support
 - Improved graphics settings
 - Enhanced mod compatibility
 
-### 🐛 Bug Fixes
+### Bug Fixes
 - Fixed crash on startup
 - Resolved memory leaks
 - Corrected texture rendering issues
 
-### 🔧 Technical
+### Technical
 - Updated to Fabric ${version.loaders.includes('fabric') ? 'latest' : 'compatible'} version
 - Optimized resource loading
 - Better error handling`,
@@ -364,17 +364,17 @@ This release focuses on stability and performance improvements.
 - Performance improvements`,
                   `## What's New in ${version.version_number}
 
-### ✨ Features
+### Features
 - Added new shader support
 - Improved graphics settings
 - Enhanced mod compatibility
 
-### 🐛 Bug Fixes
+### Bug Fixes
 - Fixed crash on startup
 - Resolved memory leaks
 - Corrected texture rendering issues
 
-### 🔧 Technical
+### Technical
 - Updated to Fabric ${version.loaders.includes('fabric') ? 'latest' : 'compatible'} version
 - Optimized resource loading
 - Better error handling`,

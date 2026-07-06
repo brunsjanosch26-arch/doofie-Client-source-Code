@@ -356,7 +356,7 @@ impl MinecraftLauncher {
 
         // Add Doofie client specific parameters
         // Only add token if we have credentials AND a Doofie pack is selected in the profile
-        let has_doofie_pack = profile.as_ref().and_then(|p| p.selected_doofie_pack_id.as_ref()).is_some();
+        let _has_doofie_pack = profile.as_ref().and_then(|p| p.selected_doofie_pack_id.as_ref()).is_some();
 
         // Add profile name for ingame display
         if let Some(p) = &profile {
@@ -409,41 +409,36 @@ impl MinecraftLauncher {
         }
 
         if let Some(creds) = &self.credentials {
-            if has_doofie_pack {
-                // Get the appropriate Doofie token based on experimental mode setting
-                if let Some(doofie_token) = if params.is_experimental_mode {
-                    info!("[Doofie Launcher] Using experimental mode token");
-                    creds
-                        .doofie_credentials
-                        .experimental
-                        .as_ref()
-                        .map(|t| &t.value)
-                } else {
-                    info!("[Doofie Launcher] Using production mode token");
-                    creds
-                        .doofie_credentials
-                        .production
-                        .as_ref()
-                        .map(|t| &t.value)
-                } {
-                    info!("[Doofie Launcher] Adding Doofie token to launch parameters");
-                    command.arg(format!("-Ddoofie.token={}", doofie_token));
-                } else {
-                    info!("[Doofie Launcher] No Doofie token available for the selected mode");
-                }
-
-                // Add experimental mode parameter
-                info!(
-                    "[Doofie Launcher] Setting experimental mode: {}",
-                    params.is_experimental_mode
-                );
-                command.arg(format!(
-                    "-Ddoofie.experimental={}",
-                    params.is_experimental_mode
-                ));
+            // Always pass token so NRC mods (cosmetics, friends, voice chat) can authenticate
+            if let Some(doofie_token) = if params.is_experimental_mode {
+                info!("[Doofie Launcher] Using experimental mode token");
+                creds
+                    .doofie_credentials
+                    .experimental
+                    .as_ref()
+                    .map(|t| &t.value)
             } else {
-                info!("[Doofie Launcher] No Doofie pack selected, skipping Doofie token and experimental mode parameters");
+                info!("[Doofie Launcher] Using production mode token");
+                creds
+                    .doofie_credentials
+                    .production
+                    .as_ref()
+                    .map(|t| &t.value)
+            } {
+                info!("[Doofie Launcher] Adding Doofie token to launch parameters");
+                command.arg(format!("-Ddoofie.token={}", doofie_token));
+            } else {
+                info!("[Doofie Launcher] No Doofie token available for the selected mode");
             }
+
+            info!(
+                "[Doofie Launcher] Setting experimental mode: {}",
+                params.is_experimental_mode
+            );
+            command.arg(format!(
+                "-Ddoofie.experimental={}",
+                params.is_experimental_mode
+            ));
         } else {
             info!("[Doofie Launcher] No credentials available, skipping Doofie parameters");
         }

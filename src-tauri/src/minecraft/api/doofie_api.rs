@@ -25,9 +25,9 @@ pub struct CrashlogDto {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct ServerIdResponse {
     pub server_id: String,
+    #[serde(default)]
     pub expires_in: i32,
 }
 
@@ -138,14 +138,9 @@ impl DoofieApi {
         Self
     }
 
-    pub fn get_api_base(is_experimental: bool) -> String {
-        if is_experimental {
-            debug!("[Doofie API] Using experimental API endpoint");
-            String::from("https://api-staging.doofie.gg/api/v1")
-        } else {
-            debug!("[Doofie API] Using production API endpoint");
-            String::from("https://api.doofie.gg/api/v1")
-        }
+    pub fn get_api_base(_is_experimental: bool) -> String {
+        debug!("[Doofie API] Using production API endpoint");
+        String::from("https://doofie-client-backend-production.up.railway.app/api/v1")
     }
 
     /// Request a new server ID from Doofie API for secure authentication
@@ -168,12 +163,11 @@ impl DoofieApi {
         let server_response = crate::utils::api_utils::parse_response_with_logging::<ServerIdResponse>(response, "Doofie server-id").await?;
 
         let server_id = &server_response.server_id;
-        if !server_id.starts_with("nrc-") {
-            error!("[Doofie API] Invalid server ID received: {}", server_id);
-            return Err(AppError::RequestError(format!(
-                "Invalid server ID received from Doofie API: {}",
-                server_id
-            )));
+        if server_id.is_empty() {
+            error!("[Doofie API] Empty server ID received");
+            return Err(AppError::RequestError(
+                "Empty server ID received from Doofie API".to_string(),
+            ));
         }
 
         info!("[Doofie API] Server ID request successful: {}", server_id);

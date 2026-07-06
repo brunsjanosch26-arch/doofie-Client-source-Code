@@ -13,9 +13,13 @@ import { useGlobalModal } from "./useGlobalModal";
 import { GroupMigrationModal } from "../components/modals/GroupMigrationModal";
 import { checkForGroupMigration } from "../services/profile-service";
 import { MigrationInfo } from "../types/profile";
+import { useCinematicLaunchStore } from "../store/cinematic-launch-store";
+import { useSessionStore } from "../store/session-store";
+import { useAchievementStore } from "../store/achievement-store";
 
 interface UseProfileLaunchOptions {
   profileId: string;
+  profileName?: string;
   quickPlaySingleplayer?: string;
   quickPlayMultiplayer?: string;
   onLaunchSuccess?: () => void;
@@ -24,7 +28,7 @@ interface UseProfileLaunchOptions {
 }
 
 export function useProfileLaunch(options: UseProfileLaunchOptions) {
-  const { profileId, quickPlaySingleplayer, quickPlayMultiplayer, onLaunchSuccess, onLaunchError, skipLastPlayedUpdate } = options;
+  const { profileId, profileName, quickPlaySingleplayer, quickPlayMultiplayer, onLaunchSuccess, onLaunchError, skipLastPlayedUpdate } = options;
 
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { showModal, hideModal } = useGlobalModal();
@@ -209,6 +213,10 @@ export function useProfileLaunch(options: UseProfileLaunchOptions) {
       const migrationInfo: MigrationInfo = await checkForGroupMigration(profileId);
 
       if (migrationInfo.direction === 'None') {
+        // Show cinematic launch screen
+        useCinematicLaunchStore.getState().show(profileName || profileId);
+        useSessionStore.getState().startSession(profileId, profileName || profileId);
+        useAchievementStore.getState().updateStats({ launchCount: useAchievementStore.getState().stats.launchCount + 1 });
         // No migration needed, launch directly
         performLaunch(undefined);
         return;

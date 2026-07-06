@@ -250,9 +250,15 @@ interface ThemeState {
   // News section width
   newsSectionWidth: number;
   setNewsSectionWidth: (width: number) => void;
+  // News section collapsed
+  newsSectionCollapsed: boolean;
+  setNewsSectionCollapsed: (collapsed: boolean) => void;
   // Featured profile mode
   featureMode: boolean;
   setFeatureMode: (enabled: boolean) => void;
+  // Mouse tracker
+  isMouseTrackerEnabled: boolean;
+  toggleMouseTracker: () => void;
   // Language
   language: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
@@ -294,8 +300,13 @@ export const useThemeStore = create<ThemeState>()(
       modSource: ModPlatform.Modrinth,
       // News section width - defaults
       newsSectionWidth: 375,
+      // News section collapsed - defaults
+      newsSectionCollapsed: false,
       // Featured profile mode - defaults
       featureMode: false,
+      // Mouse tracker - defaults
+      isMouseTrackerEnabled: false,
+      toggleMouseTracker: () => set(s => ({ isMouseTrackerEnabled: !s.isMouseTrackerEnabled })),
       // Language - defaults
       language: "en" as SupportedLanguage,
       // Analytics consent state - defaults
@@ -490,6 +501,11 @@ export const useThemeStore = create<ThemeState>()(
       // News section width
       setNewsSectionWidth: (width: number) => {
         set({ newsSectionWidth: width });
+      },
+
+      // News section collapsed
+      setNewsSectionCollapsed: (collapsed: boolean) => {
+        set({ newsSectionCollapsed: collapsed });
       },
 
       // Featured profile mode

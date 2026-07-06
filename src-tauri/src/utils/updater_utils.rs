@@ -47,37 +47,13 @@ pub async fn check_update_available_detailed(
         current_version, channel
     );
 
-    // Determine the base part of the URL and the platform-specific segment template
-    let base_repo_url = if is_beta_channel {
-        "https://api-staging.doofie.gg/api/v1/launcher/releases-v2"
+    let update_url_str = if is_beta_channel {
+        "https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/latest-beta.json"
     } else {
-        "https://api.doofie.gg/api/v1/launcher/releases-v2"
+        "https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/latest.json"
     };
 
-    let mut platform_specific_target = "{{target}}".to_string(); // Default: Tauri replaces {{target}}
-
-    if cfg!(target_os = "linux") {
-        if std::env::var("APPIMAGE").is_ok() {
-            info!("Linux AppImage detected. Updater will use default target for manifest URL.");
-            // platform_specific_target remains "{{target}}" for AppImage
-        } else {
-            // Not an AppImage, assume .deb or similar package manager context.
-            let deb_target_identifier = "debian";
-            info!(
-                "Linux non-AppImage (e.g., .deb) detected. Modifying manifest URL to use target: {}",
-                deb_target_identifier
-            );
-            platform_specific_target = deb_target_identifier.to_string();
-        }
-    }
-
-    // Construct the final update URL string
-    let update_url_str = format!(
-        "{}/{}/{{{{arch}}}}/{{{{current_version}}}}",
-        base_repo_url, platform_specific_target
-    );
-
-    info!("Using update endpoint template: {}", update_url_str);
+    info!("Using update endpoint: {}", update_url_str);
 
     let update_url = update_url_str.parse()
         .map_err(|e| AppError::Other(format!("Failed to parse update URL '{}': {}", update_url_str, e)))?;
@@ -421,43 +397,13 @@ pub async fn check_for_updates(
         None,
     );
 
-    // Determine the base part of the URL and the platform-specific segment template
-    let base_repo_url = if is_beta_channel {
-        "https://api-staging.doofie.gg/api/v1/launcher/releases-v2"
+    let update_url_str = if is_beta_channel {
+        "https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/latest-beta.json"
     } else {
-        "https://api.doofie.gg/api/v1/launcher/releases-v2"
+        "https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/latest.json"
     };
 
-    let mut platform_specific_target = "{{target}}".to_string(); // Default: Tauri replaces {{target}}
-
-    if cfg!(target_os = "linux") {
-        if std::env::var("APPIMAGE").is_ok() {
-            info!("Linux AppImage detected. Updater will use default target for manifest URL.");
-            // platform_specific_target remains "{{target}}" for AppImage
-        } else {
-            // Not an AppImage, assume .deb or similar package manager context.
-            // The server must be configured to serve a .deb manifest for this specific target string.
-            // IMPORTANT: "debian" is a placeholder. Confirm with your backend/server team
-            // what target string they expect for .deb packages (e.g., "debian", "linux-deb").
-            let deb_target_identifier = "debian";
-            info!(
-                "Linux non-AppImage (e.g., .deb) detected. Modifying manifest URL to use target: {}",
-                deb_target_identifier
-            );
-            platform_specific_target = deb_target_identifier.to_string();
-        }
-    }
-
-    // Construct the final update URL string
-    // Tauri will replace {{arch}} and {{current_version}}.
-    // {{target}} will also be replaced by Tauri *if* platform_specific_target is "{{target}}".
-    // Otherwise, our specific target (e.g., "debian") is used directly.
-    let update_url_str = format!(
-        "{}/{}/{{{{arch}}}}/{{{{current_version}}}}",
-        base_repo_url, platform_specific_target
-    );
-
-    info!("Using update endpoint template: {}", update_url_str);
+    info!("Using update endpoint: {}", update_url_str);
 
     let update_url = match update_url_str.parse() {
         Ok(url) => url,

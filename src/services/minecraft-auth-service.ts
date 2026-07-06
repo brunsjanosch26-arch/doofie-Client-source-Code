@@ -64,4 +64,13 @@ export class MinecraftAuthService {
       return false;
     }
   }
+
+  static async addOfflineAccount(username: string): Promise<MinecraftAccount> {
+    try {
+      return await invoke<MinecraftAccount>("add_offline_account", { username });
+    } catch (error) {
+      console.error("Failed to add offline account:", error);
+      throw error;
+    }
+  }
 }

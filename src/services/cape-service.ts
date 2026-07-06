@@ -2,14 +2,12 @@
 import type { CapesBrowseResponse, BrowseCapesOptions, GetPlayerCapesPayloadOptions, CosmeticCape, OwnedCapesResponse } from '../types/doofieCapes';
 import type { MinecraftProfile } from '../types/minecraft';
 
-export const getCapeImageUrl = (hash: string, isExperimental: boolean): string => {
-  const base = isExperimental ? 'https://cdn.doofie.gg/capes-staging/prod' : 'https://cdn.doofie.gg/capes/prod';
-  return `${base}/${hash}.png`;
+export const getCapeImageUrl = (hash: string, _isExperimental: boolean): string => {
+  return `https://doofie-client-backend-production.up.railway.app/uploads/capes/${hash}.png`;
 };
 
-export const getCapeReviewImageUrl = (hash: string, isExperimental: boolean): string => {
-  const base = isExperimental ? 'https://cdn.doofie.gg/capes-staging/review' : 'https://cdn.doofie.gg/capes/review';
-  return `${base}/${hash}.png`;
+export const getCapeReviewImageUrl = (hash: string, _isExperimental: boolean): string => {
+  return `https://doofie-client-backend-production.up.railway.app/uploads/capes/${hash}.png`;
 };
 
 /**

@@ -28,3 +28,12 @@ Cargo.lock
 doofie-mod/.gradle/
 doofie-mod/build/
 "Client Mod/"
+
+# Local Netlify folder
+.netlify
+
+nrc-patch-tmp/
+nrc-patch-tmp2/
+instances/
+doofie-mod/net/
+*.exe

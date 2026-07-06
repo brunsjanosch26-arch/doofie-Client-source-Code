@@ -138,9 +138,7 @@ pub const SUCCESS_HTML: &str = r#"<!DOCTYPE html>
 <body>
     <div class="container">
         <div class="branding">
-            <span>NORISK</span>
-            <span class="branding-bolt">⚡</span>
-            <span>CLIENT</span>
+            <span>✦ DOOFIE CLIENT</span>
         </div>
         <div class="icon-wrapper">
             <svg class="check-icon" viewBox="0 0 24 24">

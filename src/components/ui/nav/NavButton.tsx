@@ -49,7 +49,7 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>(
 
     const baseClasses = cn(
       "font-minecraft relative overflow-hidden transition-all duration-300",
-      "w-16 h-16 rounded-md text-white flex items-center justify-center",
+      "w-12 h-12 rounded-md text-white flex items-center justify-center",
       "text-shadow-sm",
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-1 focus-visible:ring-offset-black/20",
     );
@@ -107,7 +107,7 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>(
               : "opacity-0 transition-opacity duration-300",
           )}
         />
-        <span className="relative z-10 flex items-center justify-center w-8 h-8">
+        <span className="relative z-10 flex items-center justify-center w-6 h-6">
           {icon}
         </span>
       </button>

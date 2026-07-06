@@ -1,47 +1,25 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface PinnedProfilesState {
-  pinnedProfileIds: string[];
-  isPinned: (profileId: string) => boolean;
-  togglePin: (profileId: string) => void;
+  pinnedIds: string[];
+  togglePin: (id: string) => void;
+  isPinned: (id: string) => boolean;
 }
-
-const STORAGE_KEY = "doofie-pinned-profiles";
 
 export const usePinnedProfilesStore = create<PinnedProfilesState>()(
   persist(
     (set, get) => ({
-      pinnedProfileIds: [],
-
-      isPinned: (profileId: string) => {
-        return get().pinnedProfileIds.includes(profileId);
+      pinnedIds: [],
+      togglePin: (id) => {
+        set((state) => ({
+          pinnedIds: state.pinnedIds.includes(id)
+            ? state.pinnedIds.filter((p) => p !== id)
+            : [...state.pinnedIds, id],
+        }));
       },
-
-      togglePin: (profileId: string) => {
-        set((state) => {
-          if (state.pinnedProfileIds.includes(profileId)) {
-            return {
-              pinnedProfileIds: state.pinnedProfileIds.filter(
-                (id) => id !== profileId,
-              ),
-            };
-          }
-          return {
-            pinnedProfileIds: [profileId, ...state.pinnedProfileIds],
-          };
-        });
-      },
+      isPinned: (id) => get().pinnedIds.includes(id),
     }),
-    {
-      name: STORAGE_KEY,
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          if (!Array.isArray(state.pinnedProfileIds)) {
-            state.pinnedProfileIds = [];
-          }
-        }
-      },
-    },
-  ),
+    { name: "doofie-pinned-profiles" }
+  )
 );

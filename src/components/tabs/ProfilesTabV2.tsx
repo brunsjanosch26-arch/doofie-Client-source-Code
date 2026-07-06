@@ -110,7 +110,7 @@ export function ProfilesTabV2() {
   const isNrcGroup = (groupName: string | null): boolean => {
     if (!groupName) return false;
     const normalized = groupName.toLowerCase();
-    return normalized === "nrc" || normalized === "doofieclient" || normalized === "doofie client";
+    return normalized === "nrc" || normalized === "doofieclient" || normalized === "doofie client" || normalized === "norisk client" || normalized === "noriskclient";
   };
 
   // Calculate group counts based on current search/filter
@@ -130,7 +130,7 @@ export function ProfilesTabV2() {
   const createGroups = (): GroupTab[] => {
     const defaultGroups: GroupTab[] = [
       { id: "all", name: "All", count: getFilteredCountForGroup("all") },
-      { id: "nrc", name: "NRC", count: getFilteredCountForGroup("nrc") },
+      { id: "nrc", name: "Doofie", count: getFilteredCountForGroup("nrc") },
       { id: "server", name: "SERVER", count: getFilteredCountForGroup("server") },
       { id: "modpacks", name: "MODPACKS", count: getFilteredCountForGroup("modpacks") },
     ];

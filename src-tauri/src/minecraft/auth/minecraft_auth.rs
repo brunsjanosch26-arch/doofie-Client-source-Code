@@ -51,6 +51,8 @@ pub enum AuthFlow {
     Sisu,
     /// Direct OAuth flow (browser-based login, AuthMe style)
     Direct,
+    /// Offline account — no Microsoft authentication, no token refresh
+    Offline,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -863,10 +865,27 @@ impl MinecraftAuthStore {
                     Ok(copied_credentials)
                 }
                 Err(e) => {
-                    info!("[Doofie Token] Token refresh failed: {:?}", e);
-                    info!("[Doofie Token] Falling back to original credentials");
-                    // Return the original credentials if token refresh fails
-                    let creds_mut =  &mut creds.clone();
+                    let err_msg = format!("{:?}", e);
+                    error!("[Doofie Token] Token refresh failed: {}", err_msg);
+
+                    // Write error to debug log file on Desktop so the user can share it
+                    if let Some(desktop) = directories::UserDirs::new().and_then(|d| d.desktop_dir().map(|p| p.to_path_buf())) {
+                        let log_path = desktop.join("doofie-debug.log");
+                        let content = format!(
+                            "[{}] Doofie token refresh failed for user '{}':\n{}\n\n",
+                            chrono::Utc::now().format("%Y-%m-%d %H:%M:%S UTC"),
+                            creds.username,
+                            err_msg
+                        );
+                        let _ = std::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(&log_path)
+                            .and_then(|mut f| { use std::io::Write; f.write_all(content.as_bytes()) });
+                        info!("[Doofie Token] Error written to {:?}", log_path);
+                    }
+
+                    let creds_mut = &mut creds.clone();
                     if e.to_string().contains("InsufficientPrivilegesException") && e.to_string().contains("/session/minecraft/join") {
                         info!("[Doofie Token] Detected child protection restriction, setting ignore_child_protection_warning to true");
                         creds_mut.ignore_child_protection_warning = true;
@@ -891,6 +910,10 @@ impl MinecraftAuthStore {
         // Use the stored auth_flow to determine which refresh method to use
         // For backwards compatibility, None defaults to trying Direct first, then SISU
         match creds.auth_flow {
+            Some(AuthFlow::Offline) => {
+                info!("[Token Refresh] Offline account — skipping token refresh");
+                Ok(Some(creds.clone()))
+            }
             Some(AuthFlow::Direct) => {
                 info!("[Token Refresh] Using Direct OAuth flow");
                 self.refresh_token_direct(creds, cred_id, profile_name).await
@@ -1125,6 +1148,13 @@ impl MinecraftAuthStore {
             "[Token Check] Starting token validation check for user: {}",
             creds.username
         );
+
+        // Offline accounts have no Microsoft tokens — nothing to refresh
+        if creds.auth_flow == Some(AuthFlow::Offline) {
+            info!("[Token Check] Offline account — skipping all token refresh");
+            return Ok(None);
+        }
+
         info!(
             "[Token Check] Microsoft token expires at: {}",
             creds.expires
@@ -1314,6 +1344,40 @@ impl MinecraftAuthStore {
         info!("[Account Manager] Successfully saved changes");
 
         Ok(())
+    }
+
+    pub async fn add_offline_account(&self, username: String) -> Result<Credentials> {
+        info!("[Account Manager] Creating offline account for '{}'", username);
+
+        if username.is_empty() || username.len() > 16 {
+            return Err(AppError::InvalidInput(
+                "Benutzername muss 1–16 Zeichen lang sein.".to_string(),
+            ));
+        }
+        if !username.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            return Err(AppError::InvalidInput(
+                "Benutzername darf nur Buchstaben, Zahlen und _ enthalten.".to_string(),
+            ));
+        }
+
+        let credentials = Credentials {
+            id: Uuid::new_v4(),
+            username: username.clone(),
+            access_token: "offline".to_string(),
+            refresh_token: String::new(),
+            expires: Utc::now() + Duration::days(36500),
+            doofie_credentials: DoofieCredentials {
+                production: None,
+                experimental: None,
+            },
+            active: true,
+            ignore_child_protection_warning: false,
+            auth_flow: Some(AuthFlow::Offline),
+        };
+
+        self.update_or_insert(credentials.clone()).await?;
+        info!("[Account Manager] Offline account '{}' created successfully", username);
+        Ok(credentials)
     }
 
     pub async fn get_all_accounts(&self) -> Result<Vec<Credentials>> {

@@ -17,6 +17,7 @@ interface SkinView3DWrapperProps {
   onPaintPixel?: (x: any, y: any) => void;
   autoRotateSpeed?: number;
   startFromBack?: boolean;
+  onViewerReady?: (viewer: skinview3d.SkinViewer) => void;
 }
 
 
@@ -39,6 +40,7 @@ export const SkinView3DWrapper: React.FC<SkinView3DWrapperProps> = ({
   displayAsElytra = false,
   autoRotateSpeed = 1.0,
   startFromBack = false,
+  onViewerReady,
 }) => {
   console.log("[SkinView3D] Component props:", {
     skinUrl: skinUrl ? (typeof skinUrl === 'string' ? skinUrl.substring(0, 50) + "..." : skinUrl) : null,
@@ -85,9 +87,11 @@ export const SkinView3DWrapper: React.FC<SkinView3DWrapperProps> = ({
     viewer.zoom = zoom;
    
     if (startFromBack && viewer.playerObject) {
-        viewer.playerObject.rotation.y = Math.PI; 
-    } else if (!enableAutoRotate && viewer.playerObject) {
-        viewer.playerObject.rotation.y = Math.PI; 
+        viewer.playerObject.rotation.y = Math.PI;
+    }
+
+    if (onViewerReady) {
+      onViewerReady(viewer);
     }
 
 

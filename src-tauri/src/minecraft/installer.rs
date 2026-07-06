@@ -811,6 +811,51 @@ pub async fn install_minecraft_version(
         Ok(())
     }).await?;
 
+    // --- Step: Copy bundled pre-installed mods to profile mods folder ---
+    // Skip mods already loaded via addMods (same SHA1) to avoid duplicate mod errors in Fabric.
+    if modloader_enum != ModLoader::Vanilla {
+        if let Some(resource_dir) = crate::config::RESOURCE_DIR.get() {
+            let known_sha1s: std::collections::HashSet<String> = target_mods
+                .iter()
+                .filter_map(|tm| tm.sha1.as_ref().map(|s| s.to_lowercase()))
+                .collect();
+
+            let is_offline = credentials.as_ref()
+                .map(|c| c.auth_flow == Some(crate::minecraft::auth::minecraft_auth::AuthFlow::Offline))
+                .unwrap_or(false);
+
+            for jar_name in crate::config::BUNDLED_MODS {
+                // Skip NRC auth-requiring mods for offline accounts — they crash without a Doofie token
+                if is_offline && crate::config::NRC_AUTH_MODS.contains(jar_name) {
+                    info!("[BundledMods] Skipping {} for offline account", jar_name);
+                    continue;
+                }
+
+                let src = resource_dir.join(jar_name);
+                if !src.exists() {
+                    warn!("[BundledMods] Source not found: {:?}", src);
+                    continue;
+                }
+                // Compute SHA1 and skip if already provided via addMods
+                match crate::utils::hash_utils::calculate_sha1_from_file(&src).await {
+                    Ok(sha1) if known_sha1s.contains(&sha1.to_lowercase()) => {
+                        info!("[BundledMods] Skipping {} (already in addMods, SHA1 match)", jar_name);
+                        continue;
+                    }
+                    Err(e) => warn!("[BundledMods] SHA1 check failed for {}: {}", jar_name, e),
+                    _ => {}
+                }
+                let dst = profile_mods_path.join(jar_name);
+                match std::fs::copy(&src, &dst) {
+                    Ok(_) => info!("[BundledMods] Installed: {}", jar_name),
+                    Err(e) => warn!("[BundledMods] Failed to copy {}: {}", jar_name, e),
+                }
+            }
+        } else {
+            warn!("[BundledMods] RESOURCE_DIR not set — bundled mods not installed");
+        }
+    }
+
     // Download log4j configuration if available
     let mut log4j_arg = None;
     if let Some(logging) = &piston_meta.logging {

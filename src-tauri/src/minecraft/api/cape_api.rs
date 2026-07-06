@@ -98,14 +98,9 @@ impl CapeApi {
     }
 
     /// Get the base URL for the cosmetics API
-    fn get_api_base(is_experimental: bool) -> String {
-        if is_experimental {
-            debug!("[Cape API] Using experimental API endpoint");
-            String::from("https://api-staging.doofie.gg/api/v1/cosmetics")
-        } else {
-            debug!("[Cape API] Using production API endpoint");
-            String::from("https://api.doofie.gg/api/v1/cosmetics")
-        }
+    fn get_api_base(_is_experimental: bool) -> String {
+        debug!("[Cape API] Using production API endpoint");
+        String::from("https://doofie-client-backend-production.up.railway.app/api/v1/cosmetics")
     }
 
     /// Browse capes with optional parameters
@@ -466,6 +461,7 @@ impl CapeApi {
         let response = HTTP_CLIENT
             .post(url)
             .header("Authorization", format!("Bearer {}", doofie_token))
+            .header("Content-Type", "image/png")
             .query(&query_params)
             .body(image_data)
             .send()

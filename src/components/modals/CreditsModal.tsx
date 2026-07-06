@@ -73,7 +73,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
                 title="Visit deadmake.dev"
               />
               <IconButton
-                icon={<span className="text-sm" style={{ transform: "translateY(2px)"}}>🍋</span>}
+                icon={<Icon icon="solar:star-bold" className="w-4 h-4" style={{ transform: "translateY(2px)" }} />}
                 onClick={() => handleOpenUrl("https://fruity.dev")}
                 variant="default"
                 size="sm"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Icon } from "@iconify/react";
 
 const isBrowser = () => !(window as any).__TAURI_INTERNALS__;
 
@@ -74,7 +75,7 @@ export function WebLandingOverlay() {
               color: "#fff", width: 40, height: 40, borderRadius: 8,
               fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
             }}
-          >✕</button>
+          ><Icon icon="solar:close-circle-bold" style={{ width: '20px', height: '20px' }} /></button>
         </div>
       )}
 
@@ -108,7 +109,7 @@ export function WebLandingOverlay() {
             padding: "5px 14px", borderRadius: 20, marginBottom: 32,
             textTransform: "uppercase",
           }}>
-            ⚡ Basiert auf dem NoRisk Client — kein Ersatz, eine Verbesserung
+            100% Doofie — dein Launcher, dein Style
           </div>
 
           {/* Hero */}
@@ -122,10 +123,10 @@ export function WebLandingOverlay() {
               Doofie <span style={{ color: "#3d7ff0" }}>Client</span>
             </h1>
             <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: "#5a6a8a", maxWidth: 520, margin: "0 auto 12px", fontWeight: 500 }}>
-              Der Minecraft Launcher auf Basis des NoRisk Clients — mit neuen Features, Posen, Hintergründen, Mod-Manager und mehr.
+              Der Minecraft Launcher mit eigenem Style — Posen, Hintergründe, Mod-Manager, Freunde-System und mehr.
             </p>
             <p style={{ fontSize: 13, color: "#4a5a7a", marginBottom: 36 }}>
-              Wir haben den NoRisk Client nicht ersetzt — wir haben ihn verbessert.
+              Dein Launcher. Dein Design. Dein Doofie.
             </p>
 
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
@@ -165,7 +166,7 @@ export function WebLandingOverlay() {
           <div style={{ marginBottom: 56 }}>
             <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 3, color: "#3d7ff0", textTransform: "uppercase", marginBottom: 14 }}>Was neu ist</p>
             <h2 style={{ fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 900, color: "#fff", letterSpacing: -1, marginBottom: 32 }}>
-              Alles was der NoRisk Client nicht hat
+              Alles was ein Launcher haben muss
             </h2>
             <div style={{
               display: "grid",
@@ -173,18 +174,18 @@ export function WebLandingOverlay() {
               gap: 12,
             }}>
               {[
-                { icon: "🕺", title: "10 Skin-Posen", desc: "Stehend, kniend, fliegend, winkend — 4 davon animiert" },
-                { icon: "🎨", title: "Custom Hintergründe", desc: "Eigenes Bild, Minecraft-Foto oder 9 Animationen" },
-                { icon: "📦", title: "Mod-Manager", desc: "Mods direkt aus Modrinth & CurseForge installieren" },
-                { icon: "📁", title: "Profil-System", desc: "Jede Instanz komplett isoliert mit eigenen Mods & Saves" },
-                { icon: "🎭", title: "Akzentfarben", desc: "12 Farben für den gesamten Launcher wählbar" },
-                { icon: "👥", title: "Freunde-System", desc: "Online-Status & Server deiner Freunde live sehen" },
+                { icon: "solar:accessibility-bold", title: "10 Skin-Posen", desc: "Stehend, kniend, fliegend, winkend — 4 davon animiert" },
+                { icon: "solar:palette-bold", title: "Custom Hintergründe", desc: "Eigenes Bild, Minecraft-Foto oder 9 Animationen" },
+                { icon: "solar:box-bold", title: "Mod-Manager", desc: "Mods direkt aus Modrinth & CurseForge installieren" },
+                { icon: "solar:folder-bold", title: "Profil-System", desc: "Jede Instanz komplett isoliert mit eigenen Mods & Saves" },
+                { icon: "solar:pallete-2-bold", title: "Akzentfarben", desc: "12 Farben für den gesamten Launcher wählbar" },
+                { icon: "solar:users-group-rounded-bold", title: "Freunde-System", desc: "Online-Status & Server deiner Freunde live sehen" },
               ].map(f => (
                 <div key={f.title} style={{
                   background: "rgba(13,19,40,0.8)", border: "1px solid rgba(61,127,240,0.15)",
                   borderRadius: 12, padding: "20px 22px",
                 }}>
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>{f.icon}</div>
+                  <div style={{ marginBottom: 8 }}><Icon icon={f.icon} style={{ width: "24px", height: "24px" }} /></div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{f.title}</div>
                   <div style={{ fontSize: 12, color: "#5a6a8a", lineHeight: 1.5 }}>{f.desc}</div>
                 </div>

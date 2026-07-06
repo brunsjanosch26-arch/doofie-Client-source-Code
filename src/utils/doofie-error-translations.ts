@@ -62,5 +62,9 @@ export function translateApiError(error: unknown, fallback?: string): string {
     return interpolate(embedded.translatableKey, embedded.args);
   }
 
+  // Show the raw error if it contains useful info, use fallback only as last resort
+  if (raw && raw !== '[object Object]' && raw.length > 0) {
+    return raw;
+  }
   return fallback ?? raw;
 }

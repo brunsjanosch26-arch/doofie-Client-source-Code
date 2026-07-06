@@ -40,6 +40,7 @@ interface MinecraftAuthState {
 
   initializeAccounts: () => Promise<void>;
   addAccount: () => Promise<void>;
+  addOfflineAccount: (username: string) => Promise<void>;
   removeAccount: (accountId: string) => Promise<void>;
   setActiveAccount: (accountId: string) => Promise<void>;
 }
@@ -191,6 +192,26 @@ export const useMinecraftAuthStore = create<MinecraftAuthState>((set, get) => ({
         console.log("Account add cancelled by user.");
         set({ isLoading: false, error: i18n.t('auth.errors.login_cancelled') });
       }
+    }
+  },
+
+  addOfflineAccount: async (username: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newAccount = await MinecraftAuthService.addOfflineAccount(username);
+      const accounts = await MinecraftAuthService.getAccounts();
+      const activeAccount = await MinecraftAuthService.getActiveAccount();
+      setMojangTraits(activeAccount);
+      const updatedAccounts = accounts.map((account) => ({
+        ...account,
+        active: activeAccount ? account.id === activeAccount.id : false,
+      }));
+      set({ accounts: updatedAccounts, activeAccount, isLoading: false, error: null });
+      toast.success(i18n.t('auth.success.account_added', { username: newAccount.username }), { duration: 1500 });
+    } catch (error) {
+      const errorMessage = parseErrorMessage(error);
+      toast.error(errorMessage || i18n.t('auth.errors.add_account', { error: errorMessage }), { duration: 3000 });
+      set({ error: errorMessage, isLoading: false });
     }
   },
 

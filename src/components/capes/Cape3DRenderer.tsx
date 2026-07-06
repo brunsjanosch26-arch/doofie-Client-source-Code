@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { InView } from 'react-intersection-observer';
@@ -302,7 +303,7 @@ export function Cape3DRenderer({
           )}
           {inView && errorMessage && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center bg-red-900/80 border border-red-700/80 text-red-300 p-2 rounded backdrop-blur-sm">
-              <p className="font-bold text-sm">⚠️ {t('common.error')}</p>
+              <p className="font-bold text-sm flex items-center gap-1"><Icon icon="solar:danger-triangle-bold" className="w-4 h-4" /> {t('common.error')}</p>
               <p className="text-xs mt-1">{errorMessage}</p>
             </div>
           )}

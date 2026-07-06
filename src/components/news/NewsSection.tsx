@@ -24,6 +24,8 @@ export function NewsSection({ className }: NewsSectionProps) {
   const accentColor = useThemeStore((state) => state.accentColor);
   const newsSectionWidth = useThemeStore((state) => state.newsSectionWidth);
   const setNewsSectionWidth = useThemeStore((state) => state.setNewsSectionWidth);
+  const newsSectionCollapsed = useThemeStore((state) => state.newsSectionCollapsed);
+  const setNewsSectionCollapsed = useThemeStore((state) => state.setNewsSectionCollapsed);
 
   // News Store
   const {
@@ -188,6 +190,35 @@ export function NewsSection({ className }: NewsSectionProps) {
     );
   };
 
+  if (newsSectionCollapsed) {
+    return (
+      <div
+        className="h-full flex flex-col items-center justify-start pt-3 relative z-10 transition-all duration-300"
+        style={{
+          width: "36px",
+          borderLeft: `2px solid ${accentColor.value}60`,
+          boxShadow: `0 0 15px ${accentColor.value}30 inset`,
+        }}
+      >
+        <button
+          onClick={() => setNewsSectionCollapsed(false)}
+          className="text-white/60 hover:text-white transition-colors p-1"
+          title="News einblenden"
+        >
+          <Icon icon="solar:alt-arrow-left-bold" className="w-5 h-5" />
+        </button>
+        <div className="mt-2 flex-1 flex items-center">
+          <span
+            className="text-white/30 font-minecraft text-xs"
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", letterSpacing: "0.1em" }}
+          >
+            news
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={newsRef}
@@ -216,6 +247,13 @@ export function NewsSection({ className }: NewsSectionProps) {
             <Icon icon="pixel:newspaper-solid" className="w-7 h-7 text-white" />
             <h2 className="text-2xl font-minecraft lowercase text-white">{t('news.title')}</h2>
           </div>
+          <button
+            onClick={() => setNewsSectionCollapsed(true)}
+            className="text-white/50 hover:text-white transition-colors ml-auto"
+            title="News ausblenden"
+          >
+            <Icon icon="solar:alt-arrow-right-bold" className="w-5 h-5" />
+          </button>
         </div>
         <hr
           className="mt-2 border-t-2"

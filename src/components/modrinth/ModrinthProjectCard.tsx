@@ -159,7 +159,7 @@ export function ModrinthProjectCard({
                       icon={<Icon icon="pixel:cube-solid" />}
                       withAnimation={false}
                     >
-                      NORISK PACK
+                      DOOFIE PACK
                     </Label>
                   )}
 

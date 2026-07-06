@@ -24,7 +24,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             remove_account,
             get_active_account,
             set_active_account,
-            get_accounts
+            get_accounts,
+            add_offline_account
         ])
         .build()
 }
@@ -398,4 +399,15 @@ pub async fn get_accounts() -> Result<Vec<Credentials>, CommandError> {
         .get_all_accounts()
         .await?;
     Ok(accounts)
+}
+
+/// Create an offline Minecraft account (no Microsoft authentication)
+#[tauri::command]
+pub async fn add_offline_account(username: String) -> Result<Credentials, CommandError> {
+    let state = State::get().await?;
+    let account = state
+        .minecraft_account_manager_v2
+        .add_offline_account(username)
+        .await?;
+    Ok(account)
 }

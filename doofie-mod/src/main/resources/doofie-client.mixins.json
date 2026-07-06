@@ -2,7 +2,15 @@
   "required": true,
   "package": "de.doofie.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": [],
+  "client": [
+    "PlayerListEntryMixin",
+    "PauseScreenMixin",
+    "EntityRendererMixin",
+    "BrandingOverlayMixin",
+    "NrcBrandingPauseScreenMixin",
+    "SplashOverlayMixin",
+    "TitleScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 0
   }

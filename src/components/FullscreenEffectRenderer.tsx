@@ -16,6 +16,11 @@ import { NebulaLightning } from './effects/NebulaLightning';
 import { NebulaLiquidChrome } from './effects/NebulaLiquidChrome';
 import { RetroGridEffect } from './effects/RetroGridEffect';
 import PlainBackground from './effects/PlainBackground';
+import { AuroraEffect } from './effects/AuroraEffect';
+import { CyberpunkEffect } from './effects/CyberpunkEffect';
+import { GalaxyEffect } from './effects/GalaxyEffect';
+import { BloodMoonEffect } from './effects/BloodMoonEffect';
+import { IceEffect } from './effects/IceEffect';
 
 interface FullscreenEffectRendererProps {
   effectId: string;
@@ -132,6 +137,16 @@ export function FullscreenEffectRenderer({ effectId, onClose }: FullscreenEffect
         );
       case BACKGROUND_EFFECTS.PLAIN_BACKGROUND:
         return <PlainBackground accentColorValue={themeAccentColor.value} />;
+      case BACKGROUND_EFFECTS.AURORA:
+        return <AuroraEffect opacity={qualityParams.opacity * 1.2} speed={qualityParams.speed} />;
+      case BACKGROUND_EFFECTS.CYBERPUNK:
+        return <CyberpunkEffect opacity={qualityParams.opacity} speed={qualityParams.speed} color={themeAccentColor.value} />;
+      case BACKGROUND_EFFECTS.GALAXY:
+        return <GalaxyEffect opacity={qualityParams.opacity * 1.2} speed={qualityParams.speed} />;
+      case BACKGROUND_EFFECTS.BLOOD_MOON:
+        return <BloodMoonEffect opacity={qualityParams.opacity * 1.2} speed={qualityParams.speed} />;
+      case BACKGROUND_EFFECTS.ICE:
+        return <IceEffect opacity={qualityParams.opacity * 1.1} speed={qualityParams.speed} />;
       default:
         return (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111', color: 'white' }}>

@@ -25,7 +25,6 @@ use tauri::Listener;
 use tauri::Manager;
 use tauri_plugin_deep_link::DeepLinkExt;
 use utils::debug_utils;
-use utils::updater_utils;
 
 use crate::commands::analytics_command::track_analytics_event;
 use crate::commands::process_command::{
@@ -34,7 +33,7 @@ use crate::commands::process_command::{
     set_discord_state, stop_process,
 };
 use commands::minecraft_auth_command::{
-    begin_login, cancel_login, get_accounts, get_active_account, is_flatpak, remove_account, set_active_account
+    add_offline_account, begin_login, cancel_login, get_accounts, get_active_account, is_flatpak, remove_account, set_active_account
 };
 use commands::minecraft_command::{
     add_skin,
@@ -154,12 +153,33 @@ async fn main() {
         eprintln!("FEHLER: Logging konnte nicht initialisiert werden: {}", e);
     }
 
+    // Catch all panics and write them to the log file before aborting.
+    // This works even with panic = "abort" in the release profile.
+    std::panic::set_hook(Box::new(|info| {
+        let msg = info
+            .payload()
+            .downcast_ref::<&str>()
+            .map(|s| s.to_string())
+            .or_else(|| info.payload().downcast_ref::<String>().cloned())
+            .unwrap_or_else(|| "Unbekannte Panic-Nachricht".to_string());
+        let location = info
+            .location()
+            .map(|l| format!("{}:{}:{}", l.file(), l.line(), l.column()))
+            .unwrap_or_else(|| "unbekannte Position".to_string());
+        log::error!("=== PANIC === an {}: {}", location, msg);
+        log::error!("Der Prozess wird jetzt beendet (panic=abort).");
+        // Give the async logger a tiny moment to flush
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        eprintln!("PANIC at {}: {}", location, msg);
+    }));
+
     info!("Starting Doofie Client Launcher...");
+    info!("Tauri Builder wird initialisiert...");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_cli::init())
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             info!("SingleInstance plugin: Second instance triggered with args: {:?}", argv);
@@ -193,7 +213,13 @@ async fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
+            info!("Setup-Phase gestartet...");
             let app_handle = app.handle().clone();
+
+            // Store bundled resource directory so installer can copy pre-installed mods.
+            if let Ok(res_dir) = app.path().resource_dir() {
+                let _ = config::RESOURCE_DIR.set(res_dir);
+            }
 
             // CLI cold-start: handle subcommands (version short-circuits GUI;
             // launch fires asynchronously after State::init completes).
@@ -206,11 +232,14 @@ async fn main() {
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
-            let _tray = TrayIconBuilder::new()
+            let mut tray_builder = TrayIconBuilder::new()
                 .menu(&menu)
                 .show_menu_on_left_click(false)
-                .tooltip("Doofie Client Launcher")
-                .icon(app.default_window_icon().unwrap().clone())
+                .tooltip("Doofie Client Launcher");
+            if let Some(icon) = app.default_window_icon() {
+                tray_builder = tray_builder.icon(icon.clone());
+            }
+            let _tray = tray_builder
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
                         match app.get_webview_window("main") {
@@ -339,90 +368,25 @@ async fn main() {
             }*/
             // --- End .doofiepack handling on startup ---
 
-            // Task for State Init and Updater Window
+            // Task for State Init
             let state_init_app_handle = app_handle.clone();
             tauri::async_runtime::spawn(async move {
-                // --- Create Updater Window (but keep hidden initially) ---
-                let updater_window = match updater_utils::create_updater_window(&state_init_app_handle).await {
-                    Ok(win) => {
-                        info!("Updater window created successfully (initially hidden).");
-                        Some(win)
-                    }
-                    Err(e) => {
-                        error!("Failed to create updater window: {}", e);
-                        None
-                    }
-                };
-
                 // --- State Initialization ---
                 info!("Initiating state initialization...");
                 if let Err(e) = state::state_manager::State::init(Arc::new(state_init_app_handle.clone())).await {
-                    error!("CRITICAL: Failed to initialize state: {}. Update check and main window might not proceed correctly.", e);
-                    if let Some(win) = updater_window {
-                        updater_utils::emit_status(&state_init_app_handle, "close", "Closing due to state init error.".to_string(), None);
-                        tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-                        if let Err(close_err) = win.close() {
-                            error!("Failed to close updater window after state init error: {}", close_err);
-                        }
-                    }
+                    error!("CRITICAL: Failed to initialize state: {}", e);
                     return;
                 }
                 info!("State initialization finished successfully.");
 
-                // Sweep last session's throwaway temp profiles into the trash
-                // (non-blocking, best-effort). The trash's purge_expired retention
-                // then deletes them for good. See utils::trash_utils.
                 tauri::async_runtime::spawn(async {
                     utils::trash_utils::reap_temp_profiles().await;
                 });
-
-                // Issue #130: recover disk from pre-fix runaway logs.
                 tauri::async_runtime::spawn(async {
                     utils::log_archive::cleanup_oversized_logs().await;
                 });
 
-                info!("Attempting to retrieve launcher configuration for update check...");
-                match state::state_manager::State::get().await {
-                    Ok(state_manager_instance) => {
-                        let config = state_manager_instance.config_manager.get_config().await;
-                        let check_beta_channel = config.check_beta_channel;
-                        let mut auto_check_updates_enabled = config.auto_check_updates;
-
-                        // Disable auto-updates when running in Flatpak
-                        if updater_utils::is_flatpak() {
-                            info!("Running in Flatpak environment - disabling automatic updates (Flatpak handles updates through its own mechanism).");
-                            auto_check_updates_enabled = false;
-                        }
-
-                        if auto_check_updates_enabled {
-                            info!("Initiating application update check (Channel determined by config: Beta={})...", check_beta_channel);
-                            updater_utils::check_for_updates(state_init_app_handle.clone(), check_beta_channel, updater_window.clone()).await;
-                            info!("Update check process has finished.");
-                        } else {
-                            info!("Auto-check for updates is disabled in settings. Skipping update check.");
-                            // Ensure the updater window (if created) is closed if we skip the check.
-                            if let Some(win) = updater_window {
-                                updater_utils::emit_status(&state_init_app_handle, "close", "Auto-update disabled.".to_string(), None);
-                                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await; // Give time for emit to process
-                                if let Err(close_err) = win.close() {
-                                    error!("Failed to close updater window when skipping updates: {}", close_err);
-                                }
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        error!("Failed to get global state for update check: {}.", e);
-                        if let Some(win) = updater_window {
-                            updater_utils::emit_status(&state_init_app_handle, "close", "Closing due to state fetch error.".to_string(), None);
-                            tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-                            if let Err(close_err) = win.close() {
-                                error!("Failed to close updater window after state fetch error: {}", close_err);
-                            }
-                        }
-                    }
-                }
-
-                info!("Updater process finished. Attempting to show main window...");
+                info!("Attempting to show main window...");
                 if let Some(main_window) = state_init_app_handle.get_webview_window("main") {
                     match main_window.show() {
                         Ok(_) => {
@@ -535,6 +499,7 @@ async fn main() {
             get_active_account,
             set_active_account,
             get_accounts,
+            add_offline_account,
             search_modrinth_mods,
             search_modrinth_projects,
             search_mods_unified_command,
@@ -750,7 +715,11 @@ async fn main() {
             commands::deep_link_handler::confirm_auth_bridge,
         ])
         .build(tauri::generate_context!())
-        .expect("error while building tauri application")
+        .unwrap_or_else(|e| {
+            log::error!("=== FATAL: Tauri konnte nicht gestartet werden: {:?}", e);
+            std::thread::sleep(std::time::Duration::from_millis(300));
+            std::process::exit(1);
+        })
         .run(
             #[allow(unused_variables)]
             |app_handle, event| {

@@ -84,7 +84,7 @@ export function CrashAnalysisModal({ result, profileId, onClose }: Props) {
     try {
       const outcome = await applyCrashFix(profileId, direction ? { ...a, direction } : a);
       if (outcome.status === "skipped") {
-        toast(t("crash_analysis.toast.not_found", { target: outcome.reason }), { icon: "⚠️" });
+        toast(t("crash_analysis.toast.not_found", { target: outcome.reason }), { icon: <Icon icon="solar:danger-triangle-bold" className="w-5 h-5 text-amber-400" /> });
       } else {
         setApplied((p) => new Map(p).set(i, outcome.fix));
         refreshMods();

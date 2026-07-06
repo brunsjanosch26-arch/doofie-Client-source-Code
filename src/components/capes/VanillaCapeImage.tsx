@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { cn } from '../../lib/utils';
 
 interface VanillaCapeImageProps {
@@ -130,7 +131,7 @@ export const VanillaCapeImage = React.memo(function VanillaCapeImage({
           className="error-message w-full h-full flex justify-center items-center text-center text-xs text-red-600 bg-red-100 border border-red-600 p-1 box-border"
           title={errorMessage}
         >
-          ⚠️ {t('common.error')}
+          <Icon icon="solar:danger-triangle-bold" className="w-4 h-4 inline-block" /> {t('common.error')}
         </div>
       ) : (
         <canvas

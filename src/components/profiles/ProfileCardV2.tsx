@@ -25,6 +25,7 @@ import { parseMotdToHtml } from "../../utils/motd-utils";
 import { useTranslation } from "react-i18next";
 import { usePinnedProfilesStore } from "../../store/usePinnedProfilesStore";
 import { useResolvedLoaderVersion } from "../../hooks/useResolvedLoaderVersion";
+import { usePlaytimeStore } from "../../store/usePlaytimeStore";
 
 // Custom JSX component for tooltip content
 function StandardVersionTooltipContent() {
@@ -82,6 +83,8 @@ export function ProfileCardV2({
 
   const { isPinned, togglePin } = usePinnedProfilesStore();
   const pinned = isPinned(profile.id);
+  const { getPlaytime, formatPlaytime } = usePlaytimeStore();
+  const playtime = getPlaytime(profile.id);
 
   // Modpack versions state for conditional rendering
   const [modpackVersions, setModpackVersions] = useState(null);
@@ -653,6 +656,15 @@ export function ProfileCardV2({
                    <div className="text-white/50">
                      {formatLastPlayed(profile.last_played)}
                    </div>
+                   {playtime > 0 && (
+                     <>
+                       <div className="w-px h-2.5 bg-white/30"></div>
+                       <div className="text-white/40 flex items-center gap-1">
+                         <Icon icon="solar:clock-circle-bold" className="w-3 h-3" />
+                         {formatPlaytime(playtime)}
+                       </div>
+                     </>
+                   )}
                  </div>
                ) : (
                  // Grid mode: Full info display
@@ -690,6 +702,15 @@ export function ProfileCardV2({
                    <div className="text-white/50">
                      {formatLastPlayed(profile.last_played)}
                    </div>
+                   {playtime > 0 && (
+                     <>
+                       <div className="w-px h-2.5 bg-white/30"></div>
+                       <div className="text-white/40 flex items-center gap-1">
+                         <Icon icon="solar:clock-circle-bold" className="w-3 h-3" />
+                         {formatPlaytime(playtime)}
+                       </div>
+                     </>
+                   )}
                  </div>
                )
             )}

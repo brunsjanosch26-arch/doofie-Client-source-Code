@@ -41,11 +41,17 @@ import { ColorPickerModal } from "../modals/ColorPickerModal";
 import { ThemeSelector } from "../ThemeSelector";
 import { useLauncherTheme } from "../../hooks/useLauncherTheme";
 import { DebugSection } from "./DebugSection";
+import { ProfileSync } from "../sync/ProfileSync";
 import { useTranslation } from "react-i18next";
 import { LANGUAGE_OPTIONS } from "../../i18n";
 import type { SupportedLanguage } from "../../i18n";
 import { setDiscordState } from "../../utils/discordRpc";
 import { parseErrorMessage } from "../../utils/error-utils";
+import { POSES, usePoseStore } from "../../store/usePoseStore";
+import { SkinView3DWrapper } from "../common/SkinView3DWrapper";
+import { useMinecraftAuthStore } from "../../store/minecraft-auth-store";
+import { MinecraftSkinService } from "../../services/minecraft-skin-service";
+import { extractDominantSkinColor } from "../../utils/skinColorExtractor";
 
 export function SettingsTab() {
   const { t } = useTranslation();
@@ -54,11 +60,31 @@ export function SettingsTab() {
   const [tempConfig, setTempConfig] = useState<LauncherConfig | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState<boolean>(false); const [activeTab, setActiveTab] = useState<"general" | "appearance" | "advanced" | "debug">(
+  const [saving, setSaving] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"general" | "appearance" | "themes" | "poses" | "advanced" | "debug" | "sync">(
     "general",
   );
+  const { selectedPoseId, setSelectedPose } = usePoseStore();
+  const activeAccount = useMinecraftAuthStore((state) => state.activeAccount);
+  const [poseSkinUrl, setPoseSkinUrl] = useState<string | null>(null);
+  const [posePreviewViewer, setPosePreviewViewer] = useState<import("skinview3d").SkinViewer | null>(null);
 
   useEffect(() => { setDiscordState("Configuring Settings"); }, []);
+
+  useEffect(() => {
+    MinecraftSkinService.getActiveSkin().catch(() => null).then((skin) => {
+      if (skin?.base64_data) setPoseSkinUrl(`data:image/png;base64,${skin.base64_data}`);
+      else if (activeAccount?.id) setPoseSkinUrl(`https://api.mineatar.com/skin/${activeAccount.id}`);
+      else setPoseSkinUrl("https://api.mineatar.com/skin/Steve");
+    });
+  }, [activeAccount?.id]);
+
+  useEffect(() => {
+    if (posePreviewViewer) {
+      const pose = POSES.find(p => p.id === selectedPoseId) ?? POSES[0];
+      pose.apply(posePreviewViewer);
+    }
+  }, [selectedPoseId, posePreviewViewer]);
 
   // Create groups array for tabs
   const createGroups = (): GroupTab[] => {
@@ -74,6 +100,16 @@ export function SettingsTab() {
         count: undefined,
       },
       {
+        id: "themes",
+        name: "Themes",
+        count: undefined,
+      },
+      {
+        id: "poses",
+        name: "Posen",
+        count: undefined,
+      },
+      {
         id: "advanced",
         name: t("settings.tabs.advanced"),
         count: undefined,
@@ -81,6 +117,11 @@ export function SettingsTab() {
       {
         id: "debug",
         name: t("settings.tabs.debug"),
+        count: undefined,
+      },
+      {
+        id: "sync",
+        name: "Sync",
         count: undefined,
       },
     ];
@@ -107,7 +148,7 @@ export function SettingsTab() {
     toggleStaticBackground,
     toggleBackgroundAnimation,
   } = useThemeStore();
-  const { currentEffect, setCurrentEffect } = useBackgroundEffectStore();
+  const { currentEffect, setCurrentEffect, customImagePath, setCustomImagePath } = useBackgroundEffectStore();
   const { qualityLevel, setQualityLevel } = useQualitySettingsStore();
   const { borderRadius, setBorderRadius, setAnalyticsConsent } = useThemeStore();
 
@@ -171,6 +212,41 @@ export function SettingsTab() {
       id: BACKGROUND_EFFECTS.PLAIN_BACKGROUND,
       name: t("settings.background.plain_color"),
       icon: "solar:palette-bold",
+    },
+    {
+      id: BACKGROUND_EFFECTS.MINECRAFT,
+      name: "Minecraft",
+      icon: "solar:gamepad-bold",
+    },
+    {
+      id: BACKGROUND_EFFECTS.CUSTOM_IMAGE,
+      name: "Eigenes Bild",
+      icon: "solar:gallery-bold",
+    },
+    {
+      id: BACKGROUND_EFFECTS.AURORA,
+      name: "Aurora Borealis",
+      icon: "solar:stars-bold",
+    },
+    {
+      id: BACKGROUND_EFFECTS.CYBERPUNK,
+      name: "Cyberpunk",
+      icon: "solar:cpu-bold",
+    },
+    {
+      id: BACKGROUND_EFFECTS.GALAXY,
+      name: "Galaxie",
+      icon: "solar:planet-bold",
+    },
+    {
+      id: BACKGROUND_EFFECTS.BLOOD_MOON,
+      name: "Blood Moon",
+      icon: "solar:moon-bold",
+    },
+    {
+      id: BACKGROUND_EFFECTS.ICE,
+      name: "Eiskönigin",
+      icon: "solar:snowflake-bold",
     },
   ];
 
@@ -344,6 +420,28 @@ export function SettingsTab() {
         <div className="flex-1">
           <ColorPicker shape="square" size="md" showCustomOption={false} disabled={isAccentColorDisabled} />
         </div>
+
+        {/* Skin color auto-extract */}
+        <button
+          onClick={async () => {
+            if (isAccentColorDisabled) return;
+            const account = useMinecraftAuthStore.getState().activeAccount;
+            const skinUrl = account?.id
+              ? `https://api.mineatar.com/skin/${account.id}`
+              : "https://api.mineatar.com/skin/Steve";
+            const color = await extractDominantSkinColor(skinUrl);
+            if (color) setCustomAccentColor(color);
+          }}
+          disabled={isAccentColorDisabled}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 rounded-lg border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all text-xs font-minecraft-ten",
+            isAccentColorDisabled && "opacity-40 cursor-not-allowed"
+          )}
+          title="Akzentfarbe automatisch aus deinem Skin extrahieren"
+        >
+          <Icon icon="solar:dropper-bold" className="w-4 h-4" />
+          Aus Skin
+        </button>
 
         <button
           onClick={() => {
@@ -537,9 +635,8 @@ export function SettingsTab() {
     </div>
   );
 
-  const renderAppearanceTab = () => (
+  const renderThemesTab = () => (
     <div className="space-y-6">
-      {/* Theme Section */}
       <div>
         <div className="flex items-center gap-2 mb-2">
           <Icon icon="solar:star-bold" className="w-6 h-6 text-white" />
@@ -554,7 +651,11 @@ export function SettingsTab() {
       <div className="mt-4">
         <ThemeSelector />
       </div>
+    </div>
+  );
 
+  const renderAppearanceTab = () => (
+    <div className="space-y-6">
       {/* Background Effect Section */}
       <div className="mt-8">
         <div className="mb-4">
@@ -583,6 +684,7 @@ export function SettingsTab() {
                 size="sm"
                 disabled={saving}
               />
+              <MouseTrackerToggle disabled={saving} />
               <div className="flex items-center gap-3">
                 <span className="text-xs text-white/60 font-minecraft-ten">{t("settings.background.quality_low")}</span>
                 <input
@@ -620,8 +722,98 @@ export function SettingsTab() {
             />
           ))}
         </div>
+
+        {currentEffect === BACKGROUND_EFFECTS.CUSTOM_IMAGE && (
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              onClick={async () => {
+                try {
+                  const { open } = await import("@tauri-apps/plugin-dialog");
+                  const selected = await open({
+                    multiple: false,
+                    filters: [{ name: "Bild", extensions: ["png", "jpg", "jpeg", "webp", "gif"] }],
+                  });
+                  if (selected && typeof selected === "string") {
+                    setCustomImagePath(selected);
+                  }
+                } catch (e) {
+                  console.error("Datei-Dialog fehlgeschlagen:", e);
+                }
+              }}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-md border border-white/20 transition-colors"
+            >
+              Bild auswählen
+            </button>
+            {customImagePath && (
+              <span className="text-white/50 text-xs truncate max-w-xs">
+                {customImagePath.split(/[\\/]/).pop()}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
+    </div>
+  );
+
+  const renderPosesTab = () => (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-white/80 font-minecraft text-lg mb-1 lowercase">skin pose</h3>
+        <p className="text-white/40 text-xs mb-4">Wähle wie dein Skin auf dem Startbildschirm posiert. Animierte Posen bewegen sich kontinuierlich.</p>
+        <div className="flex gap-4">
+          {/* Pose grid */}
+          <div className="flex-1 grid grid-cols-2 gap-2">
+            {POSES.map((pose) => (
+              <button
+                key={pose.id}
+                onClick={() => setSelectedPose(pose.id)}
+                className={`flex items-center gap-2 p-3 rounded-lg border transition-all text-left ${
+                  selectedPoseId === pose.id
+                    ? "border-white/60 bg-white/15 text-white"
+                    : "border-white/10 bg-white/5 text-white/60 hover:border-white/30 hover:bg-white/10"
+                }`}
+              >
+                <Icon icon={pose.icon} className="w-5 h-5 flex-shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-minecraft text-sm lowercase truncate">{pose.name}</div>
+                  <div className="text-xs opacity-50 truncate">{pose.description}</div>
+                  {pose.animated && (
+                    <div className="text-xs mt-0.5" style={{ color: "#4ade80" }}>● animiert</div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+          {/* Live preview */}
+          <div className="w-36 flex-shrink-0 flex flex-col items-center gap-2">
+            <div className="text-white/40 text-xs font-minecraft lowercase">vorschau</div>
+            <div className="w-28 h-44 rounded-lg overflow-hidden bg-black/30 border border-white/10">
+              {poseSkinUrl && (
+                <SkinView3DWrapper
+                  skinUrl={poseSkinUrl}
+                  width={112}
+                  height={176}
+                  zoom={0.8}
+                  onViewerReady={(viewer) => {
+                    viewer.renderer.setClearColor(0x000000, 0);
+                    const pose = POSES.find(p => p.id === selectedPoseId) ?? POSES[0];
+                    pose.apply(viewer);
+                    setPosePreviewViewer(viewer);
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Credits — subtle */}
+      <div className="mt-6 pt-4 border-t border-white/5">
+        <p className="text-white/15 text-xs text-center">
+          Doofie Client — made with Herzblut
+        </p>
+      </div>
     </div>
   );
 
@@ -1066,15 +1258,25 @@ export function SettingsTab() {
         return renderGeneralTab();
       case "appearance":
         return renderAppearanceTab();
+      case "themes":
+        return renderThemesTab();
+      case "poses":
+        return renderPosesTab();
       case "advanced":
         return renderAdvancedTab();
       case "debug":
         return <DebugSection />;
+      case "sync":
+        return (
+          <div className="p-4 overflow-y-auto h-full">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Icon icon="solar:cloud-bold" className="w-5 h-5" /> Cloud-Sync</h2>
+            <ProfileSync />
+          </div>
+        );
       default:
         return null;
     }
   };
-
 
   return (
     <div className="h-full flex flex-col overflow-hidden p-4 relative">
@@ -1084,7 +1286,7 @@ export function SettingsTab() {
         <GroupTabs
           groups={groups}
           activeGroup={activeTab}
-          onGroupChange={(groupId) => setActiveTab(groupId as "general" | "appearance" | "advanced" | "debug")}
+          onGroupChange={(groupId) => setActiveTab(groupId as "general" | "appearance" | "themes" | "poses" | "advanced" | "debug" | "sync")}
           showAddButton={false}
         />
 
@@ -1117,6 +1319,30 @@ export function SettingsTab() {
       </div>
 
       {confirmDialog}
+    </div>
+  );
+}
+
+function MouseTrackerToggle({ disabled }: { disabled: boolean }) {
+  const { isMouseTrackerEnabled, toggleMouseTracker } = useThemeStore();
+  return (
+    <div className="flex items-center gap-3">
+      <Icon icon="solar:cursor-bold" className="w-4 h-4 text-white/60" />
+      <span className="text-sm text-white/70 font-minecraft-ten">Maus-Tracker</span>
+      <button
+        onClick={toggleMouseTracker}
+        disabled={disabled}
+        className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200"
+        style={{
+          background: isMouseTrackerEnabled ? "var(--accent-color, #4f8eff)" : "rgba(255,255,255,0.15)",
+          opacity: disabled ? 0.5 : 1,
+        }}
+      >
+        <span
+          className="inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform duration-200"
+          style={{ transform: isMouseTrackerEnabled ? "translateX(18px)" : "translateX(2px)" }}
+        />
+      </button>
     </div>
   );
 }

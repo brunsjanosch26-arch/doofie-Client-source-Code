@@ -35,9 +35,12 @@ export function MinecraftAccountManager({
     isLoading,
     error,
     addAccount,
+    addOfflineAccount,
     removeAccount,
     setActiveAccount,
   } = useMinecraftAuthStore();
+  const [showOfflineInput, setShowOfflineInput] = useState(false);
+  const [offlineUsername, setOfflineUsername] = useState("");
   const { showModal, hideModal } = useGlobalModal();
   const { t } = useTranslation();
   const [useBrowserLogin, setUseBrowserLogin] = useState(false);
@@ -110,6 +113,13 @@ export function MinecraftAccountManager({
     }
   };
 
+  const handleAddOfflineAccount = async () => {
+    if (!offlineUsername.trim()) return;
+    await addOfflineAccount(offlineUsername.trim());
+    setOfflineUsername("");
+    setShowOfflineInput(false);
+  };
+
   if (isInDropdown) {
     return (
       <div className="flex flex-col max-h-[400px]">
@@ -160,27 +170,60 @@ export function MinecraftAccountManager({
 
         <DropdownDivider />
 
+        {showOfflineInput && (
+          <div className="px-2 py-2 flex gap-1 items-center">
+            <input
+              type="text"
+              placeholder={t('auth.offlineUsernamePlaceholder')}
+              value={offlineUsername}
+              onChange={(e) => setOfflineUsername(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddOfflineAccount()}
+              maxLength={16}
+              className="flex-1 bg-black/40 border border-white/20 rounded px-2 py-1 text-white text-xs font-minecraft-ten focus:outline-none focus:border-white/50"
+              autoFocus
+            />
+            <button
+              onClick={handleAddOfflineAccount}
+              disabled={isLoading || !offlineUsername.trim()}
+              className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded disabled:opacity-50"
+            >
+              +
+            </button>
+          </div>
+        )}
+
         <DropdownFooter>
-          <Button
-            variant="default"
-            onClick={handleAddAccount}
-            disabled={isLoading}
-            icon={<Icon icon="solar:add-circle-bold" className="w-3 h-3" />}
-            size="sm"
-            className="w-full"
-          >
-            {isLoading ? (
-              <>
-                <Icon
-                  icon="solar:spinner-bold"
-                  className="w-3 h-3 animate-spin"
-                />
-                <span className="ml-1">{t('auth.processing')}</span>
-              </>
-            ) : (
-              t('auth.addAccount')
-            )}
-          </Button>
+          <div className="flex gap-1 w-full">
+            <Button
+              variant="default"
+              onClick={() => setShowOfflineInput(v => !v)}
+              disabled={isLoading}
+              icon={<Icon icon="solar:user-block-bold" className="w-3 h-3" />}
+              size="sm"
+            >
+              {t('auth.addOfflineAccount')}
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleAddAccount}
+              disabled={isLoading}
+              icon={<Icon icon="solar:add-circle-bold" className="w-3 h-3" />}
+              size="sm"
+              className="flex-1"
+            >
+              {isLoading ? (
+                <>
+                  <Icon
+                    icon="solar:spinner-bold"
+                    className="w-3 h-3 animate-spin"
+                  />
+                  <span className="ml-1">{t('auth.processing')}</span>
+                </>
+              ) : (
+                t('auth.addAccount')
+              )}
+            </Button>
+          </div>
         </DropdownFooter>
       </div>
     );
@@ -242,7 +285,37 @@ export function MinecraftAccountManager({
             </div>
           </div>
 
+          {showOfflineInput && (
+            <div className="bg-black/30 backdrop-blur-md border-2 border-white/20 p-4 rounded-md flex gap-2 items-center">
+              <input
+                type="text"
+                placeholder={t('auth.offlineUsernamePlaceholder')}
+                value={offlineUsername}
+                onChange={(e) => setOfflineUsername(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddOfflineAccount()}
+                maxLength={16}
+                className="flex-1 bg-black/40 border border-white/20 rounded px-3 py-2 text-white text-sm font-minecraft-ten focus:outline-none focus:border-white/50"
+                autoFocus
+              />
+              <Button variant="success" onClick={handleAddOfflineAccount} disabled={isLoading || !offlineUsername.trim()} size="md">
+                {t('auth.addOfflineConfirm')}
+              </Button>
+              <Button variant="default" onClick={() => { setShowOfflineInput(false); setOfflineUsername(""); }} size="md">
+                {t('auth.cancel')}
+              </Button>
+            </div>
+          )}
+
           <div className="flex justify-end gap-3">
+            <Button
+              variant="default"
+              onClick={() => setShowOfflineInput(v => !v)}
+              disabled={isLoading}
+              icon={<Icon icon="solar:user-block-bold" className="w-5 h-5" />}
+              size="lg"
+            >
+              {t('auth.addOfflineAccount')}
+            </Button>
             <Button
               variant="success"
               onClick={handleAddAccount}

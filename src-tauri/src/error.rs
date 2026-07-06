@@ -230,7 +230,14 @@ impl From<AppError> for CommandError {
                 args: Some(args.clone()),
                 status: Some(*status),
             },
-            _ => CommandError {
+            AppError::NoCredentialsError => CommandError {
+                message: error.to_string(),
+                kind: "NoCredentialsError".to_string(),
+                translatable_key: Some("errors.no_credentials".to_string()),
+                args: None,
+                status: None,
+            },
+        _ => CommandError {
                 message: error.to_string(),
                 kind: format!("{:?}", error),
                 translatable_key: None,

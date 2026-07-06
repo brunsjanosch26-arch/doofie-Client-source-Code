@@ -11,9 +11,10 @@ import { BrowseTab } from "../components/profiles/detail/BrowseTab";
 import { BrowseTabWrapper } from "../components/profiles/BrowseTabWrapper";
 import { ProfilesTabV2 } from "../components/tabs/ProfilesTabV2";
 import { ProfileDetailViewV2Wrapper } from "../components/profiles/ProfileDetailViewV2Wrapper";
-// DISABLED: Advent Calendar (seasonal feature)
-// import { AdventCalendarTab } from "../components/advent-calendar/AdventCalendarTab";
 import { ModDetailPage } from "../components/mods/ModDetailPage";
+import { AchievementsTab } from "../components/tabs/AchievementsTab";
+import { DashboardTab } from "../components/tabs/DashboardTab";
+import { PerformanceTab } from "../components/tabs/PerformanceTab";
 
 export const router = createHashRouter([
   {
@@ -69,11 +70,18 @@ export const router = createHashRouter([
         path: "settings",
         element: <SettingsTab />,
       },
-      // DISABLED: Advent Calendar (seasonal feature)
-      // {
-      //   path: "advent-calendar",
-      //   element: <AdventCalendarTab />,
-      // },
+      {
+        path: "achievements",
+        element: <AchievementsTab />,
+      },
+      {
+        path: "dashboard",
+        element: <DashboardTab />,
+      },
+      {
+        path: "performance",
+        element: <PerformanceTab />,
+      },
     ],
   },
 ]);

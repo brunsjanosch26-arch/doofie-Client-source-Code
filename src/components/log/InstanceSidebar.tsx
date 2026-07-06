@@ -567,7 +567,7 @@ export function InstanceSidebar({
                     try {
                       await ProcessService.abort(selectedInstance.profileId);
                       finalizeButtonLaunch(selectedInstance.profileId, "Aborted");
-                      addLauncherLog(selectedInstance.profileId, "✗ Launch aborted by user");
+                      addLauncherLog(selectedInstance.profileId, "Launch aborted by user");
                     } catch (error) {
                       console.error("Failed to abort launch:", error);
                     }
