@@ -62,8 +62,14 @@ Die fertige Jar liegt dann in `build/libs/doofie-hardcore-1.0.0.jar`.
 4. Server neu starten
 5. Optional: `plugins/DoofieHardcore/config.yml` anpassen (Preise, Startguthaben, Aufschlag) und `/reload confirm` oder Neustart
 
-## Wichtig für Hardcore
+## Wichtig: hardcore=false verwenden!
 
-Die Welt kann als Hardcore laufen (Herzen-Optik) — das Plugin setzt Spieler ohne
-Kopfgeld-Bann nach dem Tod automatisch zurück in den Survival-Modus.
-Gebannte bleiben Spectator, bis sie freigekauft werden.
+Setze in der server.properties **hardcore=false**. Dann zeigt der Todesbildschirm
+den normalen "Respawn"-Knopf. Das Plugin uebernimmt die Hardcore-Regeln selbst:
+- Normale Tode: ganz normaler Respawn am Bett/Spawn
+- Kopfgeld-Tode: Spieler landet nach dem Respawn im Spectator und kann nur
+  /freikaufen nutzen. Nach dem Freikauf geht es am Bett (oder Spawn) weiter.
+
+(Mit hardcore=true wuerde der Client "Spectate World" statt "Respawn" anzeigen —
+das laesst sich ohne Client-Mod nicht umbenennen. Einziger Nachteil von
+hardcore=false: die Hardcore-Herzen-Optik fehlt.)

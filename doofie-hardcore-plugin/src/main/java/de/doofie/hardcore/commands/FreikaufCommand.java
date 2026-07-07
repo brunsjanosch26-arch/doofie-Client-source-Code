@@ -50,11 +50,12 @@ public class FreikaufCommand implements CommandExecutor {
 
         plugin.bans().unban(target.getUniqueId());
 
-        // Wenn online: zurueck in den Survival-Modus am Spawn
+        // Wenn online: zurueck in den Survival-Modus — am Bett, sonst am Welt-Spawn
         Player online = target.getPlayer();
         if (online != null) {
             online.setGameMode(GameMode.SURVIVAL);
-            online.teleport(online.getWorld().getSpawnLocation());
+            var respawn = online.getRespawnLocation();
+            online.teleport(respawn != null ? respawn : online.getWorld().getSpawnLocation());
             online.sendMessage(Component.text("Du bist frei! Willkommen zurueck.", NamedTextColor.GREEN));
         }
 
