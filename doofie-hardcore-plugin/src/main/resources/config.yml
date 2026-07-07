@@ -14,29 +14,30 @@ freikauf-aufschlag: 0.05
 ah-aufschlag: 0.05
 
 # Dauerhafte Server-Angebote im /ah (unbegrenzter Vorrat, Preis = Verkaufspreis + Aufschlag)
-# Nur Materialien mit einem Eintrag unter 'preise' werden angezeigt
 ah-startangebot:
-  - WHEAT
-  - CARROT
-  - POTATO
-  - PORKCHOP
-  - BEEF
-  - CHICKEN
-  - COD
-  - SALMON
-  - OAK_LOG
-  - COBBLESTONE
-  - COAL
-  - IRON_INGOT
+  - BREAD
+  - COOKED_BEEF
+  - COOKED_PORKCHOP
+  - COOKED_CHICKEN
+  - COOKED_MUTTON
+  - COOKED_RABBIT
+  - COOKED_COD
+  - COOKED_SALMON
+  - BAKED_POTATO
+  - GOLDEN_CARROT
   - ARROW
-  - STRING
-  - LEATHER
+  - TORCH
+  - OAK_PLANKS
+  - LADDER
   - BONE
+  - STRING
 
 # Maximale Anzahl Auktionen pro Spieler
 max-auktionen-pro-spieler: 5
 
-# Verkaufspreise fuer /sell (Material -> Dollar pro Stueck)
+# Preis-Overrides (Material -> Dollar pro Stueck).
+# WICHTIG: JEDES Item hat automatisch einen passenden Verkaufswert (Preis-Engine im Plugin).
+# Eintraege hier UEBERSCHREIBEN nur den automatischen Preis.
 # Alle Material-Namen: https://jd.papermc.io/paper/26.2/org/bukkit/Material.html
 preise:
   DIAMOND: 100.0
