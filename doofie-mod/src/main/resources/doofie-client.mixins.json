@@ -9,7 +9,9 @@
     "BrandingOverlayMixin",
     "NrcBrandingPauseScreenMixin",
     "SplashOverlayMixin",
-    "TitleScreenMixin"
+    "TitleScreenMixin",
+    "LogoDrawerMixin",
+    "PlayerListHudMixin"
   ],
   "injectors": {
     "defaultRequire": 0

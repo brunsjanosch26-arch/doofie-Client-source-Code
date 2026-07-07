@@ -83,6 +83,9 @@ pub struct LauncherConfig {
     /// Pack rollout override: "auto" | "off" | "on"
     #[serde(default = "default_pack_rollout_override")]
     pub pack_rollout_override: String,
+    /// Launcher-Akzentfarbe (hex ohne #) — wird als -Ddoofie.accent an die Mod uebergeben
+    #[serde(default)]
+    pub accent_color: Option<String>,
 }
 
 fn default_config_version() -> u32 {
@@ -159,6 +162,7 @@ impl Default for LauncherConfig {
             cache_natives_extraction: default_cache_natives_extraction(),
             referral_state: None,
             pack_rollout_override: default_pack_rollout_override(),
+            accent_color: None,
         }
     }
 }
@@ -529,6 +533,7 @@ impl ConfigManager {
                     cache_natives_extraction: new_config.cache_natives_extraction,
                     referral_state: new_config.referral_state.clone(),
                     pack_rollout_override: new_config.pack_rollout_override.clone(),
+                    accent_color: new_config.accent_color.clone(),
                 };
 
                 true

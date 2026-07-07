@@ -1,153 +1,211 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Doofieclient",
-  "version": "2.0.0",
-  "identifier": "com.doofieclient.launcher",
-  "build": {
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1430",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFMUMxMEVFQUQ2RTYwMUMKUldRY1lHNnQ3aEFjTG4rNU5WeUV1MWdCSkM5ZEF5R3JZOHZDK2l2ai93OHlTdTJPVFVhTHowSHMK",
-      "endpoints": [
-        "https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/latest.json"
-      ]
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "Doofieclient",
+    "version": "2.0.0",
+    "identifier": "com.doofieclient.launcher",
+    "build": {
+        "beforeDevCommand": "npm run dev",
+        "devUrl": "http://localhost:1430",
+        "beforeBuildCommand": "npm run build",
+        "frontendDist": "../dist"
     },
-    "singleInstance": {
-      "active": true
-    },
-    "deep-link": {
-      "desktop": {
-        "schemes": ["doofie"]
-      }
-    },
-    "cli": {
-      "description": "Doofie Client Launcher",
-      "subcommands": {
-        "launch": {
-          "description": "Launch a profile",
-          "args": [
-            { "name": "profile", "short": "p", "takesValue": true, "required": true, "description": "Profile UUID or exact name" },
-            { "name": "mc", "takesValue": true, "description": "Override game version" },
-            { "name": "loader", "takesValue": true, "description": "Override loader (vanilla|fabric|forge|neoforge|quilt)" },
-            { "name": "loader-version", "takesValue": true, "description": "Override loader version" },
-            { "name": "server", "short": "s", "takesValue": true, "description": "Quick-play: connect to this server" },
-            { "name": "account", "short": "a", "takesValue": true, "description": "Launch with this Minecraft account" }
-          ]
+    "plugins": {
+        "updater": {
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFMUMxMEVFQUQ2RTYwMUMKUldRY1lHNnQ3aEFjTG4rNU5WeUV1MWdCSkM5ZEF5R3JZOHZDK2l2ai93OHlTdTJPVFVhTHowSHMK",
+            "endpoints": [
+                "https://github.com/brunsjanosch26-arch/doofie-client-code/releases/latest/download/latest.json"
+            ]
         },
-        "version": {
-          "description": "Print launcher version and exit"
+        "singleInstance": {
+            "active": true
+        },
+        "deep-link": {
+            "desktop": {
+                "schemes": [
+                    "doofie"
+                ]
+            }
+        },
+        "cli": {
+            "description": "Doofie Client Launcher",
+            "subcommands": {
+                "launch": {
+                    "description": "Launch a profile",
+                    "args": [
+                        {
+                            "name": "profile",
+                            "short": "p",
+                            "takesValue": true,
+                            "required": true,
+                            "description": "Profile UUID or exact name"
+                        },
+                        {
+                            "name": "mc",
+                            "takesValue": true,
+                            "description": "Override game version"
+                        },
+                        {
+                            "name": "loader",
+                            "takesValue": true,
+                            "description": "Override loader (vanilla|fabric|forge|neoforge|quilt)"
+                        },
+                        {
+                            "name": "loader-version",
+                            "takesValue": true,
+                            "description": "Override loader version"
+                        },
+                        {
+                            "name": "server",
+                            "short": "s",
+                            "takesValue": true,
+                            "description": "Quick-play: connect to this server"
+                        },
+                        {
+                            "name": "account",
+                            "short": "a",
+                            "takesValue": true,
+                            "description": "Launch with this Minecraft account"
+                        }
+                    ]
+                },
+                "version": {
+                    "description": "Print launcher version and exit"
+                }
+            }
         }
-      }
-    }
-  },
-  "app": {
-    "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "Doofie Client",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 1080,
-        "minHeight": 690,
-        "decorations": false,
-        "transparent": true,
-        "center": true,
-        "visible": false,
-        "shadow": false
-      }
-    ],
-    "security": {
-      "csp": {
-        "default-src": ["'self'", "ipc:", "http://ipc.localhost"],
-        "connect-src": [
-          "'self'", "asset:", "http://asset.localhost", "data:",
-          "https://api.iconify.design",
-          "https://*.modrinth.com",
-          "https://sessionserver.mojang.com",
-          "https://api.doofieclient.de",
-          "https://api.norisk.gg",
-          "https://api-staging.norisk.gg"
-        ],
-        "img-src": [
-          "'self'", "asset:", "http://asset.localhost",
-          "https://*.modrinth.com", "https://cdn.modrinth.com",
-          "https://textures.minecraft.net", "http://textures.minecraft.net",
-          "https://crafatar.com", "https://media.forgecdn.net",
-          "data:", "https://mc-heads.net", "https://*.mc-heads.net",
-          "https://wsrv.nl", "https://i.ibb.co",
-          "https://avatars.githubusercontent.com",
-          "https://raw.githubusercontent.com",
-          "https://i.imgur.com", "https://*.imgur.com",
-          "https://cdn.discordapp.com", "https://discordapp.com",
-          "https://media.githubusercontent.com",
-          "https://cdn.norisk.gg", "https://cdn-staging.norisk.gg"
-        ],
-        "style-src": ["'self'", "'unsafe-inline'"],
-        "frame-src": [
-          "'self'",
-          "https://www.youtube.com",
-          "https://www.youtube-nocookie.com"
-        ]
-      },
-      "assetProtocol": {
-        "enable": true,
-        "scope": {
-          "requireLiteralLeadingDot": false,
-          "allow": ["**/*"]
-        }
-      }
-    }
-  },
-  "bundle": {
-    "windows": {
-      "webviewInstallMode": { "type": "embedBootstrapper" },
-      "nsis": {
-        "installerIcon": "icons/icon.ico",
-        "installMode": "currentUser"
-      }
     },
-    "active": true,
-    "targets": ["nsis"],
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-    "resources": {
-      "resources/launcher.py": "launcher.py",
-      "resources/nrc-client.jar": "nrc-client.jar",
-      "resources/nrc-compat.jar": "nrc-compat.jar",
-      "resources/nrc-cosmetics.jar": "nrc-cosmetics.jar",
-      "resources/nrc-friends.jar": "nrc-friends.jar",
-      "resources/nrc-mcreal.jar": "nrc-mcreal.jar",
-      "resources/nrc-minigames.jar": "nrc-minigames.jar",
-      "resources/nrc-owolib.jar": "nrc-owolib.jar",
-      "resources/nrc-voicechat.jar": "nrc-voicechat.jar",
-      "resources/fabric-language-kotlin.jar": "fabric-language-kotlin.jar",
-      "resources/cloth-config.jar": "cloth-config.jar",
-      "resources/yacl.jar": "yacl.jar",
-      "resources/modmenu.jar": "modmenu.jar",
-      "resources/simple-voice-chat.jar": "simple-voice-chat.jar",
-      "resources/sodium.jar": "sodium.jar",
-      "resources/iris.jar": "iris.jar",
-      "resources/lithium.jar": "lithium.jar",
-      "resources/ferritecore.jar": "ferritecore.jar",
-      "resources/immediatelyfast.jar": "immediatelyfast.jar",
-      "resources/entityculling.jar": "entityculling.jar",
-      "resources/moreculling.jar": "moreculling.jar",
-      "resources/dynamic-fps.jar": "dynamic-fps.jar",
-      "resources/skinlayers3d.jar": "skinlayers3d.jar",
-      "resources/zoomify.jar": "zoomify.jar",
-      "resources/appleskin.jar": "appleskin.jar",
-      "resources/mousetweaks.jar": "mousetweaks.jar",
-      "resources/status-effect-bars.jar": "status-effect-bars.jar"
+    "app": {
+        "windows": [
+            {
+                "fullscreen": false,
+                "resizable": true,
+                "title": "Doofie Client",
+                "width": 1280,
+                "height": 800,
+                "minWidth": 1080,
+                "minHeight": 690,
+                "decorations": false,
+                "transparent": true,
+                "center": true,
+                "visible": false,
+                "shadow": false
+            }
+        ],
+        "security": {
+            "csp": {
+                "default-src": [
+                    "'self'",
+                    "ipc:",
+                    "http://ipc.localhost"
+                ],
+                "connect-src": [
+                    "'self'",
+                    "asset:",
+                    "http://asset.localhost",
+                    "data:",
+                    "https://api.iconify.design",
+                    "https://*.modrinth.com",
+                    "https://sessionserver.mojang.com",
+                    "https://api.doofieclient.de",
+                    "https://api.norisk.gg",
+                    "https://api-staging.norisk.gg"
+                ],
+                "img-src": [
+                    "'self'",
+                    "asset:",
+                    "http://asset.localhost",
+                    "https://*.modrinth.com",
+                    "https://cdn.modrinth.com",
+                    "https://textures.minecraft.net",
+                    "http://textures.minecraft.net",
+                    "https://crafatar.com",
+                    "https://media.forgecdn.net",
+                    "data:",
+                    "https://mc-heads.net",
+                    "https://*.mc-heads.net",
+                    "https://wsrv.nl",
+                    "https://i.ibb.co",
+                    "https://avatars.githubusercontent.com",
+                    "https://raw.githubusercontent.com",
+                    "https://i.imgur.com",
+                    "https://*.imgur.com",
+                    "https://cdn.discordapp.com",
+                    "https://discordapp.com",
+                    "https://media.githubusercontent.com",
+                    "https://cdn.norisk.gg",
+                    "https://cdn-staging.norisk.gg"
+                ],
+                "style-src": [
+                    "'self'",
+                    "'unsafe-inline'"
+                ],
+                "frame-src": [
+                    "'self'",
+                    "https://www.youtube.com",
+                    "https://www.youtube-nocookie.com"
+                ]
+            },
+            "assetProtocol": {
+                "enable": true,
+                "scope": {
+                    "requireLiteralLeadingDot": false,
+                    "allow": [
+                        "**/*"
+                    ]
+                }
+            }
+        }
+    },
+    "bundle": {
+        "windows": {
+            "webviewInstallMode": {
+                "type": "embedBootstrapper"
+            },
+            "nsis": {
+                "installerIcon": "icons/icon.ico",
+                "installMode": "currentUser"
+            }
+        },
+        "active": true,
+        "targets": [
+            "nsis"
+        ],
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "resources": {
+            "resources/launcher.py": "launcher.py",
+            "resources/nrc-client.jar": "nrc-client.jar",
+            "resources/nrc-compat.jar": "nrc-compat.jar",
+            "resources/nrc-cosmetics.jar": "nrc-cosmetics.jar",
+            "resources/nrc-friends.jar": "nrc-friends.jar",
+            "resources/nrc-mcreal.jar": "nrc-mcreal.jar",
+            "resources/nrc-minigames.jar": "nrc-minigames.jar",
+            "resources/nrc-owolib.jar": "nrc-owolib.jar",
+            "resources/nrc-voicechat.jar": "nrc-voicechat.jar",
+            "resources/fabric-language-kotlin.jar": "fabric-language-kotlin.jar",
+            "resources/cloth-config.jar": "cloth-config.jar",
+            "resources/yacl.jar": "yacl.jar",
+            "resources/modmenu.jar": "modmenu.jar",
+            "resources/simple-voice-chat.jar": "simple-voice-chat.jar",
+            "resources/sodium.jar": "sodium.jar",
+            "resources/iris.jar": "iris.jar",
+            "resources/lithium.jar": "lithium.jar",
+            "resources/ferritecore.jar": "ferritecore.jar",
+            "resources/immediatelyfast.jar": "immediatelyfast.jar",
+            "resources/entityculling.jar": "entityculling.jar",
+            "resources/moreculling.jar": "moreculling.jar",
+            "resources/dynamic-fps.jar": "dynamic-fps.jar",
+            "resources/skinlayers3d.jar": "skinlayers3d.jar",
+            "resources/zoomify.jar": "zoomify.jar",
+            "resources/appleskin.jar": "appleskin.jar",
+            "resources/mousetweaks.jar": "mousetweaks.jar",
+            "resources/status-effect-bars.jar": "status-effect-bars.jar",
+            "resources/doofie-client-1.0.0.jar": "doofie-client-1.0.0.jar"
+        }
     }
-  }
 }

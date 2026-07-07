@@ -1,9 +1,13 @@
 "use client";
 
+import { useRef } from "react";
 import { Icon } from "@iconify/react";
+import { toast } from "react-hot-toast";
 import { cn } from "../lib/utils";
 import { useLauncherTheme } from "../hooks/useLauncherTheme";
 import { LAUNCHER_THEMES } from "../store/launcher-theme-store";
+import { useThemeStore } from "../store/useThemeStore";
+import { useBackgroundEffectStore } from "../store/background-effect-store";
 
 interface ThemeSelectorProps {
   disabled?: boolean;
@@ -26,13 +30,69 @@ const EFFECT_LABELS: Record<string, string> = {
   "galaxy": "Galaxie",
   "blood-moon": "Blutmond",
   "ice": "Eis",
+  "latest-screenshot": "Mein Screenshot",
 };
 
 export function ThemeSelector({ disabled }: ThemeSelectorProps) {
   const { selectedThemeId, toggleTheme, isThemeUnlocked } = useLauncherTheme();
   const themes = Object.values(LAUNCHER_THEMES);
+  const { accentColor, setAccentColor } = useThemeStore();
+  const { currentEffect, setCurrentEffect } = useBackgroundEffectStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportTheme = () => {
+    const data = {
+      format: "doofietheme-v1",
+      accentColor,
+      backgroundEffect: currentEffect,
+      launcherTheme: selectedThemeId,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "mein-theme.doofietheme";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast.success("Theme exportiert!");
+  };
+
+  const importTheme = async (file: File) => {
+    try {
+      const data = JSON.parse(await file.text());
+      if (data.format !== "doofietheme-v1") throw new Error("Kein Doofie-Theme");
+      if (data.accentColor?.value) setAccentColor(data.accentColor);
+      if (data.backgroundEffect) setCurrentEffect(data.backgroundEffect);
+      toast.success("Theme importiert!");
+    } catch {
+      toast.error("Ungültige Theme-Datei");
+    }
+  };
 
   return (
+    <div>
+    <div className="flex gap-2 mb-3">
+      <button
+        onClick={exportTheme}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition-colors"
+        style={{ border: `1px solid ${accentColor.value}40`, background: `${accentColor.value}15` }}
+      >
+        <Icon icon="solar:export-bold" className="w-4 h-4" /> Theme exportieren
+      </button>
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition-colors"
+        style={{ border: `1px solid ${accentColor.value}40`, background: `${accentColor.value}15` }}
+      >
+        <Icon icon="solar:import-bold" className="w-4 h-4" /> Theme importieren
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".doofietheme,application/json"
+        style={{ display: "none" }}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) importTheme(f); e.target.value = ""; }}
+      />
+    </div>
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {themes.map((theme) => {
         const isUnlocked = isThemeUnlocked(theme.id);
@@ -197,6 +257,7 @@ export function ThemeSelector({ disabled }: ThemeSelectorProps) {
           50% { opacity: 1; }
         }
       `}</style>
+    </div>
     </div>
   );
 }

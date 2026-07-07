@@ -19,9 +19,14 @@ import de.doofie.hud.TargetHud;
 import de.doofie.hud.TimeHud;
 import de.doofie.screen.DoofieModScreen;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.ActionResult;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
@@ -36,40 +41,63 @@ public class DoofieClientMod implements ClientModInitializer {
     public static final String MOD_ID = "doofie_client";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    /** Zeitpunkt des Weltbeitritts fuer das gestaffelte HUD-Intro. */
+    private static long joinTime = 0;
+
+    private static boolean hudVisible(int slot) {
+        // Jedes HUD-Element erscheint 120ms nach dem vorherigen
+        return System.currentTimeMillis() - joinTime > 400 + slot * 120L;
+    }
+
     @Override
     public void onInitializeClient() {
         LOGGER.info("[Doofie Client] geladen!");
 
-        // Alle HUD-Elemente in einem Callback registrieren
+        // HUD-Intro: Beitrittszeit merken
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> joinTime = System.currentTimeMillis());
+
+        // Kampf-FX: Hitmarker + Kill-Flash
+        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+            if (world.isClient() && entity instanceof LivingEntity living) {
+                DoofieCombatFx.onAttack(living);
+            }
+            return ActionResult.PASS;
+        });
+        ClientTickEvents.END_CLIENT_TICK.register(client -> DoofieCombatFx.tick());
+
+        // Alle HUD-Elemente in einem Callback registrieren (gestaffeltes Intro)
         HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
             // Oben-links: FPS, Speed, Ping, Zeit, RAM, Licht, Reach, Chunk, Entities
-            FpsHud.render(drawContext);
-            SpeedHud.render(drawContext);
-            PingHud.render(drawContext);
-            TimeHud.render(drawContext);
-            MemoryHud.render(drawContext);
-            LightLevelHud.render(drawContext);
-            ReachHud.render(drawContext);
-            ChunkHud.render(drawContext);
-            EntityCountHud.render(drawContext);
+            if (hudVisible(0)) FpsHud.render(drawContext);
+            if (hudVisible(1)) SpeedHud.render(drawContext);
+            if (hudVisible(2)) PingHud.render(drawContext);
+            if (hudVisible(3)) TimeHud.render(drawContext);
+            if (hudVisible(4)) MemoryHud.render(drawContext);
+            if (hudVisible(5)) LightLevelHud.render(drawContext);
+            if (hudVisible(6)) ReachHud.render(drawContext);
+            if (hudVisible(7)) ChunkHud.render(drawContext);
+            if (hudVisible(8)) EntityCountHud.render(drawContext);
 
             // Oben-rechts: Armor + Status-Effekte
-            ArmorHud.render(drawContext);
-            StatusEffectsHud.render(drawContext);
+            if (hudVisible(2)) ArmorHud.render(drawContext);
+            if (hudVisible(3)) StatusEffectsHud.render(drawContext);
 
             // Unten-links: Gesundheit + Koordinaten
-            HealthHud.render(drawContext);
-            CoordinatesHud.render(drawContext);
+            if (hudVisible(0)) HealthHud.render(drawContext);
+            if (hudVisible(1)) CoordinatesHud.render(drawContext);
 
             // Unten-Mitte: Gehaltenes Item + Ziel-Info
-            HeldItemHud.render(drawContext);
-            TargetHud.render(drawContext);
+            if (hudVisible(4)) HeldItemHud.render(drawContext);
+            if (hudVisible(5)) TargetHud.render(drawContext);
 
             // Unten-rechts: Keystrokes + CPS
-            KeystrokesHud.render(drawContext);
+            if (hudVisible(0)) KeystrokesHud.render(drawContext);
 
             // Oben-Mitte: Kompass
-            CompassHud.render(drawContext);
+            if (hudVisible(6)) CompassHud.render(drawContext);
+
+            // Kampf-Effekte immer zuletzt (liegen ueber allem)
+            DoofieCombatFx.render(drawContext);
         });
 
         // ESC-Menü: "Give Feedback" → "Doofie Client"

@@ -33,10 +33,5 @@ public abstract class TitleScreenMixin extends Screen {
             .append(Text.literal("DOOFIE ").formatted(Formatting.WHITE))
             .append(Text.literal("CLIENT").formatted(Formatting.GOLD));
         ctx.drawText(tr, badge, x, y, 0xFFFFFF, true);
-
-        // Tagline mittig unter dem Logo
-        Text tagline = Text.literal("DOOFIE CLIENT").formatted(Formatting.GOLD, Formatting.BOLD);
-        int tw = tr.getWidth(tagline);
-        ctx.drawText(tr, tagline, (this.width - tw) / 2, 45, 0xFFFFFF, true);
     }
 }

@@ -20,6 +20,7 @@ export enum BACKGROUND_EFFECTS {
   GALAXY = "galaxy",
   BLOOD_MOON = "blood-moon",
   ICE = "ice",
+  LATEST_SCREENSHOT = "latest-screenshot",
 }
 
 interface BackgroundEffectState {

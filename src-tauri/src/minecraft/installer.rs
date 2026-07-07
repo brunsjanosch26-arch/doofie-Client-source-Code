@@ -824,6 +824,19 @@ pub async fn install_minecraft_version(
                 .map(|c| c.auth_flow == Some(crate::minecraft::auth::minecraft_auth::AuthFlow::Offline))
                 .unwrap_or(false);
 
+            // Unerwuenschte vorinstallierte Mods entfernen (z.B. Essential)
+            if let Ok(entries) = std::fs::read_dir(&profile_mods_path) {
+                for entry in entries.flatten() {
+                    let name = entry.file_name().to_string_lossy().to_lowercase();
+                    if name.starts_with("essential") && name.ends_with(".jar") {
+                        match std::fs::remove_file(entry.path()) {
+                            Ok(_) => info!("[BundledMods] Removed unwanted mod: {}", name),
+                            Err(e) => warn!("[BundledMods] Failed to remove {}: {}", name, e),
+                        }
+                    }
+                }
+            }
+
             for jar_name in crate::config::BUNDLED_MODS {
                 // Skip NRC auth-requiring mods for offline accounts — they crash without a Doofie token
                 if is_offline && crate::config::NRC_AUTH_MODS.contains(jar_name) {
@@ -878,6 +891,17 @@ pub async fn install_minecraft_version(
 
     // --- Execute pre-launch hooks ---
     let launcher_config = state.config_manager.get_config().await;
+
+    // Theme-Handshake: Launcher-Akzentfarbe an die Doofie-Mod durchreichen
+    if let Some(accent) = &launcher_config.accent_color {
+        let hex = accent.trim_start_matches('#');
+        if !hex.is_empty() && hex.chars().all(|c| c.is_ascii_hexdigit()) {
+            let mut jvm_args = launch_params.additional_jvm_args.clone();
+            jvm_args.push(format!("-Ddoofie.accent={}", hex));
+            launch_params = launch_params.with_additional_jvm_args(jvm_args);
+            info!("Theme handshake: passing accent color #{} to Doofie mod", hex);
+        }
+    }
     if let Some(hook) = &launcher_config.hooks.pre_launch {
         info!("Executing pre-launch hook: {}", hook);
         let hook_event_id = emit_progress_event(

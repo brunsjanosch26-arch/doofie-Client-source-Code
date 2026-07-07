@@ -1,23 +1,47 @@
 import { useEffect, useRef, useState } from "react";
 import { useThemeStore } from "../../store/useThemeStore";
+import { playStartup } from "../../utils/doofie-sounds";
+
+const BOOT_LINES = [
+  "DOOFIE KERNEL v2.0 ............ OK",
+  "Lade Creeper-Treiber .......... OK",
+  "Initialisiere Block-Engine .... OK",
+  "Kalibriere Spitzhacke ......... OK",
+  "Doofie-Modus aktiviert ........ OK",
+];
 
 /**
  * Animierter Doofie-Splashscreen beim Launcher-Start.
+ * Beim allerersten Start laeuft vorher eine Terminal-Boot-Sequenz.
  * Logo fliegt rein, Partikel-Ring, Schriftzug baut sich auf, dann Fade-out.
  */
 export function DoofieSplashScreen({ onDone }: { onDone: () => void }) {
   const { accentColor } = useThemeStore();
-  const [phase, setPhase] = useState<"in" | "hold" | "out">("in");
+  const isFirstStart = useRef(!localStorage.getItem("doofie-intro-seen")).current;
+  const [phase, setPhase] = useState<"boot" | "in" | "hold" | "out">(isFirstStart ? "boot" : "in");
+  const [bootCount, setBootCount] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const title = "doofieclient";
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("hold"), 700);
-    const t2 = setTimeout(() => setPhase("out"), 2100);
-    const t3 = setTimeout(onDone, 2700);
+    const bootMs = isFirstStart ? BOOT_LINES.length * 350 + 500 : 0;
+    if (isFirstStart) {
+      localStorage.setItem("doofie-intro-seen", "1");
+      const interval = setInterval(() => {
+        setBootCount((c) => {
+          if (c >= BOOT_LINES.length) { clearInterval(interval); return c; }
+          return c + 1;
+        });
+      }, 350);
+      setTimeout(() => setPhase("in"), bootMs);
+    }
+    playStartup();
+    const t1 = setTimeout(() => setPhase("hold"), bootMs + 700);
+    const t2 = setTimeout(() => setPhase("out"), bootMs + 2100);
+    const t3 = setTimeout(onDone, bootMs + 2700);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [onDone]);
+  }, [onDone, isFirstStart]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -83,7 +107,17 @@ export function DoofieSplashScreen({ onDone }: { onDone: () => void }) {
     }}>
       <canvas ref={canvasRef} style={{ position: "absolute", inset: 0 }} />
 
-      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "24px", marginTop: "-40px" }}>
+      {/* Terminal-Boot-Sequenz beim allerersten Start */}
+      {phase === "boot" && (
+        <div style={{ position: "relative", zIndex: 1, fontFamily: "monospace", fontSize: "14px", color: "#5eff8a", display: "flex", flexDirection: "column", gap: "8px", minWidth: "340px" }}>
+          {BOOT_LINES.slice(0, bootCount).map((l, i) => (
+            <div key={i} style={{ animation: "splashLetterIn 0.2s ease both" }}>&gt; {l}</div>
+          ))}
+          <div style={{ opacity: 0.6 }}>&gt; <span style={{ animation: "blinkCursor 0.8s step-start infinite" }}>_</span></div>
+        </div>
+      )}
+
+      <div style={{ position: "relative", zIndex: 1, display: phase === "boot" ? "none" : "flex", flexDirection: "column", alignItems: "center", gap: "24px", marginTop: "-40px" }}>
         <img
           src="/logo.png"
           alt="Doofie"
@@ -130,6 +164,9 @@ export function DoofieSplashScreen({ onDone }: { onDone: () => void }) {
         @keyframes splashBar {
           from { width: 0%; }
           to { width: 100%; }
+        }
+        @keyframes blinkCursor {
+          50% { opacity: 0; }
         }
       `}</style>
     </div>

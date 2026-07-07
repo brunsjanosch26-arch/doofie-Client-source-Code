@@ -4,6 +4,7 @@ import type React from "react";
 import { forwardRef, useRef } from "react";
 import { cn } from "../../../lib/utils";
 import { useThemeStore } from "../../../store/useThemeStore";
+import { playClick } from "../../../utils/doofie-sounds";
 
 interface NavButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: React.ReactNode;
@@ -97,6 +98,7 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>(
           className,
         )}
         style={isActive ? activeStateStyles : { ...nonActiveStateStyles, borderColor: "transparent" }}
+        onMouseDown={() => playClick()}
         {...props}
       >
         <span

@@ -26,6 +26,7 @@ import { RetroGridEffect } from "../effects/RetroGridEffect";
 import PlainBackground from "../effects/PlainBackground";
 import { MinecraftBackground } from "../effects/MinecraftBackground";
 import { CustomImageBackground } from "../effects/CustomImageBackground";
+import { LatestScreenshotBackground } from "../effects/LatestScreenshotBackground";
 import { AuroraEffect } from "../effects/AuroraEffect";
 import { CyberpunkEffect } from "../effects/CyberpunkEffect";
 import { GalaxyEffect } from "../effects/GalaxyEffect";
@@ -58,6 +59,7 @@ import { HeaderInfoCarousel } from "../header/HeaderInfoCarousel";
 import { toast } from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 import { parseErrorMessage } from "../../utils/error-utils";
+import { DoofieCommandPalette } from "../common/DoofieCommandPalette";
 
 const appConfig = {
   version: "v0.5.22",
@@ -333,6 +335,8 @@ export function AppLayout({
         return <BloodMoonEffect opacity={qualityParams.opacity * 1.2} speed={qualityParams.speed} />;
       case BACKGROUND_EFFECTS.ICE:
         return <IceEffect opacity={qualityParams.opacity * 1.1} speed={qualityParams.speed} />;
+      case BACKGROUND_EFFECTS.LATEST_SCREENSHOT:
+        return <LatestScreenshotBackground />;
       default:
         return (
           <div className="absolute inset-0 bg-red-500/20">
@@ -399,6 +403,12 @@ export function AppLayout({
       {cinematicActive && (
         <CinematicLaunchScreen profileName={cinematicProfile} onDone={hideCinematic} />
       )}
+
+      {/* Doofie-Kommandopalette (Strg+K) */}
+      <DoofieCommandPalette
+        commands={navItems.map((n) => ({ id: n.id, icon: n.icon, label: n.label }))}
+        onRun={onNavChange}
+      />
 
     </div>
   );
