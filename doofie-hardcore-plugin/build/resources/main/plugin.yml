@@ -1,0 +1,31 @@
+name: DoofieHardcore
+version: '1.0.0'
+main: de.doofie.hardcore.HardcorePlugin
+api-version: '26.2'
+author: Doofie
+description: Kopfgeld, Sell-System, Auktionshaus und Bann-Freikauf fuer den Doofie Hardcore Server
+
+commands:
+  money:
+    description: Zeigt dein Guthaben
+    usage: /money [spieler]
+    aliases: [geld, balance, bal]
+  pay:
+    description: Geld an einen Spieler senden
+    usage: /pay <spieler> <betrag>
+  sell:
+    description: Items verkaufen
+    usage: /sell <hand|all>
+    aliases: [verkaufen]
+  kopfgeld:
+    description: Kopfgeld auf einen Spieler setzen oder anzeigen
+    usage: /kopfgeld <setzen|liste> [spieler] [betrag]
+    aliases: [bounty]
+  freikaufen:
+    description: Dich oder einen gebannten Spieler freikaufen (Kopfgeld + 5%)
+    usage: /freikaufen [spieler]
+    aliases: [unbanme]
+  ah:
+    description: Auktionshaus oeffnen oder Item einstellen
+    usage: /ah [sell <preis>]
+    aliases: [auktion, auctionhouse]

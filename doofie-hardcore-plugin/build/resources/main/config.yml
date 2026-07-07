@@ -1,0 +1,65 @@
+# ─── Doofie Hardcore Plugin ───────────────────────────────
+# Waehrung: Dollar ($)
+
+# Startguthaben fuer neue Spieler
+start-guthaben: 500.0
+
+# Mindest-Kopfgeld in Dollar
+min-kopfgeld: 100.0
+
+# Aufschlag beim Freikaufen (0.05 = 5% mehr als das Kopfgeld)
+freikauf-aufschlag: 0.05
+
+# Maximale Anzahl Auktionen pro Spieler
+max-auktionen-pro-spieler: 5
+
+# Verkaufspreise fuer /sell (Material -> Dollar pro Stueck)
+# Alle Material-Namen: https://jd.papermc.io/paper/26.2/org/bukkit/Material.html
+preise:
+  DIAMOND: 100.0
+  EMERALD: 60.0
+  GOLD_INGOT: 25.0
+  IRON_INGOT: 10.0
+  COPPER_INGOT: 2.0
+  COAL: 3.0
+  REDSTONE: 2.0
+  LAPIS_LAZULI: 4.0
+  QUARTZ: 4.0
+  NETHERITE_INGOT: 800.0
+  NETHERITE_SCRAP: 180.0
+  ANCIENT_DEBRIS: 200.0
+  DIAMOND_BLOCK: 900.0
+  EMERALD_BLOCK: 540.0
+  GOLD_BLOCK: 225.0
+  IRON_BLOCK: 90.0
+  WHEAT: 1.0
+  CARROT: 0.5
+  POTATO: 0.5
+  BEETROOT: 0.5
+  SUGAR_CANE: 0.5
+  PUMPKIN: 1.5
+  MELON_SLICE: 0.3
+  COCOA_BEANS: 1.0
+  BONE: 1.0
+  STRING: 1.0
+  SPIDER_EYE: 1.0
+  GUNPOWDER: 2.5
+  ENDER_PEARL: 15.0
+  BLAZE_ROD: 10.0
+  GHAST_TEAR: 25.0
+  SLIME_BALL: 3.0
+  ROTTEN_FLESH: 0.2
+  ARROW: 0.2
+  FEATHER: 0.5
+  LEATHER: 2.0
+  PORKCHOP: 1.0
+  BEEF: 1.0
+  CHICKEN: 0.8
+  COD: 1.0
+  SALMON: 1.5
+  OAK_LOG: 0.5
+  SPRUCE_LOG: 0.5
+  BIRCH_LOG: 0.5
+  COBBLESTONE: 0.05
+  OBSIDIAN: 5.0
+  AMETHYST_SHARD: 3.0
