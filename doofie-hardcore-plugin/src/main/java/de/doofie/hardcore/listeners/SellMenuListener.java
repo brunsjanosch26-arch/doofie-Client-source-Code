@@ -84,6 +84,7 @@ public class SellMenuListener implements Listener {
         double earned = 0;
         int soldItems = 0;
         int returned = 0;
+        double aufschlag = plugin.getConfig().getDouble("ah-aufschlag", 0.05);
 
         for (int i = 0; i < ITEM_SLOTS; i++) {
             ItemStack item = inv.getItem(i);
@@ -93,6 +94,9 @@ public class SellMenuListener implements Listener {
             if (price > 0) {
                 earned += price * item.getAmount();
                 soldItems += item.getAmount();
+                // Verkaufte Items landen mit +5% als Angebot im /ah
+                plugin.auctions().add(player.getUniqueId(), player.getName(),
+                    price * (1 + aufschlag), item, true);
             } else {
                 giveOrDrop(player, item);
                 returned++;
@@ -107,6 +111,7 @@ public class SellMenuListener implements Listener {
                 .append(Component.text(soldItems + " Items", NamedTextColor.WHITE))
                 .append(Component.text(" fuer ", NamedTextColor.GREEN))
                 .append(Component.text(HardcorePlugin.dollar(earned), NamedTextColor.GOLD))
+                .append(Component.text(" — deine Items sind jetzt mit Aufschlag im /ah!", NamedTextColor.GRAY))
                 .build());
         } else {
             player.sendMessage(Component.text("Nichts Verkaufbares im Menue.", NamedTextColor.RED));
