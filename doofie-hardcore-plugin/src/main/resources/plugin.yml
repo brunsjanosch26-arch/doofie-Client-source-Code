@@ -19,7 +19,7 @@ commands:
     aliases: [verkaufen]
   kopfgeld:
     description: Kopfgeld auf einen Spieler setzen oder anzeigen
-    usage: /kopfgeld <setzen|liste> [spieler] [betrag]
+    usage: "/kopfgeld <spieler> <betrag> — oder /kopfgeld liste"
     aliases: [bounty]
   freikaufen:
     description: Dich oder einen gebannten Spieler freikaufen (Kopfgeld + 5%)

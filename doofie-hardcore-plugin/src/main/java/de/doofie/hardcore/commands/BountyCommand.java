@@ -48,55 +48,63 @@ public class BountyCommand implements CommandExecutor {
             return true;
         }
 
+        // /kopfgeld setzen <spieler> <betrag> ODER direkt /kopfgeld <spieler> <betrag>
         if (sub.equals("setzen") || sub.equals("set")) {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage("Nur fuer Spieler.");
-                return true;
-            }
             if (args.length < 3) {
-                player.sendMessage(Component.text("Nutzung: /kopfgeld setzen <spieler> <betrag>", NamedTextColor.RED));
+                sender.sendMessage(Component.text("Nutzung: /kopfgeld setzen <spieler> <betrag>", NamedTextColor.RED));
                 return true;
             }
-            Player target = Bukkit.getPlayerExact(args[1]);
-            if (target == null) {
-                player.sendMessage(Component.text("Spieler nicht online.", NamedTextColor.RED));
-                return true;
-            }
-            if (target.equals(player)) {
-                player.sendMessage(Component.text("Auf dich selbst? Netter Versuch, Doofie.", NamedTextColor.RED));
-                return true;
-            }
-            double amount;
-            try {
-                amount = Double.parseDouble(args[2]);
-            } catch (NumberFormatException e) {
-                player.sendMessage(Component.text("Ungueltiger Betrag.", NamedTextColor.RED));
-                return true;
-            }
-            double min = plugin.getConfig().getDouble("min-kopfgeld", 100.0);
-            if (amount < min) {
-                player.sendMessage(Component.text("Mindest-Kopfgeld: " + HardcorePlugin.dollar(min), NamedTextColor.RED));
-                return true;
-            }
-            if (!plugin.economy().withdraw(player.getUniqueId(), amount)) {
-                player.sendMessage(Component.text("Nicht genug Geld!", NamedTextColor.RED));
-                return true;
-            }
+            return setBounty(sender, args[1], args[2]);
+        }
+        if (args.length == 2) {
+            return setBounty(sender, args[0], args[1]);
+        }
 
-            plugin.bounties().add(target.getUniqueId(), player.getUniqueId(), amount);
-            double total = plugin.bounties().total(target.getUniqueId());
+        sender.sendMessage(Component.text("Nutzung: /kopfgeld <spieler> <betrag> — oder /kopfgeld liste", NamedTextColor.RED));
+        return true;
+    }
 
-            Bukkit.broadcast(Component.text()
-                .append(Component.text("KOPFGELD! ", NamedTextColor.DARK_RED))
-                .append(Component.text(player.getName(), NamedTextColor.GOLD))
-                .append(Component.text(" hat " + HardcorePlugin.dollar(amount) + " auf ", NamedTextColor.GRAY))
-                .append(Component.text(target.getName(), NamedTextColor.GOLD))
-                .append(Component.text(" gesetzt! Gesamt: " + HardcorePlugin.dollar(total), NamedTextColor.RED))
-                .build());
+    private boolean setBounty(CommandSender sender, String targetName, String amountStr) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("Nur fuer Spieler.");
+            return true;
+        }
+        Player target = Bukkit.getPlayerExact(targetName);
+        if (target == null) {
+            player.sendMessage(Component.text("Spieler '" + targetName + "' ist nicht online.", NamedTextColor.RED));
+            return true;
+        }
+        if (target.equals(player)) {
+            player.sendMessage(Component.text("Auf dich selbst? Netter Versuch, Doofie.", NamedTextColor.RED));
+            return true;
+        }
+        double amount;
+        try {
+            amount = Double.parseDouble(amountStr);
+        } catch (NumberFormatException e) {
+            player.sendMessage(Component.text("Ungueltiger Betrag: " + amountStr, NamedTextColor.RED));
+            return true;
+        }
+        double min = plugin.getConfig().getDouble("min-kopfgeld", 100.0);
+        if (amount < min) {
+            player.sendMessage(Component.text("Mindest-Kopfgeld: " + HardcorePlugin.dollar(min), NamedTextColor.RED));
+            return true;
+        }
+        if (!plugin.economy().withdraw(player.getUniqueId(), amount)) {
+            player.sendMessage(Component.text("Nicht genug Geld!", NamedTextColor.RED));
             return true;
         }
 
-        sender.sendMessage(Component.text("Nutzung: /kopfgeld <setzen|liste> [spieler] [betrag]", NamedTextColor.RED));
+        plugin.bounties().add(target.getUniqueId(), player.getUniqueId(), amount);
+        double total = plugin.bounties().total(target.getUniqueId());
+
+        Bukkit.broadcast(Component.text()
+            .append(Component.text("KOPFGELD! ", NamedTextColor.DARK_RED))
+            .append(Component.text(player.getName(), NamedTextColor.GOLD))
+            .append(Component.text(" hat " + HardcorePlugin.dollar(amount) + " auf ", NamedTextColor.GRAY))
+            .append(Component.text(target.getName(), NamedTextColor.GOLD))
+            .append(Component.text(" gesetzt! Gesamt: " + HardcorePlugin.dollar(total), NamedTextColor.RED))
+            .build());
         return true;
     }
 }
