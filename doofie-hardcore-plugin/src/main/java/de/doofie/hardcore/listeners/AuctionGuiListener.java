@@ -54,10 +54,16 @@ public class AuctionGuiListener implements Listener {
             ItemStack display = a.item().clone();
             ItemMeta meta = display.getItemMeta();
             List<Component> lore = meta.hasLore() && meta.lore() != null ? new ArrayList<>(meta.lore()) : new ArrayList<>();
-            lore.add(Component.text("Preis: " + HardcorePlugin.dollar(a.price()), NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-            lore.add(Component.text("Verkaeufer: " + a.sellerName(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
-            lore.add(Component.text(a.seller().equals(player.getUniqueId())
-                ? "Klicken zum Zurueckziehen" : "Klicken zum Kaufen", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("Verkauft von: " + a.sellerName(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("Preis: " + HardcorePlugin.dollar(a.pricePerItem()) + " pro Stueck", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+            if (a.amount() > 1) {
+                lore.add(Component.text("Alle " + a.amount() + ": " + HardcorePlugin.dollar(a.pricePerItem() * a.amount()), NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+            }
+            if (!a.system() && a.seller().equals(player.getUniqueId())) {
+                lore.add(Component.text("Klick: Zurueckziehen", NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false));
+            } else {
+                lore.add(Component.text("Klick: 1 kaufen | Shift+Linksklick: alle kaufen", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+            }
             meta.lore(lore);
             display.setItemMeta(meta);
             inv.setItem(i, display);
@@ -99,8 +105,8 @@ public class AuctionGuiListener implements Listener {
             return;
         }
 
-        if (auction.seller().equals(player.getUniqueId())) {
-            // Eigene Auktion zurueckziehen
+        if (!auction.system() && auction.seller().equals(player.getUniqueId())) {
+            // Eigene /ah-sell-Auktion zurueckziehen
             plugin.auctions().remove(auction.id());
             giveOrDrop(player, auction.item());
             player.sendMessage(Component.text("Auktion zurueckgezogen.", NamedTextColor.YELLOW));
@@ -108,25 +114,38 @@ public class AuctionGuiListener implements Listener {
             return;
         }
 
-        if (!plugin.economy().withdraw(player.getUniqueId(), auction.price())) {
-            player.sendMessage(Component.text("Nicht genug Geld! (" + HardcorePlugin.dollar(auction.price()) + ")", NamedTextColor.RED));
+        // Klick = 1 Stueck, Shift+Linksklick = kompletter Bestand
+        int buyAmount = event.isShiftClick() && event.isLeftClick() ? auction.amount() : 1;
+        double cost = auction.pricePerItem() * buyAmount;
+
+        if (!plugin.economy().withdraw(player.getUniqueId(), cost)) {
+            player.sendMessage(Component.text("Nicht genug Geld! (" + HardcorePlugin.dollar(cost) + ")", NamedTextColor.RED));
             return;
         }
 
-        plugin.auctions().remove(auction.id());
-        plugin.economy().deposit(auction.seller(), auction.price());
-        giveOrDrop(player, auction.item());
+        ItemStack bought = auction.item().clone();
+        bought.setAmount(buyAmount);
+        boolean empty = auction.reduce(buyAmount);
+        if (empty) plugin.auctions().remove(auction.id());
 
-        player.sendMessage(Component.text()
-            .append(Component.text("Gekauft fuer ", NamedTextColor.GREEN))
-            .append(Component.text(HardcorePlugin.dollar(auction.price()), NamedTextColor.GOLD))
-            .build());
-        Player seller = Bukkit.getPlayer(auction.seller());
-        if (seller != null) {
-            seller.sendMessage(Component.text(
-                player.getName() + " hat dein Item im /ah fuer " + HardcorePlugin.dollar(auction.price()) + " gekauft!",
-                NamedTextColor.GREEN));
+        // Bei Spieler-Auktionen bekommt der Verkaeufer das Geld;
+        // bei /sell-Items (System) wurde er schon bezahlt — Geld verschwindet.
+        if (!auction.system()) {
+            plugin.economy().deposit(auction.seller(), cost);
+            Player seller = Bukkit.getPlayer(auction.seller());
+            if (seller != null) {
+                seller.sendMessage(Component.text(
+                    player.getName() + " hat " + buyAmount + "x dein Item im /ah fuer " + HardcorePlugin.dollar(cost) + " gekauft!",
+                    NamedTextColor.GREEN));
+            }
         }
+
+        giveOrDrop(player, bought);
+        player.sendMessage(Component.text()
+            .append(Component.text("Gekauft: ", NamedTextColor.GREEN))
+            .append(Component.text(buyAmount + "x fuer ", NamedTextColor.WHITE))
+            .append(Component.text(HardcorePlugin.dollar(cost), NamedTextColor.GOLD))
+            .build());
         openGui(plugin, player, holder.page);
     }
 

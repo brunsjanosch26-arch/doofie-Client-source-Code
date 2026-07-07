@@ -10,6 +10,9 @@ min-kopfgeld: 100.0
 # Aufschlag beim Freikaufen (0.05 = 5% mehr als das Kopfgeld)
 freikauf-aufschlag: 0.05
 
+# Aufschlag fuer /sell-Items im Auktionshaus (0.05 = 5% teurer als der Verkaufspreis)
+ah-aufschlag: 0.05
+
 # Maximale Anzahl Auktionen pro Spieler
 max-auktionen-pro-spieler: 5
 

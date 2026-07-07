@@ -58,12 +58,12 @@ public class AhCommand implements CommandExecutor {
                 return true;
             }
 
-            plugin.auctions().add(player.getUniqueId(), player.getName(), price, hand);
+            plugin.auctions().add(player.getUniqueId(), player.getName(), price, hand, false);
             player.getInventory().setItemInMainHand(null);
             player.sendMessage(Component.text()
                 .append(Component.text("Eingestellt! ", NamedTextColor.GREEN))
                 .append(Component.text("Dein Item ist fuer ", NamedTextColor.GRAY))
-                .append(Component.text(HardcorePlugin.dollar(price), NamedTextColor.GOLD))
+                .append(Component.text(HardcorePlugin.dollar(price) + " pro Stueck", NamedTextColor.GOLD))
                 .append(Component.text(" im /ah.", NamedTextColor.GRAY))
                 .build());
             return true;

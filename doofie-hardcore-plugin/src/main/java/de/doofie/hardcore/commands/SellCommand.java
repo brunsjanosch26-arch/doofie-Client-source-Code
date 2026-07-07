@@ -35,6 +35,7 @@ public class SellCommand implements CommandExecutor {
             return true;
         }
         String mode = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "hand";
+        double aufschlag = plugin.getConfig().getDouble("ah-aufschlag", 0.05);
 
         double earned = 0;
         int soldItems = 0;
@@ -48,6 +49,8 @@ public class SellCommand implements CommandExecutor {
             }
             earned = price * hand.getAmount();
             soldItems = hand.getAmount();
+            // Verkaufte Items landen mit +5% im Auktionshaus
+            plugin.auctions().add(player.getUniqueId(), player.getName(), price * (1 + aufschlag), hand, true);
             player.getInventory().setItemInMainHand(null);
         } else if (mode.equals("all")) {
             ItemStack[] contents = player.getInventory().getStorageContents();
@@ -58,6 +61,7 @@ public class SellCommand implements CommandExecutor {
                 if (price <= 0) continue;
                 earned += price * item.getAmount();
                 soldItems += item.getAmount();
+                plugin.auctions().add(player.getUniqueId(), player.getName(), price * (1 + aufschlag), item, true);
                 contents[i] = null;
             }
             player.getInventory().setStorageContents(contents);
@@ -76,6 +80,7 @@ public class SellCommand implements CommandExecutor {
             .append(Component.text(soldItems + " Items", NamedTextColor.WHITE))
             .append(Component.text(" fuer ", NamedTextColor.GREEN))
             .append(Component.text(HardcorePlugin.dollar(earned), NamedTextColor.GOLD))
+            .append(Component.text(" — deine Items sind jetzt mit +" + Math.round(aufschlag * 100) + "% im /ah!", NamedTextColor.GRAY))
             .build());
         return true;
     }

@@ -14,6 +14,8 @@ Sell-System, Auktionshaus und Bann-Freikauf.
 - `/sell hand` — Item in der Hand verkaufen
 - `/sell all` — alles Verkaufbare im Inventar verkaufen
 - Preise stehen in der `config.yml` unter `preise` und können frei angepasst werden
+- **Verkaufte Items landen automatisch mit +5% Aufschlag im /ah** (Config: `ah-aufschlag`) —
+  andere Spieler können sie dort zurückkaufen
 
 ### Kopfgeld
 - `/kopfgeld setzen <spieler> <betrag>` — Kopfgeld setzen (Geld wird sofort abgezogen, Mindestbetrag 100$)
@@ -34,8 +36,12 @@ Sell-System, Auktionshaus und Bann-Freikauf.
 - `/freikaufen <spieler>` — einen Freund freikaufen
 
 ### Auktionshaus
-- `/ah` — GUI mit allen Auktionen öffnen (Klick = Kaufen, eigenes Item = Zurückziehen)
-- `/ah sell <preis>` — Item in der Hand einstellen (max. 5 gleichzeitig, Config: `max-auktionen-pro-spieler`)
+- `/ah` — GUI mit allen Angeboten: Item mit "Verkauft von" und Preis pro Stück
+- **Klick = 1 Stück kaufen** (Geld wird automatisch abgebucht, Item ins Inventar)
+- **Shift+Linksklick = kompletten Bestand kaufen**
+- Eigene `/ah sell`-Auktionen: Klick = Zurückziehen
+- `/ah sell <preis>` — Item in der Hand einstellen, Preis gilt **pro Stück**
+  (max. 5 gleichzeitig, Config: `max-auktionen-pro-spieler`)
 
 ## Bauen
 
