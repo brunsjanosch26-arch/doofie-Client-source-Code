@@ -14,8 +14,8 @@ commands:
     description: Geld an einen Spieler senden
     usage: /pay <spieler> <betrag>
   sell:
-    description: Items verkaufen
-    usage: /sell <hand|all>
+    description: Oeffnet das Verkaufsmenue
+    usage: /sell
     aliases: [verkaufen]
   kopfgeld:
     description: Kopfgeld auf einen Spieler setzen oder anzeigen

@@ -11,11 +11,10 @@ Sell-System, Auktionshaus und Bann-Freikauf.
 - `/pay <spieler> <betrag>` — Geld senden
 
 ### Sell-System (wie HugoSMP)
-- `/sell hand` — Item in der Hand verkaufen
-- `/sell all` — alles Verkaufbare im Inventar verkaufen
+- `/sell` — öffnet ein Verkaufsmenü: Items beliebig reinlegen, grüner Knopf = verkaufen
+- Nicht verkaufbare Items kommen automatisch zurück ins Inventar
+- **Unter jedem Item im Inventar steht der Verkaufswert pro Stück** (als Lore)
 - Preise stehen in der `config.yml` unter `preise` und können frei angepasst werden
-- **Verkaufte Items landen automatisch mit +5% Aufschlag im /ah** (Config: `ah-aufschlag`) —
-  andere Spieler können sie dort zurückkaufen
 
 ### Kopfgeld
 - `/kopfgeld setzen <spieler> <betrag>` — Kopfgeld setzen (Geld wird sofort abgezogen, Mindestbetrag 100$)
@@ -36,12 +35,13 @@ Sell-System, Auktionshaus und Bann-Freikauf.
 - `/freikaufen <spieler>` — einen Freund freikaufen
 
 ### Auktionshaus
-- `/ah` — GUI mit allen Angeboten: Item mit "Verkauft von" und Preis pro Stück
+- `/ah` — GUI: zuerst die **dauerhaften Server-Startangebote** (Essen, Basis-Items,
+  unbegrenzter Vorrat, Verkaufspreis +5%), danach die Spieler-Auktionen
 - **Klick = 1 Stück kaufen** (Geld wird automatisch abgebucht, Item ins Inventar)
-- **Shift+Linksklick = kompletten Bestand kaufen**
+- **Shift+Linksklick = ganzen Stack/Bestand kaufen**
 - Eigene `/ah sell`-Auktionen: Klick = Zurückziehen
 - `/ah sell <preis>` — Item in der Hand einstellen, Preis gilt **pro Stück**
-  (max. 5 gleichzeitig, Config: `max-auktionen-pro-spieler`)
+- Startangebote konfigurierbar in `config.yml` unter `ah-startangebot`
 
 ## Bauen
 
@@ -62,14 +62,13 @@ Die fertige Jar liegt dann in `build/libs/doofie-hardcore-1.0.0.jar`.
 4. Server neu starten
 5. Optional: `plugins/DoofieHardcore/config.yml` anpassen (Preise, Startguthaben, Aufschlag) und `/reload confirm` oder Neustart
 
-## Wichtig: hardcore=false verwenden!
+## Hardcore-Modus (hardcore=true)
 
-Setze in der server.properties **hardcore=false**. Dann zeigt der Todesbildschirm
-den normalen "Respawn"-Knopf. Das Plugin uebernimmt die Hardcore-Regeln selbst:
-- Normale Tode: ganz normaler Respawn am Bett/Spawn
-- Kopfgeld-Tode: Spieler landet nach dem Respawn im Spectator und kann nur
+Der Server laeuft mit **hardcore=true** (Hardcore-Herzen). Der Todesbildschirm
+zeigt dann den Vanilla-Knopf "Spectate World" — das ist clientseitig und laesst
+sich ohne Client-Mod nicht umbenennen. Funktional passt aber alles:
+- Normale Tode: Knopf druecken -> das Plugin setzt dich sofort zurueck auf
+  Survival an deinem Bett/Spawn. Nichts geht verloren.
+- Kopfgeld-Tode: Knopf druecken -> du bleibst im Spectator und kannst nur
   /freikaufen nutzen. Nach dem Freikauf geht es am Bett (oder Spawn) weiter.
-
-(Mit hardcore=true wuerde der Client "Spectate World" statt "Respawn" anzeigen —
-das laesst sich ohne Client-Mod nicht umbenennen. Einziger Nachteil von
-hardcore=false: die Hardcore-Herzen-Optik fehlt.)
+- Neue Spieler bekommen beim ersten Join alle Regeln und Commands erklaert.
