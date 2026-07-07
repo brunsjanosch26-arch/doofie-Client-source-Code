@@ -1,6 +1,7 @@
 package de.doofie.hardcore.listeners;
 
 import de.doofie.hardcore.HardcorePlugin;
+import de.doofie.hardcore.managers.QuestManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -90,7 +91,7 @@ public class SellMenuListener implements Listener {
             ItemStack item = inv.getItem(i);
             if (item == null || item.getType().isAir()) continue;
 
-            double price = plugin.priceOf(item.getType());
+            double price = plugin.priceOfItem(item);
             if (price > 0) {
                 earned += price * item.getAmount();
                 soldItems += item.getAmount();
@@ -106,6 +107,7 @@ public class SellMenuListener implements Listener {
 
         if (soldItems > 0) {
             plugin.economy().deposit(player.getUniqueId(), earned);
+            plugin.quests().progress(player, QuestManager.Type.SELL, soldItems);
             player.sendMessage(Component.text()
                 .append(Component.text("Verkauft: ", NamedTextColor.GREEN))
                 .append(Component.text(soldItems + " Items", NamedTextColor.WHITE))

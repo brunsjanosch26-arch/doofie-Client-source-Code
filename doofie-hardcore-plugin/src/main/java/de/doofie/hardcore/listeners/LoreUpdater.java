@@ -44,7 +44,7 @@ public class LoreUpdater {
     /** Setzt/aktualisiert die Verkaufswert-Zeile in der Lore eines Items. */
     public void applyLore(ItemStack item) {
         if (item == null || item.getType().isAir()) return;
-        double price = plugin.priceOf(item.getType());
+        double price = plugin.priceOfItem(item);
 
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;

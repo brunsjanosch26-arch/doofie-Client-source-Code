@@ -41,6 +41,11 @@ public class EconomyManager {
         return true;
     }
 
+    /** Alle Konten (fuer /top geld). */
+    public Map<UUID, Double> allBalances() {
+        return balances;
+    }
+
     private void load() {
         if (!file.exists()) return;
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);

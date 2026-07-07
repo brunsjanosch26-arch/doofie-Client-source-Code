@@ -32,6 +32,25 @@ ah-startangebot:
   - BONE
   - STRING
 
+# Kopf-Trophaee: Anteil des Kopfgelds als Verkaufswert des gedroppten Kopfes
+kopf-bonus: 0.10
+
+# Kopfgeldjaeger-Kompass
+jagd-kosten: 50.0
+jagd-dauer-sekunden: 60
+jagd-cooldown-sekunden: 300
+
+# Taegliche Belohnung
+daily-belohnung: 100.0
+daily-streak-belohnung: 500.0
+
+# Lotterie (Ziehung jede Stunde)
+lotto-ticket-preis: 50.0
+
+# Bounty-Schutz
+schutz-kosten: 2000.0
+schutz-dauer-minuten: 30
+
 # Maximale Anzahl Auktionen pro Spieler
 max-auktionen-pro-spieler: 5
 

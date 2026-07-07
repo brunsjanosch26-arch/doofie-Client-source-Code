@@ -29,3 +29,31 @@ commands:
     description: Auktionshaus oeffnen oder Item einstellen
     usage: /ah [sell <preis>]
     aliases: [auktion, auctionhouse]
+  jagd:
+    description: Kompass zeigt auf ein Kopfgeld-Ziel
+    usage: /jagd <spieler>
+    aliases: [hunt]
+  top:
+    description: Ranglisten anzeigen
+    usage: /top <geld|kills|kopfgelder>
+    aliases: [leaderboard]
+  daily:
+    description: Taegliche Belohnung abholen
+    usage: /daily
+    aliases: [taeglich]
+  lotto:
+    description: Lotterie-Status oder Tickets kaufen
+    usage: /lotto [kaufen [anzahl]]
+    aliases: [lotterie]
+  duell:
+    description: Duell mit Einsatz
+    usage: "/duell <spieler> <einsatz> — oder /duell annehmen"
+    aliases: [duel]
+  schutz:
+    description: Zeitweise Immunitaet gegen den Kopfgeld-Bann kaufen
+    usage: /schutz
+    aliases: [protection]
+  quests:
+    description: Deine Tagesauftraege anzeigen
+    usage: /quests
+    aliases: [auftraege]

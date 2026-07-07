@@ -2,22 +2,39 @@ package de.doofie.hardcore;
 
 import de.doofie.hardcore.commands.AhCommand;
 import de.doofie.hardcore.commands.BountyCommand;
+import de.doofie.hardcore.commands.DailyCommand;
+import de.doofie.hardcore.commands.DuellCommand;
 import de.doofie.hardcore.commands.FreikaufCommand;
+import de.doofie.hardcore.commands.JagdCommand;
+import de.doofie.hardcore.commands.LottoCommand;
 import de.doofie.hardcore.commands.MoneyCommand;
 import de.doofie.hardcore.commands.PayCommand;
+import de.doofie.hardcore.commands.QuestsCommand;
+import de.doofie.hardcore.commands.SchutzCommand;
 import de.doofie.hardcore.commands.SellCommand;
+import de.doofie.hardcore.commands.TopCommand;
 import de.doofie.hardcore.listeners.AuctionGuiListener;
 import de.doofie.hardcore.listeners.BanListener;
 import de.doofie.hardcore.listeners.DeathListener;
+import de.doofie.hardcore.listeners.GameListener;
 import de.doofie.hardcore.listeners.LoreUpdater;
 import de.doofie.hardcore.listeners.SellMenuListener;
 import de.doofie.hardcore.listeners.WelcomeListener;
 import de.doofie.hardcore.managers.AuctionManager;
 import de.doofie.hardcore.managers.BanManager;
 import de.doofie.hardcore.managers.BountyManager;
+import de.doofie.hardcore.managers.DailyManager;
+import de.doofie.hardcore.managers.DuelManager;
 import de.doofie.hardcore.managers.EconomyManager;
+import de.doofie.hardcore.managers.LottoManager;
+import de.doofie.hardcore.managers.ProtectionManager;
+import de.doofie.hardcore.managers.QuestManager;
+import de.doofie.hardcore.managers.StatsManager;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class HardcorePlugin extends JavaPlugin {
@@ -27,15 +44,29 @@ public final class HardcorePlugin extends JavaPlugin {
     private BanManager bans;
     private AuctionManager auctions;
     private LoreUpdater loreUpdater;
+    private StatsManager stats;
+    private ProtectionManager protection;
+    private DuelManager duels;
+    private DailyManager daily;
+    private LottoManager lotto;
+    private QuestManager quests;
+    private NamespacedKey headKey;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
+        headKey = new NamespacedKey(this, "kopfgeld_wert");
         economy = new EconomyManager(this);
         bounties = new BountyManager(this);
         bans = new BanManager(this);
         auctions = new AuctionManager(this);
+        stats = new StatsManager(this);
+        protection = new ProtectionManager();
+        duels = new DuelManager();
+        daily = new DailyManager(this);
+        lotto = new LottoManager(this);
+        quests = new QuestManager(this);
 
         getCommand("money").setExecutor(new MoneyCommand(this));
         getCommand("pay").setExecutor(new PayCommand(this));
@@ -43,12 +74,20 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("kopfgeld").setExecutor(new BountyCommand(this));
         getCommand("freikaufen").setExecutor(new FreikaufCommand(this));
         getCommand("ah").setExecutor(new AhCommand(this));
+        getCommand("jagd").setExecutor(new JagdCommand(this));
+        getCommand("top").setExecutor(new TopCommand(this));
+        getCommand("daily").setExecutor(new DailyCommand(this));
+        getCommand("lotto").setExecutor(new LottoCommand(this));
+        getCommand("duell").setExecutor(new DuellCommand(this));
+        getCommand("schutz").setExecutor(new SchutzCommand(this));
+        getCommand("quests").setExecutor(new QuestsCommand(this));
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);
         getServer().getPluginManager().registerEvents(new AuctionGuiListener(this), this);
         getServer().getPluginManager().registerEvents(new SellMenuListener(this), this);
         getServer().getPluginManager().registerEvents(new WelcomeListener(this), this);
+        getServer().getPluginManager().registerEvents(new GameListener(this), this);
 
         // Verkaufswert-Lore unter jedem Item aktuell halten
         loreUpdater = new LoreUpdater(this);
@@ -70,12 +109,37 @@ public final class HardcorePlugin extends JavaPlugin {
         bounties.save();
         bans.save();
         auctions.save();
+        stats.save();
+        daily.save();
+        lotto.save();
+        quests.save();
     }
 
     public EconomyManager economy() { return economy; }
     public BountyManager bounties() { return bounties; }
     public BanManager bans() { return bans; }
     public AuctionManager auctions() { return auctions; }
+    public StatsManager stats() { return stats; }
+    public ProtectionManager protection() { return protection; }
+    public DuelManager duels() { return duels; }
+    public DailyManager daily() { return daily; }
+    public LottoManager lotto() { return lotto; }
+    public QuestManager quests() { return quests; }
+    public NamespacedKey headKey() { return headKey; }
+
+    /**
+     * Preis eines konkreten Item-Stacks pro Stueck.
+     * Kopf-Trophaeen aus Kopfgeld-Kills sind 10% des Kopfgelds wert.
+     */
+    public double priceOfItem(ItemStack item) {
+        if (item == null || item.getType().isAir()) return 0;
+        if (item.getType() == Material.PLAYER_HEAD && item.hasItemMeta()) {
+            Double trophy = item.getItemMeta().getPersistentDataContainer()
+                .get(headKey, PersistentDataType.DOUBLE);
+            if (trophy != null) return trophy;
+        }
+        return priceOf(item.getType());
+    }
 
     /**
      * Verkaufspreis pro Stueck: Config-Eintrag unter 'preise' gewinnt,
