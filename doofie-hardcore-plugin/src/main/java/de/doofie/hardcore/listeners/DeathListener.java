@@ -41,7 +41,10 @@ public class DeathListener implements Listener {
         Player killer = victim.getKiller();
 
         if (killer != null && !killer.equals(victim)) {
+            if (plugin.extras().inZone(victim.getLocation())) return; // Friedenszone
             plugin.stats().addKill(killer.getUniqueId());
+            plugin.extras().recordKill(victim.getUniqueId(), killer.getUniqueId());
+            plugin.extras().addXp(killer, 10);
             plugin.guilds().warKill(killer.getUniqueId(), victim.getUniqueId());
 
             // Gerichtsduell: Angeklagter vs. Killer
@@ -100,7 +103,22 @@ public class DeathListener implements Listener {
             // ── Kopfgeld-Kill (beim Blutmond zaehlt es doppelt) ──
             plugin.bounties().claim(victim.getUniqueId());
             double payout = bounty * plugin.events().bountyMultiplier();
-            plugin.economy().deposit(killer.getUniqueId(), payout);
+
+            // Kopfgeld-Splitting: alle Angreifer der letzten 10s teilen sich die Beute
+            var assists = de.doofie.hardcore.listeners.GameListener.ASSISTS.remove(victim.getUniqueId());
+            java.util.Set<UUID> helpers = new java.util.HashSet<>();
+            helpers.add(killer.getUniqueId());
+            if (assists != null) {
+                long now = System.currentTimeMillis();
+                assists.forEach((a, t) -> { if (now - t < 10_000 && !a.equals(victim.getUniqueId())) helpers.add(a); });
+            }
+            double share = payout / helpers.size();
+            for (UUID h : helpers) {
+                plugin.economy().deposit(h, share);
+                Player hp = Bukkit.getPlayer(h);
+                if (hp != null && helpers.size() > 1) hp.sendMessage(Component.text(
+                    "Kopfgeld geteilt (" + helpers.size() + " Jaeger): +" + HardcorePlugin.dollar(share), NamedTextColor.GOLD));
+            }
             if (payout > bounty) {
                 killer.sendMessage(Component.text("BLUTMOND: Kopfgeld verdoppelt!", NamedTextColor.DARK_RED));
             }

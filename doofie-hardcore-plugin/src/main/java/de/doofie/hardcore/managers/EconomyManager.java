@@ -31,6 +31,8 @@ public class EconomyManager {
     }
 
     public void deposit(UUID player, double amount) {
+        // Blutgeld-Schulden: die Haelfte jeder Einnahme tilgt automatisch
+        if (plugin.extras() != null) amount = plugin.extras().applyDebt(player, amount);
         balances.put(player, get(player) + amount);
     }
 

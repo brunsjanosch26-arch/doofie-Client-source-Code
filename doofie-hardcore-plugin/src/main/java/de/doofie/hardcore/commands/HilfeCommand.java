@@ -24,7 +24,7 @@ public class HilfeCommand implements CommandExecutor {
         if (!(sender instanceof Player p)) { sender.sendMessage("Nur fuer Spieler."); return true; }
 
         List<Component> pages = new ArrayList<>();
-        pages.add(page("DOOFIE HARDCORE",
+        pages.add(page("BOUNTY SMP",
             "Willkommen im Handbuch!\n\nBlaettere durch die Seiten:\n\n2 Geld\n3 Tod & Freikauf\n4 Kopfgeld\n5 /ah & Shops\n6 Gilden\n7 Duelle & Wetten\n8 Events & Boerse\n9 Sonstiges\n\nViel Erfolg!"));
         pages.add(page("GELD",
             "Start: 500$\n\n/money - Guthaben\n/pay <name> <betrag>\n/sell - Verkaufsmenue: Items reinlegen, gruener Knopf!\n\nDer Verkaufswert steht unter jedem Item.\n\n/daily - taegl. Belohnung\n/quests - Tagesauftraege\n/top geld - Rangliste"));
@@ -44,8 +44,8 @@ public class HilfeCommand implements CommandExecutor {
             "/tpa <name> - Teleport-Anfrage (3s stillstehen!)\n/rtp [overworld|nether|end] - Zufalls-Teleport, sicherer Ort, 5min Cooldown. Nur bereiste Dimensionen, gesperrt mit Kopfgeld!\n\n/testament <name> - Erbe: nach 7 Tagen Bann erbt er dein halbes Vermoegen\n\n/top geld|kills|kopfgelder\n/sidebar - Stats-Anzeige an/aus\n\n/hilfe - dieses Buch"));
 
         Book book = Book.book(
-            Component.text("Doofie Handbuch", NamedTextColor.GOLD),
-            Component.text("Doofie"),
+            Component.text("Bounty SMP Handbuch", NamedTextColor.GOLD),
+            Component.text("Bounty SMP"),
             pages);
         p.openBook(book);
         return true;

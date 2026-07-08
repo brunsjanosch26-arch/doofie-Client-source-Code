@@ -25,6 +25,8 @@ import de.doofie.hardcore.commands.HilfeCommand;
 import de.doofie.hardcore.commands.RtpCommand;
 import de.doofie.hardcore.commands.SidebarCommand;
 import de.doofie.hardcore.commands.InvseeCommand;
+import de.doofie.hardcore.commands.SmpCommands;
+import de.doofie.hardcore.managers.SmpExtras;
 import de.doofie.hardcore.managers.SidebarManager;
 import de.doofie.hardcore.listeners.ShopListener;
 import de.doofie.hardcore.managers.EventManager;
@@ -75,6 +77,7 @@ public final class HardcorePlugin extends JavaPlugin {
     private StockManager stocks;
     private TestamentManager testament;
     private SidebarManager sidebar;
+    private SmpExtras extras;
     private NamespacedKey headKey;
 
     @Override
@@ -96,6 +99,7 @@ public final class HardcorePlugin extends JavaPlugin {
         guilds = new GuildManager(this);
         shops = new ShopManager(this);
         stocks = new StockManager(this);
+        extras = new SmpExtras(this);
         testament = new TestamentManager(this);
         sidebar = new SidebarManager(this);
 
@@ -126,6 +130,10 @@ public final class HardcorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(rtp, this);
         getCommand("sidebar").setExecutor(new SidebarCommand(this));
         getCommand("invsee").setExecutor(new InvseeCommand(this));
+        SmpCommands smp = new SmpCommands(this);
+        getCommand("pass").setExecutor(smp);
+        getCommand("statistik").setExecutor(smp);
+        getCommand("zone").setExecutor(smp);
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);
@@ -142,7 +150,7 @@ public final class HardcorePlugin extends JavaPlugin {
         // Alle 5 Minuten speichern
         getServer().getScheduler().runTaskTimer(this, this::saveAll, 20L * 300, 20L * 300);
 
-        getLogger().info("Doofie Hardcore geladen — Kopfgeld, /sell und /ah aktiv!");
+        getLogger().info("Bounty SMP geladen — Kopfgeld, /sell und /ah aktiv!");
     }
 
     @Override
@@ -163,6 +171,7 @@ public final class HardcorePlugin extends JavaPlugin {
         shops.save();
         stocks.save();
         testament.save();
+        extras.save();
     }
 
     public EconomyManager economy() { return economy; }
@@ -181,6 +190,7 @@ public final class HardcorePlugin extends JavaPlugin {
     public StockManager stocks() { return stocks; }
     public TestamentManager testament() { return testament; }
     public SidebarManager sidebar() { return sidebar; }
+    public SmpExtras extras() { return extras; }
     public NamespacedKey headKey() { return headKey; }
 
     /**

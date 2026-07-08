@@ -36,6 +36,7 @@ public class AuftragCommand implements CommandExecutor {
             p.sendMessage(Component.text("Nicht genug Geld! Kostet " + HardcorePlugin.dollar(cost) + " (inkl. 20% Schweigegeld)", NamedTextColor.RED));
             return true;
         }
+        plugin.extras().addTax(cost - amount);
         plugin.bounties().add(target.getUniqueId(), ANONYM, amount);
         p.sendMessage(Component.text("Der Auftrag ist raus. Niemand wird je erfahren, dass du es warst...", NamedTextColor.DARK_GRAY));
         Bukkit.broadcast(Component.text()

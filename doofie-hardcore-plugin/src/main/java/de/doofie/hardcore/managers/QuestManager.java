@@ -87,6 +87,7 @@ public class QuestManager {
                 q.done = true;
                 q.progress = q.target;
                 plugin.economy().deposit(player.getUniqueId(), q.reward);
+                plugin.extras().addXp(player, 50);
                 player.sendMessage(Component.text()
                     .append(Component.text("QUEST GESCHAFFT! ", NamedTextColor.GREEN))
                     .append(Component.text(q.describe() + " — Belohnung: ", NamedTextColor.GRAY))

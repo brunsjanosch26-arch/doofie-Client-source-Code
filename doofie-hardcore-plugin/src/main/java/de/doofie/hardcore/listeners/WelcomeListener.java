@@ -29,7 +29,7 @@ public class WelcomeListener implements Listener {
             double start = plugin.getConfig().getDouble("start-guthaben", 500.0);
 
             player.sendMessage(Component.text("════════════════════════════════", NamedTextColor.DARK_RED));
-            player.sendMessage(Component.text("  Willkommen auf dem Doofie Hardcore Server!", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+            player.sendMessage(Component.text("  Willkommen auf dem Bounty SMP!", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
             player.sendMessage(Component.text("════════════════════════════════", NamedTextColor.DARK_RED));
             player.sendMessage(Component.empty());
             player.sendMessage(Component.text("So funktioniert der Server:", NamedTextColor.YELLOW));

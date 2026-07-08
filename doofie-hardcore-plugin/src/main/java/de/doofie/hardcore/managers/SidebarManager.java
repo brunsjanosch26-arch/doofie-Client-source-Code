@@ -56,7 +56,7 @@ public class SidebarManager {
     private void update(Player p) {
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = board.registerNewObjective("doofie", Criteria.DUMMY,
-            Component.text("DOOFIE HARDCORE", NamedTextColor.GOLD, TextDecoration.BOLD));
+            Component.text("BOUNTY SMP", NamedTextColor.GOLD, TextDecoration.BOLD));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         UUID id = p.getUniqueId();

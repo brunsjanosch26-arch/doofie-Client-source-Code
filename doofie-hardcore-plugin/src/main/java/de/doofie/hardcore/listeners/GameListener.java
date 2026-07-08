@@ -10,16 +10,34 @@ import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 /** Quest-Fortschritt (Mob-Kills) und Duell-Abbruch beim Ausloggen. */
 public class GameListener implements Listener {
 
+    /** Opfer -> (Angreifer -> Zeit) fuer Kopfgeld-Splitting (letzte 10s). */
+    public static final java.util.Map<java.util.UUID, java.util.Map<java.util.UUID, Long>> ASSISTS = new java.util.HashMap<>();
+
     private final HardcorePlugin plugin;
 
     public GameListener(HardcorePlugin plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onPvp(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player victim)) return;
+        if (!(event.getDamager() instanceof Player attacker)) return;
+        // Friedenszonen: kein PvP
+        if (plugin.extras().inZone(victim.getLocation()) || plugin.extras().inZone(attacker.getLocation())) {
+            event.setCancelled(true);
+            attacker.sendMessage(Component.text("Friedenszone — hier gilt Waffenruhe!", NamedTextColor.AQUA));
+            return;
+        }
+        ASSISTS.computeIfAbsent(victim.getUniqueId(), v -> new java.util.HashMap<>())
+            .put(attacker.getUniqueId(), System.currentTimeMillis());
     }
 
     @EventHandler

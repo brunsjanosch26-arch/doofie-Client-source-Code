@@ -3,7 +3,7 @@ version: '1.0.0'
 main: de.doofie.hardcore.HardcorePlugin
 api-version: '26.2'
 author: Doofie
-description: Kopfgeld, Sell-System, Auktionshaus und Bann-Freikauf fuer den Doofie Hardcore Server
+description: Kopfgeld, Sell-System, Auktionshaus und Bann-Freikauf fuer das Bounty SMP
 
 commands:
   money:
@@ -98,6 +98,17 @@ commands:
     description: Stats-Sidebar ein-/ausblenden
     usage: /sidebar
     aliases: [scoreboard, stats]
+  pass:
+    description: Season-Pass anzeigen oder Premium kaufen
+    usage: "/pass [premium]"
+  statistik:
+    description: Spieler-Statistik anzeigen
+    usage: "/statistik [spieler]"
+    aliases: [stat]
+  zone:
+    description: Friedenszone erstellen (Admin)
+    usage: "/zone [radius]"
+    permission: doofie.invsee
   invsee:
     description: Fremdes Inventar einsehen (Admin)
     usage: "/invsee <spieler> [ender]"

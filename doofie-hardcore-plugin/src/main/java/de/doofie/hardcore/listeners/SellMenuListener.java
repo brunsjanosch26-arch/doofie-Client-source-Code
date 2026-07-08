@@ -113,6 +113,7 @@ public class SellMenuListener implements Listener {
             }
             plugin.economy().deposit(player.getUniqueId(), earned);
             plugin.quests().progress(player, QuestManager.Type.SELL, soldItems);
+            plugin.extras().addXp(player, soldItems);
             player.sendMessage(Component.text()
                 .append(Component.text("Verkauft: ", NamedTextColor.GREEN))
                 .append(Component.text(soldItems + " Items", NamedTextColor.WHITE))

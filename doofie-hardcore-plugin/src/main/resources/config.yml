@@ -1,4 +1,4 @@
-# ─── Doofie Hardcore Plugin ───────────────────────────────
+# ─── Bounty SMP Plugin ───────────────────────────────
 # Waehrung: Dollar ($)
 
 # Startguthaben fuer neue Spieler
@@ -50,6 +50,9 @@ lotto-ticket-preis: 50.0
 # Bounty-Schutz
 schutz-kosten: 2000.0
 schutz-dauer-minuten: 30
+
+# Season-Pass Premium-Upgrade
+pass-premium-kosten: 5000.0
 
 # Zufalls-Teleport
 rtp-cooldown-sekunden: 300

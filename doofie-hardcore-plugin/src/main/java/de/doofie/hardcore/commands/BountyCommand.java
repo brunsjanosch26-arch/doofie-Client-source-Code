@@ -90,12 +90,20 @@ public class BountyCommand implements CommandExecutor {
             player.sendMessage(Component.text("Mindest-Kopfgeld: " + HardcorePlugin.dollar(min), NamedTextColor.RED));
             return true;
         }
-        if (!plugin.economy().withdraw(player.getUniqueId(), amount)) {
+        // Rache-Rabatt: auf den eigenen Killer zahlt man nur die Haelfte
+        double toPay = amount;
+        if (plugin.extras().hasRevengeDiscount(player.getUniqueId(), target.getUniqueId())) {
+            toPay = amount / 2;
+            player.sendMessage(Component.text("RACHE-RABATT: Du zahlst nur " + HardcorePlugin.dollar(toPay)
+                + " fuer " + HardcorePlugin.dollar(amount) + " Kopfgeld!", NamedTextColor.LIGHT_PURPLE));
+        }
+        if (!plugin.economy().withdraw(player.getUniqueId(), toPay)) {
             player.sendMessage(Component.text("Nicht genug Geld!", NamedTextColor.RED));
             return true;
         }
 
         plugin.bounties().add(target.getUniqueId(), player.getUniqueId(), amount);
+        placeWantedSign(target);
         double total = plugin.bounties().total(target.getUniqueId());
 
         Bukkit.broadcast(Component.text()
@@ -106,5 +114,24 @@ public class BountyCommand implements CommandExecutor {
             .append(Component.text(" gesetzt! Gesamt: " + HardcorePlugin.dollar(total), NamedTextColor.RED))
             .build());
         return true;
+    }
+
+    /** Fahndungsplakat am Spawn ab 1000$ Gesamt-Kopfgeld. */
+    private void placeWantedSign(Player target) {
+        double total = plugin.bounties().total(target.getUniqueId());
+        if (total < 1000) return;
+        var world = target.getWorld();
+        var spawn = world.getSpawnLocation();
+        int slot = Math.abs(target.getUniqueId().hashCode()) % 8;
+        var block = world.getBlockAt(spawn.getBlockX() + 2 + slot, spawn.getBlockY() + 1, spawn.getBlockZ() + 2);
+        block.setType(org.bukkit.Material.OAK_SIGN);
+        if (block.getState() instanceof org.bukkit.block.Sign sign) {
+            var side = sign.getSide(org.bukkit.block.sign.Side.FRONT);
+            side.line(0, Component.text("=== WANTED ===", NamedTextColor.DARK_RED));
+            side.line(1, Component.text(target.getName(), NamedTextColor.GOLD));
+            side.line(2, Component.text(HardcorePlugin.dollar(total), NamedTextColor.RED));
+            side.line(3, Component.text("tot. Einfach tot.", NamedTextColor.GRAY));
+            sign.update();
+        }
     }
 }

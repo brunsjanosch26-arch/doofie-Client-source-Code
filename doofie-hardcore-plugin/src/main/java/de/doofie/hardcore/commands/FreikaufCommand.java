@@ -44,7 +44,7 @@ public class FreikaufCommand implements CommandExecutor {
         }
 
         // ── Kopfgeld-Bann: Selbst-Freikauf mit Joker-Wahl ──
-        if (plugin.bans().isBanned(payer.getUniqueId()) && (arg.isEmpty() || arg.equals("joker") || arg.equals("zahlen"))) {
+        if (plugin.bans().isBanned(payer.getUniqueId()) && (arg.isEmpty() || arg.equals("joker") || arg.equals("zahlen") || arg.equals("pump"))) {
             double cost = plugin.bans().unbanCost(payer.getUniqueId());
             boolean joker = plugin.bans().hasJoker(payer.getUniqueId());
 
@@ -60,11 +60,21 @@ public class FreikaufCommand implements CommandExecutor {
                     + " hat seinen GRATIS-JOKER eingeloest — ab jetzt wird es teuer!", NamedTextColor.LIGHT_PURPLE));
                 return true;
             }
+            if (arg.equals("pump")) {
+                plugin.extras().addDebt(payer.getUniqueId(), cost);
+                plugin.bans().unban(payer.getUniqueId());
+                revive(payer);
+                Bukkit.broadcast(Component.text(payer.getName() + " hat sich auf PUMP freigekauft — "
+                    + HardcorePlugin.dollar(cost) + " Blutgeld-Schulden (+10% Zinsen pro Tag)!", NamedTextColor.RED));
+                return true;
+            }
             if (arg.equals("zahlen")) {
                 if (!plugin.economy().withdraw(payer.getUniqueId(), cost)) {
-                    payer.sendMessage(Component.text("Nicht genug Geld! (" + HardcorePlugin.dollar(cost) + ")", NamedTextColor.RED));
+                    payer.sendMessage(Component.text("Nicht genug Geld! (" + HardcorePlugin.dollar(cost)
+                        + ") — oder /freikaufen pump (Schulden mit 10%/Tag Zinsen)", NamedTextColor.RED));
                     return true;
                 }
+                plugin.extras().addTax(cost);
                 plugin.bans().unban(payer.getUniqueId());
                 revive(payer);
                 Bukkit.broadcast(Component.text(payer.getName() + " hat sich fuer "
@@ -75,6 +85,7 @@ public class FreikaufCommand implements CommandExecutor {
             payer.sendMessage(Component.text("── Deine Freikauf-Optionen ──", NamedTextColor.GOLD));
             if (joker) payer.sendMessage(Component.text("  /freikaufen joker — dein EINMALIGER Gratis-Joker", NamedTextColor.LIGHT_PURPLE));
             payer.sendMessage(Component.text("  /freikaufen zahlen — kostet " + HardcorePlugin.dollar(cost), NamedTextColor.YELLOW));
+            payer.sendMessage(Component.text("  /freikaufen pump — auf Schulden (10%/Tag Zinsen, Haelfte aller Einnahmen tilgt)", NamedTextColor.RED));
             payer.sendMessage(Component.text("  Oder ein Freund zahlt: /freikaufen " + payer.getName(), NamedTextColor.GRAY));
             return true;
         }
