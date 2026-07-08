@@ -57,3 +57,7 @@ commands:
     description: Deine Tagesauftraege anzeigen
     usage: /quests
     aliases: [auftraege]
+  tpa:
+    description: Teleport-Anfrage an einen Spieler
+    usage: "/tpa <spieler> — dann /tpa annehmen oder /tpa ablehnen"
+    aliases: [tpask]

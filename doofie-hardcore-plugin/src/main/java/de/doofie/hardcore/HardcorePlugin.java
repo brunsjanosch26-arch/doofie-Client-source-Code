@@ -13,6 +13,7 @@ import de.doofie.hardcore.commands.QuestsCommand;
 import de.doofie.hardcore.commands.SchutzCommand;
 import de.doofie.hardcore.commands.SellCommand;
 import de.doofie.hardcore.commands.TopCommand;
+import de.doofie.hardcore.commands.TpaCommand;
 import de.doofie.hardcore.listeners.AuctionGuiListener;
 import de.doofie.hardcore.listeners.BanListener;
 import de.doofie.hardcore.listeners.DeathListener;
@@ -81,6 +82,7 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("duell").setExecutor(new DuellCommand(this));
         getCommand("schutz").setExecutor(new SchutzCommand(this));
         getCommand("quests").setExecutor(new QuestsCommand(this));
+        getCommand("tpa").setExecutor(new TpaCommand(this));
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);
