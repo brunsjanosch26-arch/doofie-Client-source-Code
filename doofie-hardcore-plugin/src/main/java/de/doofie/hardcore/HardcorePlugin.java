@@ -24,6 +24,7 @@ import de.doofie.hardcore.commands.WetteCommand;
 import de.doofie.hardcore.commands.HilfeCommand;
 import de.doofie.hardcore.commands.RtpCommand;
 import de.doofie.hardcore.commands.SidebarCommand;
+import de.doofie.hardcore.commands.InvseeCommand;
 import de.doofie.hardcore.managers.SidebarManager;
 import de.doofie.hardcore.listeners.ShopListener;
 import de.doofie.hardcore.managers.EventManager;
@@ -124,6 +125,7 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("rtp").setExecutor(rtp);
         getServer().getPluginManager().registerEvents(rtp, this);
         getCommand("sidebar").setExecutor(new SidebarCommand(this));
+        getCommand("invsee").setExecutor(new InvseeCommand(this));
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);

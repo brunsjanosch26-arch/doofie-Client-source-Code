@@ -98,3 +98,12 @@ commands:
     description: Stats-Sidebar ein-/ausblenden
     usage: /sidebar
     aliases: [scoreboard, stats]
+  invsee:
+    description: Fremdes Inventar einsehen (Admin)
+    usage: "/invsee <spieler> [ender]"
+    permission: doofie.invsee
+
+permissions:
+  doofie.invsee:
+    description: Erlaubt /invsee
+    default: op
