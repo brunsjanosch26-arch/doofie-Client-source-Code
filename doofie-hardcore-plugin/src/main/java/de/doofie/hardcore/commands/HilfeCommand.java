@@ -35,13 +35,13 @@ public class HilfeCommand implements CommandExecutor {
         pages.add(page("HANDEL",
             "/ah - Auktionshaus:\nKlick = 1 kaufen\nShift+Klick = Stack\n/ah sell <preis> - Item einstellen\n\nKistenshop bauen:\nSchild an Kiste:\nZeile 1: [shop]\nZeile 2: Preis\n\nAndere kaufen per Rechtsklick - auch wenn du offline bist!"));
         pages.add(page("GILDEN",
-            "/gilde gruenden <name> (5000$)\n/gilde einladen <name>\n/gilde beitreten\n/gilde kasse <betrag>\n/gilde chat <text>\n/gilde liste\n\nKRIEG:\n/gilde krieg <gilde> <einsatz>\nGegner: /gilde kriegannehmen\nErste Gilde mit 5 Kills gewinnt den Pot!"));
+            "/gilde gruenden <name> (5000$)\n/gilde einladen <name>\n/gilde beitreten\n/gilde verlassen\n/gilde kasse <betrag>\n/gilde chat <text>\n/gilde liste\n\nKRIEG:\n/gilde krieg <gilde> <einsatz>\nGegner: /gilde kriegannehmen\nErste Gilde mit 5 Kills gewinnt!"));
         pages.add(page("DUELLE & WETTEN",
             "/duell <name> <einsatz>\nGegner: /duell annehmen\n\nGewinner kriegt ALLES. Flucht (ausloggen) = Niederlage!\n\nZuschauer: 30s nach Start\n/wette <name> <betrag>\n\nGewinner-Wetten teilen sich den Verlierer-Pool."));
         pages.add(page("EVENTS & BOERSE",
             "Zufaellige Events:\nBLUTMOND - Kopfgelder x2\nGOLDRAUSCH - /sell x2\nSAEUBERUNG - jeder Kill 200$\nSTREIK - /ah zu\n\n/events - was laeuft?\n\n/boerse - Aktienmarkt, Kurse alle 10min\n/boerse kaufen <firma> <anzahl>\n/lotto kaufen - stuendl. Ziehung!"));
         pages.add(page("SONSTIGES",
-            "/tpa <name> - Teleport-Anfrage (3s stillstehen!)\n/rtp - Zufalls-Teleport, sicherer Ort, 5min Cooldown. Gesperrt mit Kopfgeld!\n\n/testament <name> - Erbe: nach 7 Tagen Bann erbt er dein halbes Vermoegen\n\n/top geld|kills|kopfgelder\n\n/hilfe - dieses Buch"));
+            "/tpa <name> - Teleport-Anfrage (3s stillstehen!)\n/rtp [overworld|nether|end] - Zufalls-Teleport, sicherer Ort, 5min Cooldown. Nur bereiste Dimensionen, gesperrt mit Kopfgeld!\n\n/testament <name> - Erbe: nach 7 Tagen Bann erbt er dein halbes Vermoegen\n\n/top geld|kills|kopfgelder\n\n/hilfe - dieses Buch"));
 
         Book book = Book.book(
             Component.text("Doofie Handbuch", NamedTextColor.GOLD),

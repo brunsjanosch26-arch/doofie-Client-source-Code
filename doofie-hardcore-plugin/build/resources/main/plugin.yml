@@ -92,5 +92,5 @@ commands:
     aliases: [help2, handbuch]
   rtp:
     description: Zufaelliger sicherer Teleport
-    usage: /rtp
+    usage: "/rtp [overworld|nether|end] — nur bereiste Dimensionen"
     aliases: [wild]

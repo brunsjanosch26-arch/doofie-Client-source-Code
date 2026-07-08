@@ -116,7 +116,9 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("testament").setExecutor(new TestamentCommand(this));
         getCommand("events").setExecutor(new EventsCommand(this));
         getCommand("hilfe").setExecutor(new HilfeCommand(this));
-        getCommand("rtp").setExecutor(new RtpCommand(this));
+        RtpCommand rtp = new RtpCommand(this);
+        getCommand("rtp").setExecutor(rtp);
+        getServer().getPluginManager().registerEvents(rtp, this);
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);
