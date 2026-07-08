@@ -813,7 +813,80 @@ pub async fn install_minecraft_version(
 
     // --- Step: Copy bundled pre-installed mods to profile mods folder ---
     // Skip mods already loaded via addMods (same SHA1) to avoid duplicate mod errors in Fabric.
-    if modloader_enum != ModLoader::Vanilla {
+    // Die gebuendelten Mods sind fuer MC 1.21.x gebaut — bei anderen Versionen (z.B. 26.2)
+    // NICHT installieren und bereits kopierte Bundled-Mods wieder entfernen,
+    // sonst crasht Fabric mit Versions-Fehlern.
+    let bundled_mods_compatible = version_id.starts_with("1.21");
+    if modloader_enum == ModLoader::Fabric && !bundled_mods_compatible {
+        // 1) Alle 1.21er-Bundled-Jars aus dem Profil entfernen
+        if let Ok(entries) = std::fs::read_dir(&profile_mods_path) {
+            for entry in entries.flatten() {
+                let name = entry.file_name().to_string_lossy().to_string();
+                let stale_auto = name.contains("-bsmp-") && !name.contains(&format!("-bsmp-{}.jar", version_id));
+                if crate::config::BUNDLED_MODS.contains(&name.as_str()) || stale_auto {
+                    match std::fs::remove_file(entry.path()) {
+                        Ok(_) => info!("[BundledMods] Removed incompatible bundled mod for MC {}: {}", version_id, name),
+                        Err(e) => warn!("[BundledMods] Failed to remove {}: {}", name, e),
+                    }
+                }
+            }
+        }
+        // 2) Oeffentliche Mods automatisch in der passenden Version von Modrinth holen
+        const MODRINTH_SLUGS: &[&str] = &[
+            "fabric-language-kotlin", "cloth-config", "yacl", "modmenu",
+            "simple-voice-chat", "sodium", "iris", "lithium", "ferritecore",
+            "immediatelyfast", "entityculling", "moreculling", "dynamic-fps",
+            "3dskinlayers", "zoomify", "appleskin", "mouse-tweaks", "status-effect-bars",
+        ];
+        for slug in MODRINTH_SLUGS {
+            let dst = profile_mods_path.join(format!("{}-bsmp-{}.jar", slug, version_id));
+            if dst.exists() {
+                continue; // passende Version schon vorhanden
+            }
+            let url = format!(
+                "https://api.modrinth.com/v2/project/{}/version?game_versions=%5B%22{}%22%5D&loaders=%5B%22fabric%22%5D",
+                slug, version_id
+            );
+            match crate::config::HTTP_CLIENT.get(&url).send().await {
+                Ok(resp) => {
+                    if let Ok(json) = resp.json::<serde_json::Value>().await {
+                        if let Some(file_url) = json.get(0)
+                            .and_then(|v| v.get("files"))
+                            .and_then(|f| f.get(0))
+                            .and_then(|f| f.get("url"))
+                            .and_then(|u| u.as_str())
+                        {
+                            match crate::config::HTTP_CLIENT.get(file_url).send().await {
+                                Ok(dl) => match dl.bytes().await {
+                                    Ok(bytes) => {
+                                        if std::fs::write(&dst, &bytes).is_ok() {
+                                            info!("[BundledMods] Auto-updated {} for MC {}", slug, version_id);
+                                        }
+                                    }
+                                    Err(e) => warn!("[BundledMods] Download failed for {}: {}", slug, e),
+                                },
+                                Err(e) => warn!("[BundledMods] Download failed for {}: {}", slug, e),
+                            }
+                        } else {
+                            info!("[BundledMods] No {} version for MC {} — skipped", slug, version_id);
+                        }
+                    }
+                }
+                Err(e) => warn!("[BundledMods] Modrinth lookup failed for {}: {}", slug, e),
+            }
+        }
+        info!("[BundledMods] Auto-update for MC {} done (NRC-only mods cleaned up)", version_id);
+    }
+    if modloader_enum != ModLoader::Vanilla && bundled_mods_compatible {
+        // Auto-Update-Jars anderer Versionen entfernen, die Bundled-Jars gelten wieder
+        if let Ok(entries) = std::fs::read_dir(&profile_mods_path) {
+            for entry in entries.flatten() {
+                let name = entry.file_name().to_string_lossy().to_string();
+                if name.contains("-bsmp-") {
+                    let _ = std::fs::remove_file(entry.path());
+                }
+            }
+        }
         if let Some(resource_dir) = crate::config::RESOURCE_DIR.get() {
             let known_sha1s: std::collections::HashSet<String> = target_mods
                 .iter()
