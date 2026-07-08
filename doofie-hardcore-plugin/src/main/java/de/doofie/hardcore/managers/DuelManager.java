@@ -1,6 +1,8 @@
 package de.doofie.hardcore.managers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,4 +52,30 @@ public class DuelManager {
         active.remove(duel.a());
         active.remove(duel.b());
     }
+
+    // ── Wetten auf Duelle ──
+    public record Bet(UUID bettor, UUID on, double amount) {}
+    private final List<Bet> bets = new ArrayList<>();
+    private long betsOpenUntil = 0;
+
+    public void openBets() {
+        bets.clear();
+        betsOpenUntil = System.currentTimeMillis() + 30_000L;
+    }
+
+    public boolean betsOpen() { return System.currentTimeMillis() <= betsOpenUntil; }
+    public void addBet(UUID bettor, UUID on, double amount) { bets.add(new Bet(bettor, on, amount)); }
+    public List<Bet> takeBets() {
+        List<Bet> copy = new ArrayList<>(bets);
+        bets.clear();
+        betsOpenUntil = 0;
+        return copy;
+    }
+
+    // ── Gerichtsduelle (Angeklagter -> Killer) ──
+    private final Map<UUID, UUID> courtDuels = new HashMap<>();
+    public void startCourtDuel(UUID accused, UUID killer) { courtDuels.put(accused, killer); }
+    public UUID courtOpponent(UUID accused) { return courtDuels.get(accused); }
+    public boolean inCourtDuel(UUID player) { return courtDuels.containsKey(player) || courtDuels.containsValue(player); }
+    public Map<UUID, UUID> courtDuels() { return courtDuels; }
 }

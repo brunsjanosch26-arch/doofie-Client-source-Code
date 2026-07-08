@@ -17,7 +17,7 @@ import java.util.Set;
 public class BanListener implements Listener {
 
     private static final Set<String> ALLOWED_COMMANDS = Set.of(
-        "freikaufen", "unbanme", "money", "geld", "balance", "bal", "kopfgeld", "bounty"
+        "freikaufen", "unbanme", "money", "geld", "balance", "bal", "kopfgeld", "bounty", "gerichtsduell", "testament"
     );
 
     private final HardcorePlugin plugin;

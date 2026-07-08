@@ -61,3 +61,28 @@ commands:
     description: Teleport-Anfrage an einen Spieler
     usage: "/tpa <spieler> — dann /tpa annehmen oder /tpa ablehnen"
     aliases: [tpask]
+  gilde:
+    description: Gilden-System
+    usage: "/gilde gruenden|einladen|beitreten|verlassen|kasse|krieg|chat|liste"
+    aliases: [guild, clan]
+  boerse:
+    description: Der Doofie-Aktienmarkt
+    usage: "/boerse [kaufen|verkaufen <firma> <anzahl>]"
+    aliases: [aktien, boersen]
+  wette:
+    description: Auf ein laufendes Duell wetten
+    usage: /wette <spieler> <betrag>
+    aliases: [bet]
+  auftrag:
+    description: Anonymes Kopfgeld setzen (+20% Gebuehr)
+    usage: /auftrag <spieler> <betrag>
+    aliases: [assassine]
+  gerichtsduell:
+    description: Als Gebannter den Killer um die Freiheit fordern
+    usage: "/gerichtsduell — oder /gerichtsduell annehmen"
+  testament:
+    description: Erben festlegen
+    usage: /testament <spieler>
+  events:
+    description: Aktuelles Weltevent anzeigen
+    usage: /events

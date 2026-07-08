@@ -14,6 +14,19 @@ import de.doofie.hardcore.commands.SchutzCommand;
 import de.doofie.hardcore.commands.SellCommand;
 import de.doofie.hardcore.commands.TopCommand;
 import de.doofie.hardcore.commands.TpaCommand;
+import de.doofie.hardcore.commands.AuftragCommand;
+import de.doofie.hardcore.commands.BoerseCommand;
+import de.doofie.hardcore.commands.EventsCommand;
+import de.doofie.hardcore.commands.GerichtsduellCommand;
+import de.doofie.hardcore.commands.GildeCommand;
+import de.doofie.hardcore.commands.TestamentCommand;
+import de.doofie.hardcore.commands.WetteCommand;
+import de.doofie.hardcore.listeners.ShopListener;
+import de.doofie.hardcore.managers.EventManager;
+import de.doofie.hardcore.managers.GuildManager;
+import de.doofie.hardcore.managers.ShopManager;
+import de.doofie.hardcore.managers.StockManager;
+import de.doofie.hardcore.managers.TestamentManager;
 import de.doofie.hardcore.listeners.AuctionGuiListener;
 import de.doofie.hardcore.listeners.BanListener;
 import de.doofie.hardcore.listeners.DeathListener;
@@ -51,6 +64,11 @@ public final class HardcorePlugin extends JavaPlugin {
     private DailyManager daily;
     private LottoManager lotto;
     private QuestManager quests;
+    private EventManager events;
+    private GuildManager guilds;
+    private ShopManager shops;
+    private StockManager stocks;
+    private TestamentManager testament;
     private NamespacedKey headKey;
 
     @Override
@@ -68,6 +86,11 @@ public final class HardcorePlugin extends JavaPlugin {
         daily = new DailyManager(this);
         lotto = new LottoManager(this);
         quests = new QuestManager(this);
+        events = new EventManager(this);
+        guilds = new GuildManager(this);
+        shops = new ShopManager(this);
+        stocks = new StockManager(this);
+        testament = new TestamentManager(this);
 
         getCommand("money").setExecutor(new MoneyCommand(this));
         getCommand("pay").setExecutor(new PayCommand(this));
@@ -83,6 +106,13 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("schutz").setExecutor(new SchutzCommand(this));
         getCommand("quests").setExecutor(new QuestsCommand(this));
         getCommand("tpa").setExecutor(new TpaCommand(this));
+        getCommand("gilde").setExecutor(new GildeCommand(this));
+        getCommand("boerse").setExecutor(new BoerseCommand(this));
+        getCommand("wette").setExecutor(new WetteCommand(this));
+        getCommand("auftrag").setExecutor(new AuftragCommand(this));
+        getCommand("gerichtsduell").setExecutor(new GerichtsduellCommand(this));
+        getCommand("testament").setExecutor(new TestamentCommand(this));
+        getCommand("events").setExecutor(new EventsCommand(this));
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);
@@ -90,6 +120,7 @@ public final class HardcorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new SellMenuListener(this), this);
         getServer().getPluginManager().registerEvents(new WelcomeListener(this), this);
         getServer().getPluginManager().registerEvents(new GameListener(this), this);
+        getServer().getPluginManager().registerEvents(new ShopListener(this), this);
 
         // Verkaufswert-Lore unter jedem Item aktuell halten
         loreUpdater = new LoreUpdater(this);
@@ -115,6 +146,10 @@ public final class HardcorePlugin extends JavaPlugin {
         daily.save();
         lotto.save();
         quests.save();
+        guilds.save();
+        shops.save();
+        stocks.save();
+        testament.save();
     }
 
     public EconomyManager economy() { return economy; }
@@ -127,6 +162,11 @@ public final class HardcorePlugin extends JavaPlugin {
     public DailyManager daily() { return daily; }
     public LottoManager lotto() { return lotto; }
     public QuestManager quests() { return quests; }
+    public EventManager events() { return events; }
+    public GuildManager guilds() { return guilds; }
+    public ShopManager shops() { return shops; }
+    public StockManager stocks() { return stocks; }
+    public TestamentManager testament() { return testament; }
     public NamespacedKey headKey() { return headKey; }
 
     /**

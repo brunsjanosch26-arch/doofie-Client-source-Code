@@ -106,6 +106,11 @@ public class SellMenuListener implements Listener {
         }
 
         if (soldItems > 0) {
+            double mult = plugin.events().sellMultiplier();
+            if (mult > 1) {
+                earned *= mult;
+                player.sendMessage(Component.text("GOLDRAUSCH: Doppelter Erloes!", NamedTextColor.GOLD));
+            }
             plugin.economy().deposit(player.getUniqueId(), earned);
             plugin.quests().progress(player, QuestManager.Type.SELL, soldItems);
             player.sendMessage(Component.text()

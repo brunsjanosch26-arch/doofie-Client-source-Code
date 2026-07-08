@@ -31,6 +31,12 @@ public class AhCommand implements CommandExecutor {
             return true;
         }
 
+        if (plugin.events().isActive(de.doofie.hardcore.managers.EventManager.EventType.HAENDLERPAUSE)) {
+            player.sendMessage(Component.text("HAENDLER-STREIK! Das /ah ist gerade geschlossen ("
+                + plugin.events().remainingMinutes() + " Min.)", NamedTextColor.RED));
+            return true;
+        }
+
         if (args.length >= 1 && args[0].toLowerCase(Locale.ROOT).equals("sell")) {
             if (args.length < 2) {
                 player.sendMessage(Component.text("Nutzung: /ah sell <preis>", NamedTextColor.RED));

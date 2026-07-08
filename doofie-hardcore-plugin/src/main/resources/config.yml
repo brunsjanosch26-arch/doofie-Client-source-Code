@@ -51,6 +51,9 @@ lotto-ticket-preis: 50.0
 schutz-kosten: 2000.0
 schutz-dauer-minuten: 30
 
+# Kosten fuer eine Gildengruendung
+gilde-kosten: 5000.0
+
 # Maximale Anzahl Auktionen pro Spieler
 max-auktionen-pro-spieler: 5
 

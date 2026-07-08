@@ -18,6 +18,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Herzstueck des Kopfgeld-Systems:
@@ -41,6 +42,40 @@ public class DeathListener implements Listener {
 
         if (killer != null && !killer.equals(victim)) {
             plugin.stats().addKill(killer.getUniqueId());
+            plugin.guilds().warKill(killer.getUniqueId(), victim.getUniqueId());
+
+            // Gerichtsduell: Angeklagter vs. Killer
+            var courts = plugin.duels().courtDuels();
+            UUID accused = courts.containsKey(victim.getUniqueId()) ? victim.getUniqueId()
+                : courts.containsKey(killer.getUniqueId()) ? killer.getUniqueId() : null;
+            if (accused != null) {
+                UUID opponent = courts.get(accused);
+                boolean pairMatches = (victim.getUniqueId().equals(accused) && killer.getUniqueId().equals(opponent))
+                    || (killer.getUniqueId().equals(accused) && victim.getUniqueId().equals(opponent));
+                if (pairMatches) {
+                    courts.remove(accused);
+                    if (killer.getUniqueId().equals(accused)) {
+                        // Angeklagter gewinnt -> frei!
+                        plugin.bans().unban(accused);
+                        Bukkit.broadcast(Component.text("GERICHTSDUELL: " + killer.getName()
+                            + " besiegt seinen Killer und ist FREI!", NamedTextColor.GREEN));
+                    } else {
+                        // Angeklagter verliert -> Freikauf verdoppelt sich
+                        var ban = plugin.bans().get(accused);
+                        if (ban != null) ban.cost *= 2;
+                        Bukkit.broadcast(Component.text("GERICHTSDUELL: " + victim.getName()
+                            + " verliert — Freikauf verdoppelt auf "
+                            + HardcorePlugin.dollar(ban != null ? ban.cost : 0) + "!", NamedTextColor.DARK_RED));
+                    }
+                    return;
+                }
+            }
+
+            // Saeuberung: jeder Kill bringt 200$
+            if (plugin.events().isActive(de.doofie.hardcore.managers.EventManager.EventType.SAEUBERUNG)) {
+                plugin.economy().deposit(killer.getUniqueId(), 200);
+                killer.sendMessage(Component.text("SAEUBERUNG: +200$ fuer den Kill!", NamedTextColor.DARK_RED));
+            }
         }
 
         // ── Duell-Tod: Pot an den Gewinner, kein Bann ──
@@ -49,6 +84,7 @@ public class DeathListener implements Listener {
                 && (killer.getUniqueId().equals(duel.a()) || killer.getUniqueId().equals(duel.b()))) {
             plugin.duels().endDuel(duel);
             plugin.economy().deposit(killer.getUniqueId(), duel.pot());
+            payoutBets(killer.getUniqueId());
             Bukkit.broadcast(Component.text()
                 .append(Component.text("DUELL VORBEI! ", NamedTextColor.RED))
                 .append(Component.text(killer.getName(), NamedTextColor.GOLD))
@@ -61,13 +97,17 @@ public class DeathListener implements Listener {
         double bounty = plugin.bounties().total(victim.getUniqueId());
 
         if (bounty > 0 && killer != null && !killer.equals(victim)) {
-            // ── Kopfgeld-Kill ──
+            // ── Kopfgeld-Kill (beim Blutmond zaehlt es doppelt) ──
             plugin.bounties().claim(victim.getUniqueId());
-            plugin.economy().deposit(killer.getUniqueId(), bounty);
+            double payout = bounty * plugin.events().bountyMultiplier();
+            plugin.economy().deposit(killer.getUniqueId(), payout);
+            if (payout > bounty) {
+                killer.sendMessage(Component.text("BLUTMOND: Kopfgeld verdoppelt!", NamedTextColor.DARK_RED));
+            }
 
             boolean protectedVictim = plugin.protection().isProtected(victim.getUniqueId());
             if (!protectedVictim) {
-                plugin.bans().ban(victim.getUniqueId(), bounty);
+                plugin.bans().ban(victim.getUniqueId(), bounty, killer.getUniqueId());
             }
 
             // Kopf des Opfers droppen — als Trophaee mit eingebautem Wert
@@ -96,6 +136,22 @@ public class DeathListener implements Listener {
                 Bukkit.broadcast(Component.text(
                     victim.getName() + " ist gebannt! Freikauf: " + HardcorePlugin.dollar(unbanCost), NamedTextColor.RED));
             }
+        }
+    }
+
+    /** Wetten proportional ausschuetten: Gewinner teilen sich den Verlierer-Pool. */
+    private void payoutBets(UUID winner) {
+        var bets = plugin.duels().takeBets();
+        if (bets.isEmpty()) return;
+        double winPool = bets.stream().filter(b -> b.on().equals(winner)).mapToDouble(b -> b.amount()).sum();
+        double losePool = bets.stream().filter(b -> !b.on().equals(winner)).mapToDouble(b -> b.amount()).sum();
+        for (var bet : bets) {
+            if (!bet.on().equals(winner)) continue;
+            double share = winPool > 0 ? bet.amount() / winPool : 0;
+            double prize = bet.amount() + losePool * share;
+            plugin.economy().deposit(bet.bettor(), prize);
+            Player p = Bukkit.getPlayer(bet.bettor());
+            if (p != null) p.sendMessage(Component.text("WETTE GEWONNEN: +" + HardcorePlugin.dollar(prize), NamedTextColor.GREEN));
         }
     }
 

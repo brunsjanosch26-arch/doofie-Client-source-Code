@@ -46,6 +46,8 @@ public class LottoManager {
         return tickets.getOrDefault(player, 0);
     }
 
+    public void addToPot(double amount) { pot += amount; }
+
     public double pot() {
         return pot;
     }

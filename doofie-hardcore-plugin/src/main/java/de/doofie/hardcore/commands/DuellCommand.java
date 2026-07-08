@@ -65,6 +65,8 @@ public class DuellCommand implements CommandExecutor {
                 .append(Component.text(challenger.getName() + " vs " + player.getName(), NamedTextColor.GOLD))
                 .append(Component.text(" um " + HardcorePlugin.dollar(stake * 2) + " — moege der Bessere gewinnen!", NamedTextColor.GRAY))
                 .build());
+            plugin.duels().openBets();
+            Bukkit.broadcast(Component.text("WETTEN OFFEN (30s): /wette <spieler> <betrag>", NamedTextColor.LIGHT_PURPLE));
             return true;
         }
 
