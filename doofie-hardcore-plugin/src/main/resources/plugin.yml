@@ -94,3 +94,7 @@ commands:
     description: Zufaelliger sicherer Teleport
     usage: "/rtp [overworld|nether|end] — nur bereiste Dimensionen"
     aliases: [wild]
+  sidebar:
+    description: Stats-Sidebar ein-/ausblenden
+    usage: /sidebar
+    aliases: [scoreboard, stats]

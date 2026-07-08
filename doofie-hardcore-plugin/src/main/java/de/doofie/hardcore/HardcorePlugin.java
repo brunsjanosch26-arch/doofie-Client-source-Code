@@ -23,6 +23,8 @@ import de.doofie.hardcore.commands.TestamentCommand;
 import de.doofie.hardcore.commands.WetteCommand;
 import de.doofie.hardcore.commands.HilfeCommand;
 import de.doofie.hardcore.commands.RtpCommand;
+import de.doofie.hardcore.commands.SidebarCommand;
+import de.doofie.hardcore.managers.SidebarManager;
 import de.doofie.hardcore.listeners.ShopListener;
 import de.doofie.hardcore.managers.EventManager;
 import de.doofie.hardcore.managers.GuildManager;
@@ -71,6 +73,7 @@ public final class HardcorePlugin extends JavaPlugin {
     private ShopManager shops;
     private StockManager stocks;
     private TestamentManager testament;
+    private SidebarManager sidebar;
     private NamespacedKey headKey;
 
     @Override
@@ -93,6 +96,7 @@ public final class HardcorePlugin extends JavaPlugin {
         shops = new ShopManager(this);
         stocks = new StockManager(this);
         testament = new TestamentManager(this);
+        sidebar = new SidebarManager(this);
 
         getCommand("money").setExecutor(new MoneyCommand(this));
         getCommand("pay").setExecutor(new PayCommand(this));
@@ -119,6 +123,7 @@ public final class HardcorePlugin extends JavaPlugin {
         RtpCommand rtp = new RtpCommand(this);
         getCommand("rtp").setExecutor(rtp);
         getServer().getPluginManager().registerEvents(rtp, this);
+        getCommand("sidebar").setExecutor(new SidebarCommand(this));
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);
@@ -173,6 +178,7 @@ public final class HardcorePlugin extends JavaPlugin {
     public ShopManager shops() { return shops; }
     public StockManager stocks() { return stocks; }
     public TestamentManager testament() { return testament; }
+    public SidebarManager sidebar() { return sidebar; }
     public NamespacedKey headKey() { return headKey; }
 
     /**

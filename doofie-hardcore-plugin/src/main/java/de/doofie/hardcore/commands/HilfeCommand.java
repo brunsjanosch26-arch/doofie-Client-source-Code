@@ -41,7 +41,7 @@ public class HilfeCommand implements CommandExecutor {
         pages.add(page("EVENTS & BOERSE",
             "Zufaellige Events:\nBLUTMOND - Kopfgelder x2\nGOLDRAUSCH - /sell x2\nSAEUBERUNG - jeder Kill 200$\nSTREIK - /ah zu\n\n/events - was laeuft?\n\n/boerse - Aktienmarkt, Kurse alle 10min\n/boerse kaufen <firma> <anzahl>\n/lotto kaufen - stuendl. Ziehung!"));
         pages.add(page("SONSTIGES",
-            "/tpa <name> - Teleport-Anfrage (3s stillstehen!)\n/rtp [overworld|nether|end] - Zufalls-Teleport, sicherer Ort, 5min Cooldown. Nur bereiste Dimensionen, gesperrt mit Kopfgeld!\n\n/testament <name> - Erbe: nach 7 Tagen Bann erbt er dein halbes Vermoegen\n\n/top geld|kills|kopfgelder\n\n/hilfe - dieses Buch"));
+            "/tpa <name> - Teleport-Anfrage (3s stillstehen!)\n/rtp [overworld|nether|end] - Zufalls-Teleport, sicherer Ort, 5min Cooldown. Nur bereiste Dimensionen, gesperrt mit Kopfgeld!\n\n/testament <name> - Erbe: nach 7 Tagen Bann erbt er dein halbes Vermoegen\n\n/top geld|kills|kopfgelder\n/sidebar - Stats-Anzeige an/aus\n\n/hilfe - dieses Buch"));
 
         Book book = Book.book(
             Component.text("Doofie Handbuch", NamedTextColor.GOLD),
