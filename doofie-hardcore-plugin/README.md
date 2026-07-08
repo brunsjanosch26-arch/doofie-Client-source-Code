@@ -72,3 +72,18 @@ sich ohne Client-Mod nicht umbenennen. Funktional passt aber alles:
 - Kopfgeld-Tode: Knopf druecken -> du bleibst im Spectator und kannst nur
   /freikaufen nutzen. Nach dem Freikauf geht es am Bett (oder Spawn) weiter.
 - Neue Spieler bekommen beim ersten Join alle Regeln und Commands erklaert.
+
+
+## Voicechat (Simple Voice Chat)
+
+Der Voicechat laeuft ueber das offizielle Simple-Voice-Chat-Plugin (liegt in `server-plugins/`).
+
+**Installation auf exaroton:**
+1. `server-plugins/voicechat-bukkit-2.6.20.jar` in den `plugins/`-Ordner hochladen
+2. Server einmal starten (erstellt `plugins/voicechat/voicechat-server.properties`)
+3. In dieser Datei setzen: `port=-1` (nutzt automatisch den Minecraft-Server-Port —
+   noetig, weil exaroton nur einen Port freigibt)
+4. Server neu starten
+
+**Clients:** Spieler brauchen die Simple-Voice-Chat-Mod — die ist im Doofie Client
+schon vorinstalliert! Ingame Standard-Taste `V` fuer das Voice-Menue, `CapsLock` = Push-to-Talk.
