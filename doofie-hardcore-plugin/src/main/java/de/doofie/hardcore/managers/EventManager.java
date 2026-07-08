@@ -7,7 +7,12 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 /** Dynamische Weltevents: Blutmond, Goldrausch, Saeuberung, Haendlerpause. */
 public class EventManager {
@@ -17,7 +22,8 @@ public class EventManager {
         BLUTMOND("BLUTMOND", "Alle Kopfgelder zaehlen DOPPELT!"),
         GOLDRAUSCH("GOLDRAUSCH", "Doppelte Verkaufspreise bei /sell!"),
         SAEUBERUNG("DIE SAEUBERUNG", "JEDER Spieler-Kill bringt 200$!"),
-        HAENDLERPAUSE("HAENDLER-STREIK", "Das /ah ist geschlossen!");
+        HAENDLERPAUSE("HAENDLER-STREIK", "Das /ah ist geschlossen!"),
+        TRESOR("TRESOR-RAUB", "Halte den Tresor 2 Minuten und knacke den Steuer-Topf!");
 
         public final String title;
         public final String desc;
@@ -28,6 +34,8 @@ public class EventManager {
     private final Random random = new Random();
     private EventType current = EventType.NONE;
     private long until = 0;
+    private Location tresor = null;
+    private final Map<UUID, Integer> holdTicks = new HashMap<>();
 
     public EventManager(HardcorePlugin plugin) {
         this.plugin = plugin;
@@ -41,9 +49,49 @@ public class EventManager {
             current = EventType.NONE;
         }
         if (current == EventType.NONE && random.nextInt(100) < 3) { // ~alle 30-40 Minuten
-            EventType[] pool = { EventType.BLUTMOND, EventType.GOLDRAUSCH, EventType.SAEUBERUNG, EventType.HAENDLERPAUSE };
-            start(pool[random.nextInt(pool.length)], 15 + random.nextInt(16));
+            // Tresor-Raub nur, wenn genug Steuern im Topf sind
+            if (plugin.extras().taxPot() >= 500 && random.nextInt(3) == 0) {
+                startTresor();
+            } else {
+                EventType[] pool = { EventType.BLUTMOND, EventType.GOLDRAUSCH, EventType.SAEUBERUNG, EventType.HAENDLERPAUSE };
+                start(pool[random.nextInt(pool.length)], 15 + random.nextInt(16));
+            }
         }
+    }
+
+    private void startTresor() {
+        var world = Bukkit.getWorlds().get(0);
+        var spawn = world.getSpawnLocation();
+        int x = spawn.getBlockX() + random.nextInt(1000) - 500;
+        int z = spawn.getBlockZ() + random.nextInt(1000) - 500;
+        int y = world.getHighestBlockYAt(x, z) + 1;
+        tresor = new Location(world, x, y, z);
+        world.getBlockAt(x, y - 1, z).setType(org.bukkit.Material.GOLD_BLOCK);
+        holdTicks.clear();
+        start(EventType.TRESOR, 15);
+        Bukkit.broadcast(Component.text("TRESOR bei " + x + " / " + y + " / " + z + " — Pot: "
+            + de.doofie.hardcore.HardcorePlugin.dollar(plugin.extras().taxPot()), NamedTextColor.GOLD));
+
+        var task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (!isActive(EventType.TRESOR) || tresor == null) return;
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (!p.getWorld().equals(tresor.getWorld())) continue;
+                if (p.getLocation().distanceSquared(tresor) > 25) continue;
+                int t = holdTicks.merge(p.getUniqueId(), 1, Integer::sum);
+                if (t % 6 == 0) p.sendMessage(Component.text("Tresor: " + (t * 5) + "/120 Sekunden...", NamedTextColor.GOLD));
+                if (t >= 24) { // 24 x 5s = 2 Minuten
+                    double pot = plugin.extras().drainTaxPot();
+                    plugin.economy().deposit(p.getUniqueId(), pot);
+                    Bukkit.broadcast(Component.text("TRESOR GEKNACKT! " + p.getName() + " raubt "
+                        + de.doofie.hardcore.HardcorePlugin.dollar(pot) + "!", NamedTextColor.GOLD));
+                    tresor.getBlock().getRelative(0, -1, 0).setType(org.bukkit.Material.AIR);
+                    tresor = null;
+                    current = EventType.NONE;
+                    return;
+                }
+            }
+        }, 100L, 100L);
+        Bukkit.getScheduler().runTaskLater(plugin, task::cancel, 20L * 60 * 16);
     }
 
     public void start(EventType type, int minutes) {

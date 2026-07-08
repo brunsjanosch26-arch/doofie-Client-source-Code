@@ -22,6 +22,12 @@ public class BountyCommand implements CommandExecutor {
 
     private final HardcorePlugin plugin;
 
+    // ── Bounty-Versteigerung (eine gleichzeitig) ──
+    private UUID auctionTarget = null;
+    private UUID highBidder = null;
+    private double highBid = 0;
+    private long auctionEnd = 0;
+
     public BountyCommand(HardcorePlugin plugin) {
         this.plugin = plugin;
     }
@@ -45,6 +51,64 @@ public class BountyCommand implements CommandExecutor {
                     .append(Component.text(" — " + HardcorePlugin.dollar(total), NamedTextColor.RED))
                     .build());
             });
+            return true;
+        }
+
+        // ── /kopfgeld auktion <spieler> <startgebot> ──
+        if (sub.equals("auktion")) {
+            if (!(sender instanceof Player player)) return true;
+            if (auctionTarget != null && System.currentTimeMillis() < auctionEnd) {
+                player.sendMessage(Component.text("Es laeuft schon eine Auktion!", NamedTextColor.RED));
+                return true;
+            }
+            if (args.length < 3) {
+                player.sendMessage(Component.text("Nutzung: /kopfgeld auktion <spieler> <startgebot>", NamedTextColor.RED));
+                return true;
+            }
+            Player target = Bukkit.getPlayerExact(args[1]);
+            double start;
+            try { start = Double.parseDouble(args[2]); } catch (NumberFormatException e) { return true; }
+            if (target == null || target.equals(player) || start < plugin.getConfig().getDouble("min-kopfgeld", 100.0)) {
+                player.sendMessage(Component.text("Ungueltiges Ziel oder Startgebot zu niedrig.", NamedTextColor.RED));
+                return true;
+            }
+            if (!plugin.economy().has(player.getUniqueId(), start)) {
+                player.sendMessage(Component.text("Du kannst dein eigenes Startgebot nicht zahlen!", NamedTextColor.RED));
+                return true;
+            }
+            auctionTarget = target.getUniqueId();
+            highBidder = player.getUniqueId();
+            highBid = start;
+            auctionEnd = System.currentTimeMillis() + 5 * 60_000L;
+            Bukkit.broadcast(Component.text("KOPFGELD-AUKTION auf " + target.getName() + "! Startgebot "
+                + HardcorePlugin.dollar(start) + " von " + player.getName()
+                + " — /kopfgeld bieten <betrag> (5 Minuten!)", NamedTextColor.DARK_RED));
+            Bukkit.getScheduler().runTaskLater(plugin, this::endAuction, 20L * 300);
+            return true;
+        }
+
+        // ── /kopfgeld bieten <betrag> ──
+        if (sub.equals("bieten")) {
+            if (!(sender instanceof Player player)) return true;
+            if (auctionTarget == null || System.currentTimeMillis() >= auctionEnd) {
+                player.sendMessage(Component.text("Keine Auktion aktiv.", NamedTextColor.RED));
+                return true;
+            }
+            if (args.length < 2) return true;
+            double bid;
+            try { bid = Double.parseDouble(args[1]); } catch (NumberFormatException e) { return true; }
+            if (bid <= highBid) {
+                player.sendMessage(Component.text("Du musst mehr als " + HardcorePlugin.dollar(highBid) + " bieten!", NamedTextColor.RED));
+                return true;
+            }
+            if (!plugin.economy().has(player.getUniqueId(), bid)) {
+                player.sendMessage(Component.text("So viel hast du nicht!", NamedTextColor.RED));
+                return true;
+            }
+            highBidder = player.getUniqueId();
+            highBid = bid;
+            Bukkit.broadcast(Component.text(player.getName() + " bietet " + HardcorePlugin.dollar(bid)
+                + " auf das Kopfgeld!", NamedTextColor.RED));
             return true;
         }
 
@@ -114,6 +178,27 @@ public class BountyCommand implements CommandExecutor {
             .append(Component.text(" gesetzt! Gesamt: " + HardcorePlugin.dollar(total), NamedTextColor.RED))
             .build());
         return true;
+    }
+
+    /** Auktionsende: Hoechstbietender zahlt, Kopfgeld wird gesetzt. */
+    private void endAuction() {
+        if (auctionTarget == null) return;
+        UUID target = auctionTarget, bidder = highBidder;
+        double bid = highBid;
+        auctionTarget = null;
+        highBidder = null;
+        highBid = 0;
+
+        if (bidder == null || !plugin.economy().withdraw(bidder, bid)) {
+            Bukkit.broadcast(Component.text("Auktion beendet — der Bieter konnte nicht zahlen. Nichts passiert.", NamedTextColor.GRAY));
+            return;
+        }
+        plugin.bounties().add(target, bidder, bid);
+        Player t = Bukkit.getPlayer(target);
+        if (t != null) placeWantedSign(t);
+        Bukkit.broadcast(Component.text("AUKTION VORBEI! " + Bukkit.getOfflinePlayer(bidder).getName()
+            + " setzt " + HardcorePlugin.dollar(bid) + " Kopfgeld auf "
+            + Bukkit.getOfflinePlayer(target).getName() + "!", NamedTextColor.DARK_RED));
     }
 
     /** Fahndungsplakat am Spawn ab 1000$ Gesamt-Kopfgeld. */
