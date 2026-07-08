@@ -77,6 +77,20 @@ jobs:
             - Windows 10/11 · Ubuntu 22.04+ · macOS 12+
             - Java 21 (wird vom Launcher automatisch gefunden)
             - Microsoft Minecraft-Account oder Offline-Modus
+            - **Kein Admin-Konto nötig** — der Installer installiert nur für den aktuellen Benutzer (`currentUser`-Modus), keine UAC-Erhöhung erforderlich.
+
+            ### "Windows hat den Start dieser App geschützt" / Datei wird blockiert (z.B. Schul-Laptop)
+            Der Installer ist nicht mit einem kostenpflichtigen Zertifikat signiert, daher stuft SmartScreen ihn als unbekannt ein. Das ist **keine Warnung vor echter Schadsoftware** — nur fehlende Signatur-Reputation. So umgehst du es ohne Admin-Rechte:
+            1. Rechtsklick auf die heruntergeladene `.exe` → **Eigenschaften**
+            2. Ganz unten bei "Sicherheit": Häkchen bei **"Zulassen"** setzen → OK
+            3. Installer normal per Doppelklick starten
+
+            Alternativ in PowerShell (ohne Admin-Rechte):
+            ```
+            Unblock-File "$env:USERPROFILE\Downloads\Doofie.Client_*_x64-setup.exe"
+            ```
+
+            Falls dein Schul-Laptop per Richtlinie *jede* unsignierte Anwendung hart blockiert (kein "Trotzdem ausführen" verfügbar), hilft nur eine Freigabe durch die Schul-IT — das lässt sich clientseitig nicht umgehen.
           releaseDraft: false
           prerelease: false
           updaterJsonKeepUniversal: true
