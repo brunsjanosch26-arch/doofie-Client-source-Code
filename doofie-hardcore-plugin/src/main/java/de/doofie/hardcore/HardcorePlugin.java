@@ -21,6 +21,8 @@ import de.doofie.hardcore.commands.GerichtsduellCommand;
 import de.doofie.hardcore.commands.GildeCommand;
 import de.doofie.hardcore.commands.TestamentCommand;
 import de.doofie.hardcore.commands.WetteCommand;
+import de.doofie.hardcore.commands.HilfeCommand;
+import de.doofie.hardcore.commands.RtpCommand;
 import de.doofie.hardcore.listeners.ShopListener;
 import de.doofie.hardcore.managers.EventManager;
 import de.doofie.hardcore.managers.GuildManager;
@@ -113,6 +115,8 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("gerichtsduell").setExecutor(new GerichtsduellCommand(this));
         getCommand("testament").setExecutor(new TestamentCommand(this));
         getCommand("events").setExecutor(new EventsCommand(this));
+        getCommand("hilfe").setExecutor(new HilfeCommand(this));
+        getCommand("rtp").setExecutor(new RtpCommand(this));
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BanListener(this), this);

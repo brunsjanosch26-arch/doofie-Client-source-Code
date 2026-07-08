@@ -162,15 +162,18 @@ public class DeathListener implements Listener {
         // den Hardcore-Tod (Bann gibt es NUR ueber Kopfgeld).
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!player.isOnline()) return;
+            player.setGameMode(GameMode.SPECTATOR);
             if (plugin.bans().isBanned(player.getUniqueId())) {
-                player.setGameMode(GameMode.SPECTATOR);
                 double cost = plugin.bans().unbanCost(player.getUniqueId());
                 player.sendMessage(Component.text(
                     "Du wurdest per Kopfgeld gebannt! Freikauf: " + HardcorePlugin.dollar(cost)
-                    + " — nutze /freikaufen (oder lass dich von einem Freund freikaufen).",
+                    + " — /freikaufen zeigt dir deine Optionen (Joker oder zahlen).",
                     NamedTextColor.RED));
             } else {
-                player.setGameMode(GameMode.SURVIVAL);
+                plugin.bans().markDead(player.getUniqueId());
+                player.sendMessage(Component.text(
+                    "Du bist tot! Tippe /freikaufen und du bist GRATIS wieder im Spiel.",
+                    NamedTextColor.YELLOW));
             }
         }, 1L);
     }

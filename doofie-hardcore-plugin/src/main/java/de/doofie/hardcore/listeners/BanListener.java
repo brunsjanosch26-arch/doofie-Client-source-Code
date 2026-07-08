@@ -17,7 +17,7 @@ import java.util.Set;
 public class BanListener implements Listener {
 
     private static final Set<String> ALLOWED_COMMANDS = Set.of(
-        "freikaufen", "unbanme", "money", "geld", "balance", "bal", "kopfgeld", "bounty", "gerichtsduell", "testament"
+        "freikaufen", "unbanme", "money", "geld", "balance", "bal", "kopfgeld", "bounty", "gerichtsduell", "testament", "hilfe"
     );
 
     private final HardcorePlugin plugin;
@@ -29,6 +29,11 @@ public class BanListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        if (plugin.bans().isDead(player.getUniqueId())) {
+            player.setGameMode(GameMode.SPECTATOR);
+            player.sendMessage(Component.text("Du bist noch tot! /freikaufen bringt dich gratis zurueck.", NamedTextColor.YELLOW));
+            return;
+        }
         if (plugin.bans().isBanned(player.getUniqueId())) {
             player.setGameMode(GameMode.SPECTATOR);
             double cost = plugin.bans().unbanCost(player.getUniqueId());
@@ -44,7 +49,7 @@ public class BanListener implements Listener {
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
-        if (!plugin.bans().isBanned(player.getUniqueId())) return;
+        if (!plugin.bans().isBanned(player.getUniqueId()) && !plugin.bans().isDead(player.getUniqueId())) return;
 
         String cmd = event.getMessage().substring(1).split(" ")[0].toLowerCase(Locale.ROOT);
         if (!ALLOWED_COMMANDS.contains(cmd)) {

@@ -7,7 +7,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -25,6 +27,10 @@ public class BanManager {
     private final HardcorePlugin plugin;
     private final File file;
     private final Map<UUID, Ban> banned = new HashMap<>();
+    /** Normal Gestorbene, die auf ihren Gratis-Respawn warten. */
+    private final Set<UUID> dead = new HashSet<>();
+    /** Spieler, die ihren einmaligen Gratis-Joker schon verbraucht haben. */
+    private final Set<UUID> jokerUsed = new HashSet<>();
 
     public BanManager(HardcorePlugin plugin) {
         this.plugin = plugin;
@@ -50,12 +56,26 @@ public class BanManager {
     }
 
     public void unban(UUID player) { banned.remove(player); }
+
+    public void markDead(UUID player) { dead.add(player); }
+    public boolean isDead(UUID player) { return dead.contains(player); }
+    public void revive(UUID player) { dead.remove(player); }
+
+    public boolean hasJoker(UUID player) { return !jokerUsed.contains(player); }
+    public void useJoker(UUID player) { jokerUsed.add(player); }
     public Map<UUID, Ban> all() { return banned; }
 
     private void load() {
         if (!file.exists()) return;
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        for (String s : yaml.getStringList("_dead")) {
+            try { dead.add(UUID.fromString(s)); } catch (IllegalArgumentException ignored) {}
+        }
+        for (String s : yaml.getStringList("_joker_used")) {
+            try { jokerUsed.add(UUID.fromString(s)); } catch (IllegalArgumentException ignored) {}
+        }
         for (String key : yaml.getKeys(false)) {
+            if (key.startsWith("_")) continue;
             try {
                 UUID uuid = UUID.fromString(key);
                 Ban b = new Ban();
@@ -78,6 +98,8 @@ public class BanManager {
 
     public void save() {
         YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("_dead", dead.stream().map(UUID::toString).toList());
+        yaml.set("_joker_used", jokerUsed.stream().map(UUID::toString).toList());
         banned.forEach((uuid, b) -> {
             String key = uuid.toString();
             yaml.set(key + ".cost", b.cost);

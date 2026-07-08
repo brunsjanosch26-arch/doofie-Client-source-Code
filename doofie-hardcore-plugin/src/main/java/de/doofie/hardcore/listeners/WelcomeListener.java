@@ -48,6 +48,7 @@ public class WelcomeListener implements Listener {
             player.sendMessage(Component.text(" • Freikauf: /freikaufen — kostet das Kopfgeld +5%", NamedTextColor.GRAY));
             player.sendMessage(Component.text("   (Freunde koennen dich mit /freikaufen <name> retten)", NamedTextColor.GRAY));
             player.sendMessage(Component.text("════════════════════════════════", NamedTextColor.DARK_RED));
+            player.sendMessage(Component.text("Tippe /hilfe fuer das komplette Handbuch mit ALLEN Systemen!", NamedTextColor.GOLD));
         }, 40L);
     }
 }

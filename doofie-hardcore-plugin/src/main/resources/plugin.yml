@@ -86,3 +86,11 @@ commands:
   events:
     description: Aktuelles Weltevent anzeigen
     usage: /events
+  hilfe:
+    description: Das Doofie-Handbuch oeffnen
+    usage: /hilfe
+    aliases: [help2, handbuch]
+  rtp:
+    description: Zufaelliger sicherer Teleport
+    usage: /rtp
+    aliases: [wild]
