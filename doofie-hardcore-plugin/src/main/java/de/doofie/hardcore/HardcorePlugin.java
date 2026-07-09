@@ -146,6 +146,7 @@ public final class HardcorePlugin extends JavaPlugin {
         // Verkaufswert-Lore unter jedem Item aktuell halten
         loreUpdater = new LoreUpdater(this);
         loreUpdater.start();
+        getServer().getPluginManager().registerEvents(loreUpdater, this);
 
         // Alle 5 Minuten speichern
         getServer().getScheduler().runTaskTimer(this, this::saveAll, 20L * 300, 20L * 300);
