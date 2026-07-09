@@ -36,7 +36,7 @@ public class WelcomeListener implements Listener {
             player.sendMessage(Component.text(" • Du startest mit " + HardcorePlugin.dollar(start) + " Guthaben", NamedTextColor.GRAY));
             player.sendMessage(Component.text(" • /money — dein Guthaben | /pay <spieler> <betrag> — Geld senden", NamedTextColor.GRAY));
             player.sendMessage(Component.text(" • /sell — Verkaufsmenue: Items reinlegen, bestaetigen, Geld kassieren", NamedTextColor.GRAY));
-            player.sendMessage(Component.text(" • Der Verkaufswert steht unter jedem Item im Inventar", NamedTextColor.GRAY));
+            player.sendMessage(Component.text(" • Preise siehst du im /sell-Menue und im /ah", NamedTextColor.GRAY));
             player.sendMessage(Component.text(" • /ah — Auktionshaus: kaufen per Klick (Shift+Klick = ganzer Stack)", NamedTextColor.GRAY));
             player.sendMessage(Component.text(" • /ah sell <preis> — eigenes Item im /ah anbieten", NamedTextColor.GRAY));
             player.sendMessage(Component.empty());

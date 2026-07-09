@@ -27,7 +27,7 @@ public class HilfeCommand implements CommandExecutor {
         pages.add(page("BOUNTY SMP",
             "Willkommen im Handbuch!\n\nBlaettere durch die Seiten:\n\n2 Geld\n3 Tod & Freikauf\n4 Kopfgeld\n5 /ah & Shops\n6 Gilden\n7 Duelle & Wetten\n8 Events & Boerse\n9 Sonstiges\n\nViel Erfolg!"));
         pages.add(page("GELD",
-            "Start: 500$\n\n/money - Guthaben\n/pay <name> <betrag>\n/sell - Verkaufsmenue: Items reinlegen, gruener Knopf!\n\nDer Verkaufswert steht unter jedem Item.\n\n/daily - taegl. Belohnung\n/quests - Tagesauftraege\n/top geld - Rangliste"));
+            "Start: 500$\n\n/money - Guthaben\n/pay <name> <betrag>\n/sell - Verkaufsmenue: Items reinlegen, gruener Knopf!\n\nPreise siehst du im /sell-Menue und /ah.\n\n/daily - taegl. Belohnung\n/quests - Tagesauftraege\n/top geld - Rangliste"));
         pages.add(page("TOD & FREIKAUF",
             "JEDER Tod = Spectator!\n\nNormaler Tod:\n/freikaufen = GRATIS zurueck ins Leben.\n\nKopfgeld-Tod (von Spieler gekillt):\n/freikaufen joker = 1x im Leben gratis\n/freikaufen zahlen = Kopfgeld +5%\n\nFreunde helfen:\n/freikaufen <name>"));
         pages.add(page("KOPFGELD",
