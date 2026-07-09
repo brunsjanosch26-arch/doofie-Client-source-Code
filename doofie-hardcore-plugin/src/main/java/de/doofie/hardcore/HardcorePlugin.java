@@ -25,7 +25,10 @@ import de.doofie.hardcore.commands.HilfeCommand;
 import de.doofie.hardcore.commands.RtpCommand;
 import de.doofie.hardcore.commands.SidebarCommand;
 import de.doofie.hardcore.commands.InvseeCommand;
+import de.doofie.hardcore.commands.DoofieItemCommand;
 import de.doofie.hardcore.commands.SmpCommands;
+import de.doofie.hardcore.managers.CustomItems;
+import de.doofie.hardcore.listeners.ItemModelCleaner;
 import de.doofie.hardcore.managers.SmpExtras;
 import de.doofie.hardcore.managers.SidebarManager;
 import de.doofie.hardcore.listeners.ShopListener;
@@ -78,6 +81,7 @@ public final class HardcorePlugin extends JavaPlugin {
     private TestamentManager testament;
     private SidebarManager sidebar;
     private SmpExtras extras;
+    private CustomItems customItems;
     private NamespacedKey headKey;
 
     @Override
@@ -130,6 +134,7 @@ public final class HardcorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(rtp, this);
         getCommand("sidebar").setExecutor(new SidebarCommand(this));
         getCommand("invsee").setExecutor(new InvseeCommand(this));
+        getCommand("doofieitem").setExecutor(new DoofieItemCommand(this));
         SmpCommands smp = new SmpCommands(this);
         getCommand("pass").setExecutor(smp);
         getCommand("statistik").setExecutor(smp);
@@ -142,6 +147,16 @@ public final class HardcorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new WelcomeListener(this), this);
         getServer().getPluginManager().registerEvents(new GameListener(this), this);
         getServer().getPluginManager().registerEvents(new ShopListener(this), this);
+
+        // Custom-Items: Hermes-Ruestung, Legendaerer Doener, Goetterspeer
+        customItems = new CustomItems(this);
+        customItems.start();
+        getServer().getPluginManager().registerEvents(customItems, this);
+
+        // Raeumt die frueher gestempelten item_models von normalen Items weg
+        ItemModelCleaner cleaner = new ItemModelCleaner(this);
+        cleaner.start();
+        getServer().getPluginManager().registerEvents(cleaner, this);
 
         // Verkaufswert-Lore unter jedem Item aktuell halten
         loreUpdater = new LoreUpdater(this);
@@ -192,6 +207,7 @@ public final class HardcorePlugin extends JavaPlugin {
     public TestamentManager testament() { return testament; }
     public SidebarManager sidebar() { return sidebar; }
     public SmpExtras extras() { return extras; }
+    public CustomItems customItems() { return customItems; }
     public NamespacedKey headKey() { return headKey; }
 
     /**

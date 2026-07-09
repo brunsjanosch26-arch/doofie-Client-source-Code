@@ -113,8 +113,16 @@ commands:
     description: Fremdes Inventar einsehen (Admin)
     usage: "/invsee <spieler> [ender]"
     permission: doofie.invsee
+  doofieitem:
+    description: Custom-Items vergeben (Admin) — Hermes-Ruestung gibts NUR hierueber
+    usage: "/doofieitem give <spieler> <set|helm|brust|hose|schuhe|doener|speer>"
+    permission: doofie.items
+    aliases: [citem]
 
 permissions:
   doofie.invsee:
     description: Erlaubt /invsee
+    default: op
+  doofie.items:
+    description: Erlaubt /doofieitem (Custom-Items vergeben)
     default: op
