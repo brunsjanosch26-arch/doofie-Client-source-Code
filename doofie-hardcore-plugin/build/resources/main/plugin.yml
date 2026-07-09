@@ -114,8 +114,8 @@ commands:
     usage: "/invsee <spieler> [ender]"
     permission: doofie.invsee
   doofieitem:
-    description: Custom-Items vergeben (Admin) — Hermes-Ruestung gibts NUR hierueber
-    usage: "/doofieitem give <spieler> <set|helm|brust|hose|schuhe|doener|speer>"
+    description: Custom-Items vergeben (Admin) — Element-Ruestungen gibts NUR hierueber
+    usage: "/doofieitem give <spieler> <doener|speer|feuer_set|wasser_helm|...>"
     permission: doofie.items
     aliases: [citem]
 

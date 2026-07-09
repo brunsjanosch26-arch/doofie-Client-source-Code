@@ -22,6 +22,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -85,8 +86,21 @@ public class CustomItems implements Listener {
     /** Startet den Effekt-Task und registriert die Crafting-Rezepte. */
     public void start() {
         registerRecipes();
+        // Bereits online (Plugin-Reload): Rezepte sofort ins Rezeptbuch
+        Bukkit.getOnlinePlayers().forEach(this::discoverRecipes);
         // Alle 3 Sekunden: Set-Boni pruefen (Effektdauer 5s, damit nichts flackert)
         Bukkit.getScheduler().runTaskTimer(plugin, this::applyArmorEffects, 60L, 60L);
+    }
+
+    /** Schaltet die Custom-Rezepte im Rezeptbuch frei. */
+    private void discoverRecipes(Player p) {
+        p.discoverRecipe(new NamespacedKey(plugin, "doener"));
+        p.discoverRecipe(new NamespacedKey(plugin, "goetterspeer"));
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        discoverRecipes(event.getPlayer());
     }
 
     // ────────────────────────── Item-Fabrik ──────────────────────────
