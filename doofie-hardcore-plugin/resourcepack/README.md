@@ -14,6 +14,10 @@ Vanilla-Textur (das frühere Stempeln aller Items ist zurückgenommen; der
 | Hermes-Brustplatte | `doofie:hermes_brust` | vorerst Vanilla |
 | Hermes-Beinschutz | `doofie:hermes_hose` | vorerst Vanilla |
 | Hermes-Sandalen | `doofie:hermes_schuhe` | vorerst Vanilla |
+| Feuer-Rüstung (4 Teile) | `doofie:feuer_helm/brust/hose/schuhe` | Dungeons-Icons „Hovering Inferno" |
+| Wasser-Rüstung (4 Teile) | `doofie:wasser_helm/brust/hose/schuhe` | Dungeons-Icons „Ocean Depths" |
+| Erde-Rüstung (4 Teile) | `doofie:erde_helm/brust/hose/schuhe` | Dungeons-Icons „Geomancer Robe" |
+| Luft-Rüstung (4 Teile) | `doofie:luft_helm/brust/hose/schuhe` | Dungeons-Icons „Emerald Gale" |
 
 ## Installation
 
