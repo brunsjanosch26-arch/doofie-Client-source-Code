@@ -8,6 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -47,13 +49,18 @@ import java.util.UUID;
 /**
  * Custom-Items des Bounty SMP:
  *
- * — ELEMENT-RUESTUNGEN (nur per Admin-Command /doofieitem, volles 4er-Set noetig):
- *   FEUER:  Deine Schlaege zuenden Gegner 5 Sekunden an.
- *   WASSER: Wasseratmung + Conduit-Kraft, Nachtsicht unter Wasser.
- *   ERDE:   Rechtsklick mit leerer Hand reisst Erdbloecke im 10x10-Bereich
- *           hoch; nochmal Rechtsklick feuert sie ab (6 Herzen) — Auto-Aim
- *           auf den naechsten Mob, sonst exakt in Blickrichtung.
- *   LUFT:   Schnelligkeit III + Sprungkraft III + kein Fallschaden.
+ * — ELEMENT-RUESTUNGEN (nur per Admin-Command /doofieitem, volles 4er-Set noetig;
+ *   aktive Faehigkeit jeweils per Rechtsklick mit leerer Hand):
+ *   FEUER:  Schlaege zuenden Gegner an. Aktiv: Flammensturm — alle Gegner
+ *           im 8er-Umkreis brennen 10s und nehmen 3 Herzen (10s Cooldown).
+ *   WASSER: Wasseratmung + Conduit-Kraft, Nachtsicht unter Wasser. Aktiv:
+ *           Gezeitenwelle — schleudert Gegner im 8er-Umkreis weg, 2 Herzen
+ *           + Slowness III (10s Cooldown).
+ *   ERDE:   Aktiv: Erdbloecke im 10x10-Bereich ballen sich zur Kanonenkugel
+ *           ueber dir; nochmal Rechtsklick feuert sie ab (6 Herzen) —
+ *           Auto-Aim/Homing auf den naechsten Mob, sonst Blickrichtung.
+ *   LUFT:   Schnelligkeit III + Sprungkraft III + kein Fallschaden. Aktiv:
+ *           Windschub — katapultiert dich in Blickrichtung (5s Cooldown).
  *
  * — LEGENDAERER DOENER (craftbar, richtig teuer):
  *   Fuellt den Hunger komplett und gibt Eile II (15 Min), Staerke II (10 Min),
@@ -61,7 +68,9 @@ import java.util.UUID;
  *   Schnelligkeit III (15 Min) und Saettigung IV (5 Min).
  *
  * — GOETTERSPEER (craftbar, krank teuer):
- *   Netherite-Speer mit Sharpness VI und Unbreakable.
+ *   Netherite-Speer mit Sharpness VI, Lunge V und Unbreakable. In der Hand:
+ *   Staerke II, Schnelligkeit II, Resistenz I — und alle 5s trifft ein Blitz
+ *   den naechsten Gegner im 6er-Umkreis (5 Herzen).
  *
  * Jedes Item bekommt ein item_model (Namespace 'doofie'), damit es per
  * Resource Pack umtexturiert werden kann — siehe resourcepack/README.md.
@@ -81,6 +90,10 @@ public class CustomItems implements Listener {
     private final Map<UUID, List<FallingBlock>> erdeGeladen = new HashMap<>();
     /** Erde-Set: Cooldown-Ende pro Spieler (ms) */
     private final Map<UUID, Long> erdeCooldown = new HashMap<>();
+    /** Goetterspeer: Blitz-Cooldown-Ende pro Spieler (ms) */
+    private final Map<UUID, Long> blitzCooldown = new HashMap<>();
+    /** Feuer/Wasser/Luft: Faehigkeits-Cooldown-Ende pro Spieler+Set (ms) */
+    private final Map<String, Long> abilityCooldown = new HashMap<>();
 
     public CustomItems(HardcorePlugin plugin) {
         this.plugin = plugin;
@@ -173,11 +186,16 @@ public class CustomItems implements Listener {
             case "feuer" -> unbreakableArmor(armorMaterial(teil), "feuer_" + teil,
                 "Feuer-" + teilName(teil), NamedTextColor.RED,
                 List.of("Teil der Feuer-Ruestung.",
-                    "Volles Set: Deine Schlaege zuenden", "Gegner 5 Sekunden an."));
+                    "Volles Set: Schlaege zuenden Gegner an.",
+                    "Rechtsklick (leere Hand): Flammensturm —",
+                    "Gegner im 8er-Umkreis brennen (3 Herzen)."));
             case "wasser" -> unbreakableArmor(armorMaterial(teil), "wasser_" + teil,
                 "Wasser-" + teilName(teil), NamedTextColor.BLUE,
                 List.of("Teil der Wasser-Ruestung.",
-                    "Volles Set: Wasseratmung, Conduit-Kraft", "und Nachtsicht unter Wasser."));
+                    "Volles Set: Wasseratmung, Conduit-Kraft,",
+                    "Nachtsicht unter Wasser. Rechtsklick",
+                    "(leere Hand): Gezeitenwelle — schleudert",
+                    "Gegner weg (2 Herzen + Slowness III)."));
             case "erde" -> unbreakableArmor(armorMaterial(teil), "erde_" + teil,
                 "Erd-" + teilName(teil), NamedTextColor.DARK_GREEN,
                 List.of("Teil der Erd-Ruestung.",
@@ -188,7 +206,10 @@ public class CustomItems implements Listener {
             default -> unbreakableArmor(armorMaterial(teil), "luft_" + teil,
                 "Luft-" + teilName(teil), NamedTextColor.WHITE,
                 List.of("Teil der Luft-Ruestung.",
-                    "Volles Set: Schnelligkeit III,", "Sprungkraft III, kein Fallschaden."));
+                    "Volles Set: Schnelligkeit III,",
+                    "Sprungkraft III, kein Fallschaden.",
+                    "Rechtsklick (leere Hand): Windschub —",
+                    "katapultiert dich in Blickrichtung."));
         };
     }
 
@@ -214,9 +235,13 @@ public class CustomItems implements Listener {
         ItemStack item = tagged(Material.NETHERITE_SPEAR, "goetterspeer",
             "Götterspeer", NamedTextColor.LIGHT_PURPLE,
             List.of("Geschmiedet aus Sternenstaub und Groessenwahn.",
-                "Sharpness VI · Unzerstoerbar"));
+                "Sharpness VI · Lunge V · Unzerstoerbar",
+                "In der Hand: Staerke II, Schnelligkeit II,",
+                "Resistenz I — und Zeus persoenlich blitzt",
+                "nahe Gegner weg (5 Herzen, alle 5s)."));
         ItemMeta meta = item.getItemMeta();
         meta.addEnchant(Enchantment.SHARPNESS, 6, true);
+        meta.addEnchant(Enchantment.LUNGE, 5, true);
         meta.setUnbreakable(true);
         item.setItemMeta(meta);
         return item;
@@ -297,7 +322,35 @@ public class CustomItems implements Listener {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 2, true, false, true));
                 p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 100, 2, true, false, true));
             }
+
+            speerEffekte(p);
         }
+    }
+
+    // ────────────────────────── Goetterspeer: Buffs + Auto-Blitz ──────────────────────────
+
+    /** Speer in Haupt- oder Nebenhand: permanente Buffs + Blitz auf den naechsten Gegner. */
+    private void speerEffekte(Player p) {
+        if (!is(p.getInventory().getItemInMainHand(), "goetterspeer")
+            && !is(p.getInventory().getItemInOffHand(), "goetterspeer")) return;
+
+        p.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 100, 1, true, false, true));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 1, true, false, true));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 100, 0, true, false, true));
+
+        // Auto-Blitz: naechster Gegner im 6er-Umkreis (auch unter dir), alle 5s
+        long jetzt = System.currentTimeMillis();
+        Long cd = blitzCooldown.get(p.getUniqueId());
+        if (cd != null && cd > jetzt) return;
+        p.getWorld().getNearbyEntitiesByType(LivingEntity.class, p.getLocation(), 6).stream()
+            .filter(e -> !e.equals(p))
+            .min(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(p.getLocation())))
+            .ifPresent(ziel -> {
+                p.getWorld().strikeLightningEffect(ziel.getLocation());
+                ziel.damage(10.0, p); // 5 Herzen
+                ziel.setFireTicks(60);
+                blitzCooldown.put(p.getUniqueId(), jetzt + 5_000);
+            });
     }
 
     // ────────────────────────── Feuer: Schlaege zuenden an ──────────────────────────
@@ -326,15 +379,82 @@ public class CustomItems implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Player p = event.getPlayer();
         if (!p.getInventory().getItemInMainHand().getType().isAir()) return; // nur leere Hand
-        if (!fullSet(p, "erde")) return;
 
-        List<FallingBlock> geladen = erdeGeladen.get(p.getUniqueId());
-        if (geladen != null) {
-            feuerErdbloeckeAb(p, geladen);
-        } else {
-            ladeErdbloecke(p);
+        if (fullSet(p, "erde")) {
+            List<FallingBlock> geladen = erdeGeladen.get(p.getUniqueId());
+            if (geladen != null) {
+                feuerErdbloeckeAb(p, geladen);
+            } else {
+                ladeErdbloecke(p);
+            }
+            event.setCancelled(true);
+        } else if (fullSet(p, "feuer")) {
+            feuersturm(p);
+            event.setCancelled(true);
+        } else if (fullSet(p, "wasser")) {
+            gezeitenwelle(p);
+            event.setCancelled(true);
+        } else if (fullSet(p, "luft")) {
+            windschub(p);
+            event.setCancelled(true);
         }
-        event.setCancelled(true);
+    }
+
+    // ────────────────────────── Aktive Set-Faehigkeiten (Rechtsklick, leere Hand) ──────────────────────────
+
+    /** true, wenn die Faehigkeit bereit ist; setzt dann direkt den neuen Cooldown. */
+    private boolean abilityBereit(Player p, String set, long cooldownMs, NamedTextColor farbe) {
+        long jetzt = System.currentTimeMillis();
+        Long cd = abilityCooldown.get(p.getUniqueId() + ":" + set);
+        if (cd != null && cd > jetzt) {
+            p.sendMessage(Component.text("Kraft laedt noch " + ((cd - jetzt) / 1000 + 1)
+                + "s auf...", farbe));
+            return false;
+        }
+        abilityCooldown.put(p.getUniqueId() + ":" + set, jetzt + cooldownMs);
+        return true;
+    }
+
+    /** FEUER: Flammensturm — alle Gegner im 8er-Umkreis brennen und nehmen 3 Herzen. */
+    private void feuersturm(Player p) {
+        if (!abilityBereit(p, "feuer", 10_000, NamedTextColor.RED)) return;
+        int getroffen = 0;
+        for (LivingEntity ziel : p.getWorld().getNearbyEntitiesByType(LivingEntity.class, p.getLocation(), 8)) {
+            if (ziel.equals(p)) continue;
+            ziel.damage(6.0, p);
+            ziel.setFireTicks(200); // 10 Sekunden
+            getroffen++;
+        }
+        p.getWorld().spawnParticle(Particle.FLAME, p.getLocation().add(0, 1, 0), 300, 4, 1.5, 4, 0.05);
+        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1f, 0.7f);
+        p.sendMessage(Component.text("Flammensturm! " + getroffen + " Gegner brennen.", NamedTextColor.RED));
+    }
+
+    /** WASSER: Gezeitenwelle — schleudert Gegner im 8er-Umkreis weg, 2 Herzen + Slowness III. */
+    private void gezeitenwelle(Player p) {
+        if (!abilityBereit(p, "wasser", 10_000, NamedTextColor.BLUE)) return;
+        int getroffen = 0;
+        for (LivingEntity ziel : p.getWorld().getNearbyEntitiesByType(LivingEntity.class, p.getLocation(), 8)) {
+            if (ziel.equals(p)) continue;
+            ziel.damage(4.0, p);
+            ziel.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 100, 2));
+            Vector weg = ziel.getLocation().toVector().subtract(p.getLocation().toVector());
+            if (weg.lengthSquared() < 0.01) weg = new Vector(1, 0, 0);
+            ziel.setVelocity(weg.normalize().multiply(2.0).setY(0.6));
+            getroffen++;
+        }
+        p.getWorld().spawnParticle(Particle.SPLASH, p.getLocation().add(0, 1, 0), 500, 4, 1.5, 4, 0.1);
+        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_SPLASH, 1f, 0.8f);
+        p.sendMessage(Component.text("Gezeitenwelle! " + getroffen + " Gegner weggespuelt.", NamedTextColor.BLUE));
+    }
+
+    /** LUFT: Windschub — katapultiert dich in Blickrichtung (kein Fallschaden dank Set). */
+    private void windschub(Player p) {
+        if (!abilityBereit(p, "luft", 5_000, NamedTextColor.WHITE)) return;
+        p.setVelocity(p.getEyeLocation().getDirection().clone().multiply(2.5).add(new Vector(0, 0.6, 0)));
+        p.getWorld().spawnParticle(Particle.CLOUD, p.getLocation(), 60, 0.5, 0.3, 0.5, 0.1);
+        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BREEZE_SHOOT, 1f, 1.2f);
+        p.sendMessage(Component.text("Windschub!", NamedTextColor.WHITE));
     }
 
     /** Phase 1: Erdbloecke im 10x10-Bereich aus dem Boden reissen, sie schweben. */
@@ -371,17 +491,22 @@ public class CustomItems implements Listener {
             return;
         }
 
-        // Nach dem Hochreissen schweben lassen
+        // Nach dem Hochreissen zur Kanonenkugel ueber dem Spieler zusammenballen
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            List<Vector> offsets = kugelOffsets(bloecke.size());
+            Location zentrum = p.getEyeLocation().add(0, 3, 0);
+            int i = 0;
             for (FallingBlock fb : bloecke) {
                 if (!fb.isValid()) continue;
                 fb.setGravity(false);
                 fb.setVelocity(new Vector(0, 0, 0));
+                fb.teleport(zentrum.clone().add(offsets.get(i++)));
             }
         }, 12L);
 
         erdeGeladen.put(p.getUniqueId(), bloecke);
-        p.sendMessage(Component.text(bloecke.size() + " Erdbloecke schweben — Rechtsklick zum Abfeuern!",
+        p.sendMessage(Component.text("Erd-Kanonenkugel (" + bloecke.size()
+            + " Bloecke) schwebt ueber dir — Rechtsklick zum Abfeuern!",
             NamedTextColor.DARK_GREEN));
 
         // Sicherheit: nach 30s ohne Abfeuern loesen sich die Bloecke auf
@@ -445,6 +570,17 @@ public class CustomItems implements Listener {
     /** Koerpermitte eines Mobs als Zielpunkt. */
     private static Vector mitte(Mob m) {
         return m.getLocation().toVector().add(new Vector(0, m.getHeight() / 2, 0));
+    }
+
+    /** Offsets fuer eine dichte Kugel-Formation: von innen nach aussen gefuellt. */
+    private static List<Vector> kugelOffsets(int anzahl) {
+        List<Vector> alle = new ArrayList<>();
+        for (int x = -2; x <= 2; x++)
+            for (int y = -2; y <= 2; y++)
+                for (int z = -2; z <= 2; z++)
+                    alle.add(new Vector(x, y, z));
+        alle.sort(Comparator.comparingDouble(Vector::lengthSquared));
+        return alle.subList(0, Math.min(anzahl, alle.size()));
     }
 
     /** Abgefeuerte/schwebende Erdbloecke duerfen nicht als Block landen. */
