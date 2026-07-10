@@ -64,6 +64,9 @@ import java.util.UUID;
  *           Auto-Aim/Homing auf den naechsten Mob, sonst Blickrichtung.
  *           Sneak+Rechtsklick toggelt den Bloecke-Essen-Modus: Rechtsklick
  *           verspeist jeden Block, Hungerkeulen je nach Verkaufswert.
+ *           Rechtsklick mit beliebigem Schwert: ORBITAL STRIKE — ~300
+ *           explosive Erd-Bomben regnen in 10 Schichten auf deine Position
+ *           (Schuetze immun, Krater fuellt sich wieder auf, 10 Min Cooldown).
  *   LUFT:   Schnelligkeit III + Sprungkraft III + kein Fallschaden. Aktiv:
  *           Windschub — katapultiert dich in Blickrichtung (5s Cooldown).
  *
@@ -84,6 +87,7 @@ import java.util.UUID;
 public class CustomItems implements Listener {
 
     private static final String ERDE_TAG = "doofie_erde";
+    private static final String NUKE_TAG = "doofie_nuke";
     private static final Set<Material> ERDBLOECKE = Set.of(
         Material.DIRT, Material.GRASS_BLOCK, Material.COARSE_DIRT,
         Material.ROOTED_DIRT, Material.PODZOL, Material.MYCELIUM,
@@ -102,6 +106,8 @@ public class CustomItems implements Listener {
     private final Map<String, Long> abilityCooldown = new HashMap<>();
     /** Erde-Set: Spieler mit aktivem Bloecke-Essen-Modus (Toggle per Sneak+Rechtsklick) */
     private final Set<UUID> erdeEssenModus = new HashSet<>();
+    /** Orbital Strike: Ende der Explosions-Immunitaet des Schuetzen (ms) */
+    private final Map<UUID, Long> nukeImmun = new HashMap<>();
 
     public CustomItems(HardcorePlugin plugin) {
         this.plugin = plugin;
@@ -402,6 +408,14 @@ public class CustomItems implements Listener {
         if (event.getHand() != EquipmentSlot.HAND) return;
         if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Player p = event.getPlayer();
+        // Erd-Set + beliebiges Schwert (Holz bis Netherite): ORBITAL STRIKE
+        if (p.getInventory().getItemInMainHand().getType().name().endsWith("_SWORD")
+            && fullSet(p, "erde")) {
+            orbitalStrike(p);
+            event.setCancelled(true);
+            return;
+        }
+
         if (!p.getInventory().getItemInMainHand().getType().isAir()) return; // nur leere Hand
 
         if (fullSet(p, "erde")) {
@@ -652,9 +666,98 @@ public class CustomItems implements Listener {
     /** Abgefeuerte/schwebende Erdbloecke duerfen nicht als Block landen. */
     @EventHandler
     public void onErdblockLandet(EntityChangeBlockEvent event) {
+        // Orbital-Strike-Bombe: beim Aufschlag explodieren statt landen
+        if (event.getEntity().getScoreboardTags().contains(NUKE_TAG)) {
+            event.setCancelled(true);
+            Location loc = event.getEntity().getLocation();
+            event.getEntity().remove();
+            loc.getWorld().createExplosion(loc, 4f, false, true);
+            return;
+        }
         if (!event.getEntity().getScoreboardTags().contains(ERDE_TAG)) return;
         event.setCancelled(true);
         event.getEntity().remove();
+    }
+
+    // ────────────────────────── Erde: Orbital Strike (Nuke Shot) ──────────────────────────
+
+    /**
+     * Rechtsklick mit beliebigem Schwert + volles Erd-Set: Orbital Strike auf
+     * die eigene Position — 10 Schichten explosive Erde regnen vom Himmel
+     * (wie der Orbital-Strike-Cannon-Nuke-Shot, nur mit Erde statt TNT).
+     * Der Schuetze ist immun, der Krater fuellt sich danach mit Erde auf.
+     */
+    private void orbitalStrike(Player p) {
+        if (!abilityBereit(p, "orbital", 600_000, NamedTextColor.DARK_GREEN)) return; // 10 Min
+        Location zentrum = p.getLocation();
+        var welt = zentrum.getWorld();
+
+        // Alte Bodenhoehen im Umkreis merken, um den Krater spaeter aufzufuellen
+        int radius = 24;
+        int[][] alteHoehen = new int[radius * 2 + 1][radius * 2 + 1];
+        for (int dx = -radius; dx <= radius; dx++)
+            for (int dz = -radius; dz <= radius; dz++)
+                alteHoehen[dx + radius][dz + radius] =
+                    welt.getHighestBlockYAt(zentrum.getBlockX() + dx, zentrum.getBlockZ() + dz);
+
+        // Explosions-Immunitaet fuer den Schuetzen, solange der Regen faellt
+        nukeImmun.put(p.getUniqueId(), System.currentTimeMillis() + 45_000);
+
+        welt.playSound(zentrum, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 4f, 0.5f);
+        p.sendMessage(Component.text("ORBITAL STRIKE! In Deckung — die Erde kommt von oben.",
+            NamedTextColor.DARK_GREEN));
+
+        // 10 Schichten a ~30 Erd-Bomben (~300 gesamt), im Abstand von 8 Ticks
+        for (int schicht = 0; schicht < 10; schicht++) {
+            final int s = schicht;
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                for (int dx = -5; dx <= 5; dx += 2) {
+                    for (int dz = -5; dz <= 5; dz += 2) {
+                        if (dx * dx + dz * dz > 27) continue;
+                        Location spawn = zentrum.clone().add(
+                            dx + Math.random() - 0.5, 45 + s * 3, dz + Math.random() - 0.5);
+                        FallingBlock bombe = welt.spawnFallingBlock(spawn, Material.DIRT.createBlockData());
+                        bombe.setDropItem(false);
+                        bombe.setHurtEntities(false);
+                        bombe.addScoreboardTag(NUKE_TAG);
+                        bombe.setVelocity(new Vector(0, -1.4, 0));
+                    }
+                }
+            }, s * 8L);
+        }
+
+        // Nach 25s: Krater bis zur alten Bodenhoehe mit Erde auffuellen (gebatcht)
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            List<Block> zuFuellen = new ArrayList<>();
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    int altY = alteHoehen[dx + radius][dz + radius];
+                    for (int y = altY; y > altY - 40; y--) {
+                        Block b = welt.getBlockAt(zentrum.getBlockX() + dx, y, zentrum.getBlockZ() + dz);
+                        if (!b.getType().isAir()) break; // erster fester Block: Saeule fertig
+                        zuFuellen.add(b);
+                    }
+                }
+            }
+            // 400 Bloecke pro Tick setzen, damit nichts ruckelt
+            Bukkit.getScheduler().runTaskTimer(plugin, task -> {
+                int budget = 400;
+                while (budget-- > 0 && !zuFuellen.isEmpty()) {
+                    zuFuellen.remove(zuFuellen.size() - 1).setType(Material.DIRT);
+                }
+                if (zuFuellen.isEmpty()) task.cancel();
+            }, 1L, 1L);
+        }, 20L * 25);
+    }
+
+    /** Der Orbital-Strike-Schuetze ist gegen die eigenen Explosionen immun. */
+    @EventHandler
+    public void onNukeSchaden(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player p)) return;
+        if (event.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
+            && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) return;
+        Long ende = nukeImmun.get(p.getUniqueId());
+        if (ende != null && ende > System.currentTimeMillis()) event.setCancelled(true);
     }
 
     // ────────────────────────── Doener-Buff ──────────────────────────
