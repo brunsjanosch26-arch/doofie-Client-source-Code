@@ -87,6 +87,9 @@ public class AuctionGuiListener implements Listener {
         "doener", 2500.0,
         "goetterspeer", 30000.0);
 
+    /** Diese Server-Angebote gibt es nur EIN einziges Mal — danach sind sie weg. */
+    private static final java.util.Set<String> EINMALIG = java.util.Set.of("goetterspeer");
+
     /**
      * Eintrag im GUI: Server-Material, Server-Custom-Item (customId)
      * oder Spieler-Auktion (auctionId).
@@ -165,6 +168,7 @@ public class AuctionGuiListener implements Listener {
 
         switch (katId) {
             case "legendaer" -> legendaerAngebot(plugin).forEach((id, preis) -> {
+                if (EINMALIG.contains(id) && plugin.auctions().istEinmaligVerkauft(id)) return;
                 if (plugin.customItems().byId(id) != null && preis > 0)
                     entries.add(new SlotEntry(null, id, preis, null));
             });
@@ -240,7 +244,12 @@ public class AuctionGuiListener implements Listener {
                 if (existing.hasLore() && existing.lore() != null) lore.addAll(existing.lore());
                 lore.add(Component.text("Verkauft von: Server", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
                 lore.add(Component.text("Preis: " + HardcorePlugin.dollar(entry.price()), NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-                lore.add(Component.text("Vorrat: unbegrenzt", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+                if (EINMALIG.contains(entry.customId())) {
+                    lore.add(Component.text("EINMALIGES ANGEBOT — nur 1x auf dem", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
+                    lore.add(Component.text("ganzen Server, dann fuer immer weg!", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
+                } else {
+                    lore.add(Component.text("Vorrat: unbegrenzt", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+                }
                 lore.add(Component.text("Klick: 1 kaufen", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
             } else {
                 Auction a = plugin.auctions().byId(entry.auctionId());
@@ -330,9 +339,20 @@ public class AuctionGuiListener implements Listener {
 
         // ── Server-Custom-Item (Legendaer) ──
         if (entry.customId() != null) {
+            if (EINMALIG.contains(entry.customId()) && plugin.auctions().istEinmaligVerkauft(entry.customId())) {
+                player.sendMessage(Component.text("Zu spaet — das Angebot ist schon weg!", NamedTextColor.RED));
+                openKategorie(plugin, player, holder.kategorie, holder.page);
+                return;
+            }
             if (!plugin.economy().withdraw(player.getUniqueId(), entry.price())) {
                 player.sendMessage(Component.text("Nicht genug Geld! (" + HardcorePlugin.dollar(entry.price()) + ")", NamedTextColor.RED));
                 return;
+            }
+            if (EINMALIG.contains(entry.customId())) {
+                plugin.auctions().markiereEinmaligVerkauft(entry.customId());
+                Bukkit.broadcast(Component.text(player.getName()
+                    + " hat das einmalige Legendaer-Angebot aus dem /ah gekauft — es ist fuer immer weg!",
+                    NamedTextColor.LIGHT_PURPLE));
             }
             giveOrDrop(player, plugin.customItems().byId(entry.customId()));
             player.sendMessage(Component.text()

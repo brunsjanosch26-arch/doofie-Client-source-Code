@@ -8,7 +8,9 @@ import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -54,12 +56,33 @@ public class AuctionManager {
 
     private final HardcorePlugin plugin;
     private final File file;
+    private final File einmaligFile;
     private final List<Auction> auctions = new ArrayList<>();
+    /** Einmalige Server-Angebote (z.B. Goetterspeer), die schon weg sind. */
+    private final Set<String> einmaligVerkauft = new HashSet<>();
 
     public AuctionManager(HardcorePlugin plugin) {
         this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "auctions.yml");
+        this.einmaligFile = new File(plugin.getDataFolder(), "ah-einmalig.yml");
         load();
+    }
+
+    /** Wurde dieses einmalige Server-Angebot schon verkauft? */
+    public boolean istEinmaligVerkauft(String id) {
+        return einmaligVerkauft.contains(id);
+    }
+
+    /** Einmaliges Server-Angebot als verkauft markieren (sofort persistiert). */
+    public void markiereEinmaligVerkauft(String id) {
+        einmaligVerkauft.add(id);
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("verkauft", new ArrayList<>(einmaligVerkauft));
+        try {
+            yaml.save(einmaligFile);
+        } catch (IOException e) {
+            plugin.getLogger().warning("Konnte ah-einmalig.yml nicht speichern: " + e.getMessage());
+        }
     }
 
     public List<Auction> all() {
@@ -98,6 +121,10 @@ public class AuctionManager {
     }
 
     private void load() {
+        if (einmaligFile.exists()) {
+            einmaligVerkauft.addAll(
+                YamlConfiguration.loadConfiguration(einmaligFile).getStringList("verkauft"));
+        }
         if (!file.exists()) return;
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
         for (String key : yaml.getKeys(false)) {
