@@ -13,24 +13,22 @@ freikauf-aufschlag: 0.05
 # Aufschlag fuer Server-Angebote im Auktionshaus (0.05 = 5% teurer als der Verkaufspreis)
 ah-aufschlag: 0.05
 
-# Dauerhafte Server-Angebote im /ah (unbegrenzter Vorrat, Preis = Verkaufspreis + Aufschlag)
-ah-startangebot:
-  - BREAD
-  - COOKED_BEEF
-  - COOKED_PORKCHOP
-  - COOKED_CHICKEN
-  - COOKED_MUTTON
-  - COOKED_RABBIT
-  - COOKED_COD
-  - COOKED_SALMON
-  - BAKED_POTATO
-  - GOLDEN_CARROT
-  - ARROW
-  - TORCH
-  - OAK_PLANKS
-  - LADDER
-  - BONE
-  - STRING
+# Server-Angebote im /ah nach Kategorie (unbegrenzter Vorrat,
+# Preis = Verkaufspreis + Aufschlag). Kategorien: starter, pvp, bauen,
+# essen, redstone, werkzeug. Ohne Eintrag greift das eingebaute
+# Standard-Sortiment der jeweiligen Kategorie — hier kann man es ueberschreiben:
+# ah-kategorien:
+#   starter:
+#     - BREAD
+#     - TORCH
+#   pvp:
+#     - DIAMOND_SWORD
+
+# Preise der Legendaer-Kategorie (Custom-Items, Server-Verkauf).
+# Standard: doener 2500, goetterspeer 30000 — hier ueberschreibbar:
+# ah-legendaer:
+#   doener: 2500.0
+#   goetterspeer: 30000.0
 
 # Kopf-Trophaee: Anteil des Kopfgelds als Verkaufswert des gedroppten Kopfes
 kopf-bonus: 0.10
