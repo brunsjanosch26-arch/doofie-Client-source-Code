@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,6 +37,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +51,8 @@ import java.util.UUID;
  *   FEUER:  Deine Schlaege zuenden Gegner 5 Sekunden an.
  *   WASSER: Wasseratmung + Conduit-Kraft, Nachtsicht unter Wasser.
  *   ERDE:   Rechtsklick mit leerer Hand reisst Erdbloecke im 10x10-Bereich
- *           hoch; nochmal Rechtsklick feuert sie als Geschosse ab.
+ *           hoch; nochmal Rechtsklick feuert sie ab (6 Herzen) — Auto-Aim
+ *           auf den naechsten Mob, sonst exakt in Blickrichtung.
  *   LUFT:   Schnelligkeit III + Sprungkraft III + kein Fallschaden.
  *
  * — LEGENDAERER DOENER (craftbar, richtig teuer):
@@ -180,7 +183,8 @@ public class CustomItems implements Listener {
                 List.of("Teil der Erd-Ruestung.",
                     "Volles Set: Rechtsklick mit leerer Hand",
                     "reisst Erdbloecke hoch (10x10) —",
-                    "nochmal Rechtsklick feuert sie ab!"));
+                    "nochmal Rechtsklick feuert sie ab!",
+                    "Auto-Aim auf den naechsten Mob, 6 Herzen."));
             default -> unbreakableArmor(armorMaterial(teil), "luft_" + teil,
                 "Luft-" + teilName(teil), NamedTextColor.WHITE,
                 List.of("Teil der Luft-Ruestung.",
@@ -388,28 +392,42 @@ public class CustomItems implements Listener {
         }, 20L * 30);
     }
 
-    /** Phase 2: Die schwebenden Bloecke in Blickrichtung abfeuern. */
+    /** Phase 2: Abfeuern — Auto-Aim auf den naechsten Mob, sonst exakt in Blickrichtung. */
     private void feuerErdbloeckeAb(Player p, List<FallingBlock> bloecke) {
         erdeGeladen.remove(p.getUniqueId());
         erdeCooldown.put(p.getUniqueId(), System.currentTimeMillis() + 10_000); // 10s Cooldown
 
-        Location ziel = p.getEyeLocation().add(p.getEyeLocation().getDirection().multiply(25));
+        // Auto-Aim: naechster Mob im Umkreis von 30 Bloecken
+        Mob autoZiel = p.getWorld().getNearbyEntitiesByType(Mob.class, p.getLocation(), 30).stream()
+            .min(Comparator.comparingDouble(m -> m.getLocation().distanceSquared(p.getLocation())))
+            .orElse(null);
+
         List<FallingBlock> fliegend = new ArrayList<>();
         for (FallingBlock fb : bloecke) {
             if (!fb.isValid()) continue;
-            fb.setGravity(true);
-            fb.setVelocity(ziel.toVector().subtract(fb.getLocation().toVector()).normalize().multiply(1.6));
+            fb.setGravity(false); // gerade Flugbahn — auch senkrecht nach oben oder geradeaus
+            Vector richtung = autoZiel != null
+                ? mitte(autoZiel).subtract(fb.getLocation().toVector())
+                : p.getEyeLocation().getDirection().clone();
+            fb.setVelocity(richtung.normalize().multiply(1.6));
             fliegend.add(fb);
         }
-        p.sendMessage(Component.text("Erdgeschosse abgefeuert!", NamedTextColor.DARK_GREEN));
+        p.sendMessage(autoZiel != null
+            ? Component.text("Erdgeschosse jagen " + autoZiel.getName() + "!", NamedTextColor.DARK_GREEN)
+            : Component.text("Erdgeschosse abgefeuert!", NamedTextColor.DARK_GREEN));
 
-        // Treffer-Task: Geschosse verletzen alles in ihrer Flugbahn (4 Herzen)
+        // Treffer-Task: Zielverfolgung + Geschosse verletzen alles in ihrer Flugbahn (6 Herzen)
         Bukkit.getScheduler().runTaskTimer(plugin, task -> {
             fliegend.removeIf(fb -> {
                 if (!fb.isValid()) return true;
+                // Homing: Kurs jeden Tick auf den Ziel-Mob korrigieren
+                if (autoZiel != null && autoZiel.isValid() && !autoZiel.isDead()) {
+                    fb.setVelocity(mitte(autoZiel).subtract(fb.getLocation().toVector())
+                        .normalize().multiply(1.6));
+                }
                 for (var entity : fb.getNearbyEntities(1.2, 1.2, 1.2)) {
                     if (entity instanceof LivingEntity ziel2 && !ziel2.equals(p)) {
-                        ziel2.damage(8.0, p);
+                        ziel2.damage(12.0, p);
                         fb.remove();
                         return true;
                     }
@@ -422,6 +440,11 @@ public class CustomItems implements Listener {
         // Nach 5s Restgeschosse aufraeumen
         Bukkit.getScheduler().runTaskLater(plugin, () ->
             fliegend.forEach(fb -> { if (fb.isValid()) fb.remove(); }), 100L);
+    }
+
+    /** Koerpermitte eines Mobs als Zielpunkt. */
+    private static Vector mitte(Mob m) {
+        return m.getLocation().toVector().add(new Vector(0, m.getHeight() / 2, 0));
     }
 
     /** Abgefeuerte/schwebende Erdbloecke duerfen nicht als Block landen. */
