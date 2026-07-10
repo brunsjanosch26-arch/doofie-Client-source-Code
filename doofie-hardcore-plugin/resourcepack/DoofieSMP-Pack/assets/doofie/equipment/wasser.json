@@ -1,0 +1,10 @@
+{
+  "layers": {
+    "humanoid": [
+      { "texture": "doofie:wasser" }
+    ],
+    "humanoid_leggings": [
+      { "texture": "doofie:wasser" }
+    ]
+  }
+}

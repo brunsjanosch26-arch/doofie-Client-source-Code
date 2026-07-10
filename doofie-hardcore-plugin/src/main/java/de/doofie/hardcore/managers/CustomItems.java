@@ -28,6 +28,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.EquippableComponent;
 import org.bukkit.inventory.meta.components.FoodComponent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
@@ -125,8 +126,24 @@ public class CustomItems implements Listener {
         ItemStack item = tagged(mat, id, name, color, lore);
         ItemMeta meta = item.getItemMeta();
         meta.setUnbreakable(true);
+        // Equipment-Asset doofie:<element>, damit das Resource Pack die
+        // Ruestung auch AM KOERPER umtexturieren kann (statt Netherite-Optik)
+        String element = id.split("_", 2)[0];
+        EquippableComponent eq = meta.getEquippable();
+        eq.setSlot(armorSlot(id.split("_", 2)[1]));
+        eq.setModel(new NamespacedKey("doofie", element));
+        meta.setEquippable(eq);
         item.setItemMeta(meta);
         return item;
+    }
+
+    private static EquipmentSlot armorSlot(String teil) {
+        return switch (teil) {
+            case "helm" -> EquipmentSlot.HEAD;
+            case "brust" -> EquipmentSlot.CHEST;
+            case "hose" -> EquipmentSlot.LEGS;
+            default -> EquipmentSlot.FEET;
+        };
     }
 
     private static Material armorMaterial(String teil) {

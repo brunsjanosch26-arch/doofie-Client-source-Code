@@ -19,6 +19,11 @@ Vanilla-Textur (das frühere Stempeln aller Items ist zurückgenommen; der
 | Erde-Rüstung (4 Teile) | `doofie:erde_helm/brust/hose/schuhe` | Dungeons-Icons „Geomancer Robe" |
 | Luft-Rüstung (4 Teile) | `doofie:luft_helm/brust/hose/schuhe` | Dungeons-Icons „Emerald Gale" |
 
+Die Element-Rüstungen werden auch **am Körper** umtexturiert: Das Plugin setzt
+pro Teil ein `equippable`-Asset (`doofie:feuer` usw.), die Layer-Texturen liegen
+unter `textures/entity/equipment/humanoid[_leggings]/<element>.png`, die
+Definitionen unter `equipment/<element>.json`.
+
 ## Installation
 
 `DoofieSMP-Pack.zip` in den `resourcepacks`-Ordner des Clients legen und
