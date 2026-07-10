@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -41,6 +42,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +61,8 @@ import java.util.UUID;
  *   ERDE:   Aktiv: Erdbloecke im 10x10-Bereich ballen sich zur Kanonenkugel
  *           ueber dir; nochmal Rechtsklick feuert sie ab (6 Herzen) —
  *           Auto-Aim/Homing auf den naechsten Mob, sonst Blickrichtung.
+ *           Sneak+Rechtsklick toggelt den Bloecke-Essen-Modus: Rechtsklick
+ *           verspeist jeden Block, Hungerkeulen je nach Verkaufswert.
  *   LUFT:   Schnelligkeit III + Sprungkraft III + kein Fallschaden. Aktiv:
  *           Windschub — katapultiert dich in Blickrichtung (5s Cooldown).
  *
@@ -94,6 +98,8 @@ public class CustomItems implements Listener {
     private final Map<UUID, Long> blitzCooldown = new HashMap<>();
     /** Feuer/Wasser/Luft: Faehigkeits-Cooldown-Ende pro Spieler+Set (ms) */
     private final Map<String, Long> abilityCooldown = new HashMap<>();
+    /** Erde-Set: Spieler mit aktivem Bloecke-Essen-Modus (Toggle per Sneak+Rechtsklick) */
+    private final Set<UUID> erdeEssenModus = new HashSet<>();
 
     public CustomItems(HardcorePlugin plugin) {
         this.plugin = plugin;
@@ -202,7 +208,9 @@ public class CustomItems implements Listener {
                     "Volles Set: Rechtsklick mit leerer Hand",
                     "reisst Erdbloecke hoch (10x10) —",
                     "nochmal Rechtsklick feuert sie ab!",
-                    "Auto-Aim auf den naechsten Mob, 6 Herzen."));
+                    "Auto-Aim auf den naechsten Mob, 6 Herzen.",
+                    "Sneak+Rechtsklick: Bloecke-Essen-Modus —",
+                    "iss jeden Block, Keulen nach Wert."));
             default -> unbreakableArmor(armorMaterial(teil), "luft_" + teil,
                 "Luft-" + teilName(teil), NamedTextColor.WHITE,
                 List.of("Teil der Luft-Ruestung.",
@@ -381,11 +389,25 @@ public class CustomItems implements Listener {
         if (!p.getInventory().getItemInMainHand().getType().isAir()) return; // nur leere Hand
 
         if (fullSet(p, "erde")) {
-            List<FallingBlock> geladen = erdeGeladen.get(p.getUniqueId());
-            if (geladen != null) {
-                feuerErdbloeckeAb(p, geladen);
+            if (p.isSneaking()) {
+                // Sneak + Rechtsklick: Bloecke-Essen-Modus umschalten
+                if (erdeEssenModus.remove(p.getUniqueId())) {
+                    p.sendMessage(Component.text("Bloecke-Essen AUS — Rechtsklick laedt wieder die Kanonenkugel.",
+                        NamedTextColor.DARK_GREEN));
+                } else {
+                    erdeEssenModus.add(p.getUniqueId());
+                    p.sendMessage(Component.text("Bloecke-Essen AN — Rechtsklick auf einen Block verspeist ihn!",
+                        NamedTextColor.DARK_GREEN));
+                }
+            } else if (erdeEssenModus.contains(p.getUniqueId())) {
+                if (event.getClickedBlock() != null) erdblockEssen(p, event.getClickedBlock());
             } else {
-                ladeErdbloecke(p);
+                List<FallingBlock> geladen = erdeGeladen.get(p.getUniqueId());
+                if (geladen != null) {
+                    feuerErdbloeckeAb(p, geladen);
+                } else {
+                    ladeErdbloecke(p);
+                }
             }
             event.setCancelled(true);
         } else if (fullSet(p, "feuer")) {
@@ -570,6 +592,34 @@ public class CustomItems implements Listener {
     /** Koerpermitte eines Mobs als Zielpunkt. */
     private static Vector mitte(Mob m) {
         return m.getLocation().toVector().add(new Vector(0, m.getHeight() / 2, 0));
+    }
+
+    /** Erde-Set: angeklickten Block essen — Hungerkeulen je nach Verkaufswert. */
+    private void erdblockEssen(Player p, Block b) {
+        if (p.getFoodLevel() >= 20) {
+            p.sendMessage(Component.text("Du bist pappsatt!", NamedTextColor.DARK_GREEN));
+            return;
+        }
+        double preis = plugin.priceOf(b.getType());
+        if (!b.getType().isItem() || preis <= 0) {
+            p.sendMessage(Component.text("Das ist selbst fuer dich ungeniessbar.", NamedTextColor.DARK_GREEN));
+            return;
+        }
+        // Probe-BlockBreakEvent: geschuetzte Bloecke (z.B. Shop-Kisten) sind tabu
+        BlockBreakEvent probe = new BlockBreakEvent(b, p);
+        Bukkit.getPluginManager().callEvent(probe);
+        if (probe.isCancelled()) return;
+
+        // 1 Keule Basis, +2 pro Zehnerpotenz Wert: 1$ = 1, 10$ = 3, 100$ = 5, 1000$ = 7 Keulen
+        int keulen = Math.min(10, 1 + (int) (Math.log10(Math.max(1, preis)) * 2));
+        p.getWorld().spawnParticle(Particle.BLOCK, b.getLocation().add(0.5, 0.5, 0.5),
+            30, 0.3, 0.3, 0.3, b.getBlockData());
+        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 1f, 1f);
+        b.setType(Material.AIR);
+        p.setFoodLevel(Math.min(20, p.getFoodLevel() + keulen * 2));
+        p.setSaturation(Math.min(p.getFoodLevel(), p.getSaturation() + keulen));
+        p.sendMessage(Component.text("Mahlzeit! +" + keulen + (keulen == 1 ? " Hungerkeule" : " Hungerkeulen")
+            + " (Wert: " + Math.round(preis) + "$)", NamedTextColor.DARK_GREEN));
     }
 
     /** Offsets fuer eine dichte Kugel-Formation: von innen nach aussen gefuellt. */
