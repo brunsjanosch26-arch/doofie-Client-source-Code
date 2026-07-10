@@ -16,6 +16,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -72,9 +73,10 @@ import java.util.UUID;
  *   Schnelligkeit III (15 Min) und Saettigung IV (5 Min).
  *
  * — GOETTERSPEER (craftbar, krank teuer):
- *   Netherite-Speer mit Sharpness VI, Lunge V und Unbreakable. In der Hand:
- *   Staerke II, Schnelligkeit II, Resistenz I — und alle 5s trifft ein Blitz
- *   den naechsten Gegner im 6er-Umkreis (5 Herzen).
+ *   Netherite-Speer mit Sharpness VI, Lunge VI und Unbreakable. In der Hand:
+ *   Staerke II, Schnelligkeit II, Resistenz I — und alle 10s trifft ein Blitz
+ *   den naechsten feindlichen Mob oder Spieler im 20er-Umkreis bzw. im
+ *   selben Chunk (5 Herzen).
  *
  * Jedes Item bekommt ein item_model (Namespace 'doofie'), damit es per
  * Resource Pack umtexturiert werden kann — siehe resourcepack/README.md.
@@ -243,13 +245,14 @@ public class CustomItems implements Listener {
         ItemStack item = tagged(Material.NETHERITE_SPEAR, "goetterspeer",
             "Götterspeer", NamedTextColor.LIGHT_PURPLE,
             List.of("Geschmiedet aus Sternenstaub und Groessenwahn.",
-                "Sharpness VI · Lunge V · Unzerstoerbar",
+                "Sharpness VI · Lunge VI · Unzerstoerbar",
                 "In der Hand: Staerke II, Schnelligkeit II,",
-                "Resistenz I — und Zeus persoenlich blitzt",
-                "nahe Gegner weg (5 Herzen, alle 5s)."));
+                "Resistenz I — und Zeus blitzt alle 10s den",
+                "naechsten Monster/Spieler im 20er-Umkreis",
+                "oder im selben Chunk weg (5 Herzen)."));
         ItemMeta meta = item.getItemMeta();
         meta.addEnchant(Enchantment.SHARPNESS, 6, true);
-        meta.addEnchant(Enchantment.LUNGE, 5, true);
+        meta.addEnchant(Enchantment.LUNGE, 6, true);
         meta.setUnbreakable(true);
         item.setItemMeta(meta);
         return item;
@@ -301,15 +304,18 @@ public class CustomItems implements Listener {
         doener.setIngredient('A', Material.ENCHANTED_GOLDEN_APPLE);
         Bukkit.addRecipe(doener);
 
-        // Goetterspeer — krank teuer (~30.000$ Materialwert)
+        // Goetterspeer:
+        //   Netherite-Barren | Nether-Stern     | Netherite-Barren
+        //   Verz. Goldapfel  | Netherite-Speer  | Verz. Goldapfel
+        //   Diamantblock     | Breeze-Rute      | Diamantblock
         ShapedRecipe speer = new ShapedRecipe(new NamespacedKey(plugin, "goetterspeer"), goetterspeer());
         speer.shape("BSB", "EPE", "DWD");
-        speer.setIngredient('B', Material.NETHERITE_BLOCK);
+        speer.setIngredient('B', Material.NETHERITE_INGOT);
         speer.setIngredient('S', Material.NETHER_STAR);
         speer.setIngredient('E', Material.ENCHANTED_GOLDEN_APPLE);
         speer.setIngredient('P', Material.NETHERITE_SPEAR);
         speer.setIngredient('D', Material.DIAMOND_BLOCK);
-        speer.setIngredient('W', Material.BEACON);
+        speer.setIngredient('W', Material.BREEZE_ROD);
         Bukkit.addRecipe(speer);
     }
 
@@ -346,19 +352,29 @@ public class CustomItems implements Listener {
         p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 1, true, false, true));
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 100, 0, true, false, true));
 
-        // Auto-Blitz: naechster Gegner im 6er-Umkreis (auch unter dir), alle 5s
+        // Auto-Blitz alle 10s: naechster feindlicher Mob oder Spieler im
+        // 20er-Umkreis — oder im selben Chunk
         long jetzt = System.currentTimeMillis();
         Long cd = blitzCooldown.get(p.getUniqueId());
         if (cd != null && cd > jetzt) return;
-        p.getWorld().getNearbyEntitiesByType(LivingEntity.class, p.getLocation(), 6).stream()
+        p.getWorld().getNearbyEntitiesByType(LivingEntity.class, p.getLocation(), 24).stream()
             .filter(e -> !e.equals(p))
+            .filter(e -> e instanceof Monster || e instanceof Player)
+            .filter(e -> e.getLocation().distanceSquared(p.getLocation()) <= 20 * 20
+                || sameChunk(e.getLocation(), p.getLocation()))
             .min(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(p.getLocation())))
             .ifPresent(ziel -> {
                 p.getWorld().strikeLightningEffect(ziel.getLocation());
                 ziel.damage(10.0, p); // 5 Herzen
                 ziel.setFireTicks(60);
-                blitzCooldown.put(p.getUniqueId(), jetzt + 5_000);
+                blitzCooldown.put(p.getUniqueId(), jetzt + 10_000);
             });
+    }
+
+    private static boolean sameChunk(Location a, Location b) {
+        return a.getWorld().equals(b.getWorld())
+            && a.getBlockX() >> 4 == b.getBlockX() >> 4
+            && a.getBlockZ() >> 4 == b.getBlockZ() >> 4;
     }
 
     // ────────────────────────── Feuer: Schlaege zuenden an ──────────────────────────
