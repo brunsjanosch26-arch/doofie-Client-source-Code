@@ -64,9 +64,11 @@ import java.util.UUID;
  *           Auto-Aim/Homing auf den naechsten Mob, sonst Blickrichtung.
  *           Sneak+Rechtsklick toggelt den Bloecke-Essen-Modus: Rechtsklick
  *           verspeist jeden Block, Hungerkeulen je nach Verkaufswert.
- *           Rechtsklick mit beliebigem Schwert: ORBITAL STRIKE — ~300
- *           explosive Erd-Bomben regnen in 10 Schichten auf deine Position
- *           (Schuetze immun, Krater fuellt sich wieder auf, 10 Min Cooldown).
+ *           Rechtsklick mit beliebigem Schwert: ORBITAL STRIKE — eine
+ *           riesige Scheibe aus ~260 explosiven Erd-Bomben (Ringe bis
+ *           Radius 42) erscheint 50 Bloecke ueber dir, faellt herab und
+ *           zuendet in Wellen wie der Unstable-SMP-Nuke-Shot (Schuetze
+ *           immun, Krater fuellt sich wieder auf, 10 Min Cooldown).
  *   LUFT:   Schnelligkeit III + Sprungkraft III + kein Fallschaden. Aktiv:
  *           Windschub — katapultiert dich in Blickrichtung (5s Cooldown).
  *
@@ -693,7 +695,7 @@ public class CustomItems implements Listener {
         var welt = zentrum.getWorld();
 
         // Alte Bodenhoehen im Umkreis merken, um den Krater spaeter aufzufuellen
-        int radius = 24;
+        int radius = 48;
         int[][] alteHoehen = new int[radius * 2 + 1][radius * 2 + 1];
         for (int dx = -radius; dx <= radius; dx++)
             for (int dz = -radius; dz <= radius; dz++)
@@ -707,28 +709,36 @@ public class CustomItems implements Listener {
         p.sendMessage(Component.text("ORBITAL STRIKE! In Deckung — die Erde kommt von oben.",
             NamedTextColor.DARK_GREEN));
 
-        // Wie der Original-Nuke-Shot (MK6): ALLE Bomben spawnen an einem Punkt
-        // hoch ueber dem Ziel und werden in 10 Ringen nach aussen geschleudert —
-        // innere Ringe langsam, aeussere schneller (eased), dazu Abwaertsschub.
-        // Ergebnis: ein explodierender Springbrunnen aus Erde (~260 Bomben).
-        Location himmel = zentrum.clone().add(0, 60, 0);
-        for (int ring = 0; ring < 10; ring++) {
-            final int r = ring;
+        // Original-Nuke-Shot: Die Bomben erscheinen 50 Bloecke ueber dem Ziel
+        // als riesige FLACHE SCHEIBE aus konzentrischen Ringen (bis Radius 42),
+        // fallen senkrecht als geschlossene Scheibe herab und zuenden per
+        // Zuendschnur (~4s) — teils noch in der Luft, in Wellen von innen
+        // nach aussen. Ringe wie im Original: ~45 innen + 5x ~44 aussen.
+        double[] ringRadien = {3, 8, 15, 25, 35, 42};
+        int[] ringAnzahl = {45, 40, 44, 44, 44, 44};
+        for (int ring = 0; ring < ringRadien.length; ring++) {
+            final double bandRadius = ringRadien[ring];
+            final int anzahl = ringAnzahl[ring];
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                int anzahl = 8 + r * 4;                    // innen 8, aussen bis 44 Bomben
-                double speed = 0.12 + r * 0.055;           // aeussere Ringe fliegen weiter raus
                 for (int i = 0; i < anzahl; i++) {
-                    double winkel = 2 * Math.PI * i / anzahl + Math.random() * 0.25;
-                    FallingBlock bombe = welt.spawnFallingBlock(himmel, Material.DIRT.createBlockData());
+                    double winkel = 2 * Math.PI * i / anzahl + Math.random() * 0.3;
+                    double abstand = bandRadius + (Math.random() - 0.5) * 4;
+                    Location spawn = zentrum.clone().add(
+                        Math.cos(winkel) * abstand, 50, Math.sin(winkel) * abstand);
+                    FallingBlock bombe = welt.spawnFallingBlock(spawn, Material.DIRT.createBlockData());
                     bombe.setDropItem(false);
                     bombe.setHurtEntities(false);
                     bombe.addScoreboardTag(NUKE_TAG);
-                    bombe.setVelocity(new Vector(
-                        Math.cos(winkel) * speed,
-                        -0.3 - Math.random() * 0.3,
-                        Math.sin(winkel) * speed));
+                    bombe.setVelocity(new Vector(0, -0.5, 0));
+                    // Zuendschnur wie TNT: nach ~4s zuenden, egal ob gelandet
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        if (!bombe.isValid()) return;
+                        Location loc = bombe.getLocation();
+                        bombe.remove();
+                        welt.createExplosion(loc, 4f, false, true);
+                    }, 70L + (long) (Math.random() * 20));
                 }
-            }, r * 3L);
+            }, ring * 4L);
         }
 
         // Nach 25s: Krater bis zur alten Bodenhoehe mit Erde auffuellen (gebatcht)
