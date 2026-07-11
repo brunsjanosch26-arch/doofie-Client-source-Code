@@ -707,23 +707,28 @@ public class CustomItems implements Listener {
         p.sendMessage(Component.text("ORBITAL STRIKE! In Deckung — die Erde kommt von oben.",
             NamedTextColor.DARK_GREEN));
 
-        // 10 Schichten a ~30 Erd-Bomben (~300 gesamt), im Abstand von 8 Ticks
-        for (int schicht = 0; schicht < 10; schicht++) {
-            final int s = schicht;
+        // Wie der Original-Nuke-Shot (MK6): ALLE Bomben spawnen an einem Punkt
+        // hoch ueber dem Ziel und werden in 10 Ringen nach aussen geschleudert —
+        // innere Ringe langsam, aeussere schneller (eased), dazu Abwaertsschub.
+        // Ergebnis: ein explodierender Springbrunnen aus Erde (~260 Bomben).
+        Location himmel = zentrum.clone().add(0, 60, 0);
+        for (int ring = 0; ring < 10; ring++) {
+            final int r = ring;
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                for (int dx = -5; dx <= 5; dx += 2) {
-                    for (int dz = -5; dz <= 5; dz += 2) {
-                        if (dx * dx + dz * dz > 27) continue;
-                        Location spawn = zentrum.clone().add(
-                            dx + Math.random() - 0.5, 45 + s * 3, dz + Math.random() - 0.5);
-                        FallingBlock bombe = welt.spawnFallingBlock(spawn, Material.DIRT.createBlockData());
-                        bombe.setDropItem(false);
-                        bombe.setHurtEntities(false);
-                        bombe.addScoreboardTag(NUKE_TAG);
-                        bombe.setVelocity(new Vector(0, -1.4, 0));
-                    }
+                int anzahl = 8 + r * 4;                    // innen 8, aussen bis 44 Bomben
+                double speed = 0.12 + r * 0.055;           // aeussere Ringe fliegen weiter raus
+                for (int i = 0; i < anzahl; i++) {
+                    double winkel = 2 * Math.PI * i / anzahl + Math.random() * 0.25;
+                    FallingBlock bombe = welt.spawnFallingBlock(himmel, Material.DIRT.createBlockData());
+                    bombe.setDropItem(false);
+                    bombe.setHurtEntities(false);
+                    bombe.addScoreboardTag(NUKE_TAG);
+                    bombe.setVelocity(new Vector(
+                        Math.cos(winkel) * speed,
+                        -0.3 - Math.random() * 0.3,
+                        Math.sin(winkel) * speed));
                 }
-            }, s * 8L);
+            }, r * 3L);
         }
 
         // Nach 25s: Krater bis zur alten Bodenhoehe mit Erde auffuellen (gebatcht)
