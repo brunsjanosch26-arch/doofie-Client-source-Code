@@ -1,0 +1,6 @@
+name: DoofieLobby
+version: '${version}'
+main: de.doofie.lobby.LobbyPlugin
+api-version: '26.2'
+author: Doofie
+description: Netzwerk-Lobby — Modus-Kompass mit GUI, schickt Spieler ueber Velocity auf die Spielmodi

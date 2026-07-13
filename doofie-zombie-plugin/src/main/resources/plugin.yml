@@ -1,0 +1,39 @@
+name: DoofieZombie
+version: '${version}'
+main: de.doofie.zombie.ZombiePlugin
+api-version: '26.2'
+author: Doofie
+description: Zombie-Apokalypse — naechtliche Horden, Blutmond und Basen-Verteidigung
+
+commands:
+  apokalypse:
+    description: Apokalypse-Status
+    usage: "/apokalypse [status|item]"
+    aliases: [apo]
+  tpa:
+    description: Teleport-Anfrage an einen Spieler (ich zu dir)
+    usage: "/tpa <spieler> — dann /tpaccept oder /tpadeny"
+    aliases: [tpask]
+  tpahere:
+    description: Teleport-Anfrage an einen Spieler (du zu mir)
+    usage: /tpahere <spieler>
+  tpaccept:
+    description: Offene Teleport-Anfrage annehmen
+    usage: /tpaccept
+    aliases: [tpaannehmen]
+  tpadeny:
+    description: Offene Teleport-Anfrage ablehnen
+    usage: /tpadeny
+    aliases: [tpaablehnen]
+  tpaauto:
+    description: TPA-Anfragen automatisch annehmen (an/aus)
+    usage: /tpaauto
+  lobby:
+    description: Zurueck in die Netzwerk-Lobby
+    usage: /lobby
+    aliases: [hub, l]
+
+permissions:
+  doofie.zombie.admin:
+    description: Erlaubt /apokalypse item
+    default: op

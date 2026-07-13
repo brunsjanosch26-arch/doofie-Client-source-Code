@@ -1,0 +1,32 @@
+# Doofie-Netzwerk — Velocity-Konfiguration (Vorlage)
+# Auf dem exaroton-PROXY-Server ablegen. Die Server-Adressen bekommst du
+# von exaroton (jeder Server hat eine eigene *.exaroton.me-Adresse).
+
+config-version = "2.7"
+bind = "0.0.0.0:25565"
+motd = "<aqua><bold>DOOFIE-NETZWERK</bold></aqua> <gray>— 6 Modi, ein Kompass</gray>"
+show-max-players = 100
+online-mode = true
+
+# WICHTIG: modern forwarding, damit die Paper-Server die echten
+# Spieler-UUIDs bekommen. Das Secret steht in forwarding.secret —
+# dasselbe Secret muss auf JEDEM Paper-Server eingetragen werden!
+player-info-forwarding-mode = "modern"
+forwarding-secret-file = "forwarding.secret"
+
+[servers]
+# exaroton-Adressen deiner Server eintragen:
+lobby = "doofie-lobby.exaroton.me:25565"
+skyblock = "doofie-skyblock.exaroton.me:25565"
+bossraid = "doofie-bossraid.exaroton.me:25565"
+kingdoms = "doofie-kingdoms.exaroton.me:25565"
+jaeger = "doofie-jaeger.exaroton.me:25565"
+zombie = "doofie-zombie.exaroton.me:25565"
+chaos = "doofie-chaos.exaroton.me:25565"
+
+# Neue Spieler landen zuerst in der Lobby
+try = ["lobby"]
+
+[forced-hosts]
+
+[advanced]

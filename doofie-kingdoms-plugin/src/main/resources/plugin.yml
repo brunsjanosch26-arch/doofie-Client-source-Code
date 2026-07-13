@@ -1,0 +1,35 @@
+name: DoofieKingdoms
+version: '${version}'
+main: de.doofie.kingdoms.KingdomsPlugin
+api-version: '26.2'
+author: Doofie
+description: Kingdoms — Koenigreiche mit Land-Claims, Kriegs-Fenstern und Koenigskrone
+
+commands:
+  reich:
+    description: Koenigreich-Befehle
+    usage: "/reich gruenden|einladen|beitreten|verlassen|claim|unclaim|krieg|liste|info"
+    aliases: [kingdom, k]
+  tpa:
+    description: Teleport-Anfrage an einen Spieler (ich zu dir)
+    usage: "/tpa <spieler> — dann /tpaccept oder /tpadeny"
+    aliases: [tpask]
+  tpahere:
+    description: Teleport-Anfrage an einen Spieler (du zu mir)
+    usage: /tpahere <spieler>
+  tpaccept:
+    description: Offene Teleport-Anfrage annehmen
+    usage: /tpaccept
+    aliases: [tpaannehmen]
+  tpadeny:
+    description: Offene Teleport-Anfrage ablehnen
+    usage: /tpadeny
+    aliases: [tpaablehnen]
+  tpaauto:
+    description: TPA-Anfragen automatisch annehmen (an/aus)
+    usage: /tpaauto
+  lobby:
+    description: Zurueck in die Netzwerk-Lobby
+    usage: /lobby
+    aliases: [hub, l]
+

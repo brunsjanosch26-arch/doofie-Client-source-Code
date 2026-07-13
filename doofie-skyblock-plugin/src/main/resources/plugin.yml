@@ -1,0 +1,34 @@
+name: DoofieSkyblock
+version: '${version}'
+main: de.doofie.skyblock.SkyblockPlugin
+api-version: '26.2'
+author: Doofie
+description: Skyblock-Wars — Himmelsinseln mit Insel-Kern, Void-Angel und Kern-Brecher
+
+commands:
+  insel:
+    description: Insel-Befehle
+    usage: "/insel [home|level|top]"
+    aliases: [island, is]
+  tpa:
+    description: Teleport-Anfrage an einen Spieler (ich zu dir)
+    usage: "/tpa <spieler> — dann /tpaccept oder /tpadeny"
+    aliases: [tpask]
+  tpahere:
+    description: Teleport-Anfrage an einen Spieler (du zu mir)
+    usage: /tpahere <spieler>
+  tpaccept:
+    description: Offene Teleport-Anfrage annehmen
+    usage: /tpaccept
+    aliases: [tpaannehmen]
+  tpadeny:
+    description: Offene Teleport-Anfrage ablehnen
+    usage: /tpadeny
+    aliases: [tpaablehnen]
+  tpaauto:
+    description: TPA-Anfragen automatisch annehmen (an/aus)
+    usage: /tpaauto
+  lobby:
+    description: Zurueck in die Netzwerk-Lobby
+    usage: /lobby
+    aliases: [hub, l]
