@@ -85,7 +85,7 @@ public class AuctionGuiListener implements Listener {
     /** Standard-Preise der Legendaer-Kategorie (Config ah-legendaer.<id> gewinnt). */
     private static final Map<String, Double> LEGENDAER_STANDARD = Map.of(
         "doener", 2500.0,
-        "goetterspeer", 30000.0);
+        "goetterspeer", 70000.0);
 
     /** Diese Server-Angebote gibt es nur EIN einziges Mal — danach sind sie weg. */
     private static final java.util.Set<String> EINMALIG = java.util.Set.of("goetterspeer");

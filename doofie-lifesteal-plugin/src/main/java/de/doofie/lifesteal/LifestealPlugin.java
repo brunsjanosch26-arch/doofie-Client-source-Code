@@ -28,6 +28,7 @@ public class LifestealPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         items.start();
         new LifestealCommands(this).register();
+        new TpaCommand(this).register();
 
         getLogger().info("Doofie-Lifesteal aktiv — moege das Herzstehlen beginnen!");
     }

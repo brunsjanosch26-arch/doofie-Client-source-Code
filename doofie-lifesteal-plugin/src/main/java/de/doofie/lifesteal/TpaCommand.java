@@ -1,6 +1,5 @@
-package de.doofie.hardcore.commands;
+package de.doofie.lifesteal;
 
-import de.doofie.hardcore.HardcorePlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -19,12 +18,13 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Das Doofie-TPA-System:
+ * Das Doofie-TPA-System (Lifesteal-Ausgabe):
  *   /tpa <spieler>     — Anfrage: ICH will zu DIR
  *   /tpahere <spieler> — Anfrage: DU sollst zu MIR
  *   /tpaccept          — letzte Anfrage annehmen (auch: /tpa annehmen)
  *   /tpadeny           — letzte Anfrage ablehnen  (auch: /tpa ablehnen)
  *   /tpaauto           — Auto-Annehmen ein-/ausschalten
+ * Eliminierte (Zuschauer) koennen weder anfragen noch angefragt werden.
  * Nach dem Annehmen: 3 Sekunden Warmup (nicht bewegen!), dann Teleport.
  * Alle Befehle haben Tab-Vervollstaendigung (Spielernamen + Unterbefehle).
  */
@@ -33,14 +33,21 @@ public class TpaCommand implements TabExecutor {
     /** here = true: der ZIEL-Spieler soll sich zum Anfragenden bewegen. */
     private record Request(UUID sender, long time, boolean here) {}
 
-    private final HardcorePlugin plugin;
+    private final LifestealPlugin plugin;
     /** Ziel -> letzte Anfrage */
     private final Map<UUID, Request> requests = new HashMap<>();
     /** Spieler mit aktivem Auto-Annehmen */
     private final Set<UUID> autoAccept = new HashSet<>();
 
-    public TpaCommand(HardcorePlugin plugin) {
+    public TpaCommand(LifestealPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    public void register() {
+        for (String c : new String[]{"tpa", "tpahere", "tpaccept", "tpadeny", "tpaauto"}) {
+            plugin.getCommand(c).setExecutor(this);
+            plugin.getCommand(c).setTabCompleter(this);
+        }
     }
 
     @Override
@@ -88,8 +95,9 @@ public class TpaCommand implements TabExecutor {
             player.sendMessage(Component.text("Spieler nicht gefunden.", NamedTextColor.RED));
             return;
         }
-        if (plugin.bans().isBanned(player.getUniqueId())) {
-            player.sendMessage(Component.text("Gebannt — kein Teleport fuer dich!", NamedTextColor.RED));
+        if (plugin.getHeartManager().istEliminiert(player.getUniqueId())
+            || plugin.getHeartManager().istEliminiert(target.getUniqueId())) {
+            player.sendMessage(Component.text("Eliminierte Zuschauer koennen kein TPA nutzen.", NamedTextColor.RED));
             return;
         }
         requests.put(target.getUniqueId(), new Request(player.getUniqueId(), System.currentTimeMillis(), here));

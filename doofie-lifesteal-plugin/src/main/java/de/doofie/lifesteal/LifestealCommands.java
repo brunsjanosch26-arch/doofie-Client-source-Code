@@ -5,11 +5,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -19,8 +22,13 @@ import java.util.UUID;
  *   /revive <spieler>        — eliminierten Spieler zurueckholen (Revive-Beacon in der Hand)
  *   /eliminiert              — Liste aller Eliminierten
  *   /lifestealitem give ...  — Admin: Custom-Items vergeben
+ * Alle Befehle haben Tab-Vervollstaendigung.
  */
-public class LifestealCommands implements CommandExecutor {
+public class LifestealCommands implements TabExecutor {
+
+    private static final List<String> ITEM_IDS = List.of(
+        LifestealItems.HERZ, LifestealItems.FRAGMENT,
+        LifestealItems.REVIVE_BEACON, LifestealItems.SCHWERT);
 
     private final LifestealPlugin plugin;
 
@@ -31,7 +39,43 @@ public class LifestealCommands implements CommandExecutor {
     public void register() {
         for (String cmd : new String[]{"herzen", "auszahlen", "revive", "eliminiert", "lifestealitem"}) {
             plugin.getCommand(cmd).setExecutor(this);
+            plugin.getCommand(cmd).setTabCompleter(this);
         }
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        String prefix = args.length > 0 ? args[args.length - 1].toLowerCase(Locale.ROOT) : "";
+        switch (command.getName()) {
+            case "herzen" -> {
+                if (args.length == 1) return null; // Spielernamen
+            }
+            case "auszahlen" -> {
+                if (args.length == 1) return filter(List.of("1", "2", "5"), prefix);
+            }
+            case "revive" -> {
+                if (args.length == 1) {
+                    // Nur eliminierte Spieler vorschlagen
+                    List<String> namen = new ArrayList<>();
+                    for (UUID u : plugin.getHeartManager().getEliminierte()) {
+                        String n = Bukkit.getOfflinePlayer(u).getName();
+                        if (n != null && n.toLowerCase(Locale.ROOT).startsWith(prefix)) namen.add(n);
+                    }
+                    return namen;
+                }
+            }
+            case "lifestealitem" -> {
+                if (args.length == 1) return filter(List.of("give"), prefix);
+                if (args.length == 2) return null; // Spielernamen
+                if (args.length == 3) return filter(ITEM_IDS, prefix);
+            }
+            default -> { }
+        }
+        return List.of();
+    }
+
+    private static List<String> filter(List<String> optionen, String prefix) {
+        return optionen.stream().filter(o -> o.startsWith(prefix)).toList();
     }
 
     @Override

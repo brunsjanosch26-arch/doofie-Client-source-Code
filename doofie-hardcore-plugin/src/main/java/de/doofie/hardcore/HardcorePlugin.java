@@ -120,7 +120,11 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("duell").setExecutor(new DuellCommand(this));
         getCommand("schutz").setExecutor(new SchutzCommand(this));
         getCommand("quests").setExecutor(new QuestsCommand(this));
-        getCommand("tpa").setExecutor(new TpaCommand(this));
+        TpaCommand tpa = new TpaCommand(this);
+        for (String c : new String[]{"tpa", "tpahere", "tpaccept", "tpadeny", "tpaauto"}) {
+            getCommand(c).setExecutor(tpa);
+            getCommand(c).setTabCompleter(tpa);
+        }
         getCommand("gilde").setExecutor(new GildeCommand(this));
         getCommand("boerse").setExecutor(new BoerseCommand(this));
         getCommand("wette").setExecutor(new WetteCommand(this));
@@ -148,7 +152,7 @@ public final class HardcorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GameListener(this), this);
         getServer().getPluginManager().registerEvents(new ShopListener(this), this);
 
-        // Custom-Items: Hermes-Ruestung, Legendaerer Doener, Goetterspeer
+        // Custom-Items: Legendaerer Doener, Goetterspeer
         customItems = new CustomItems(this);
         customItems.start();
         getServer().getPluginManager().registerEvents(customItems, this);

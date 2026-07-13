@@ -25,10 +25,10 @@ ah-aufschlag: 0.05
 #     - DIAMOND_SWORD
 
 # Preise der Legendaer-Kategorie (Custom-Items, Server-Verkauf).
-# Standard: doener 2500, goetterspeer 30000 — hier ueberschreibbar:
+# Standard: doener 2500, goetterspeer 70000 — hier ueberschreibbar:
 # ah-legendaer:
 #   doener: 2500.0
-#   goetterspeer: 30000.0
+#   goetterspeer: 70000.0
 
 # Kopf-Trophaee: Anteil des Kopfgelds als Verkaufswert des gedroppten Kopfes
 kopf-bonus: 0.10

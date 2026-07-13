@@ -58,9 +58,23 @@ commands:
     usage: /quests
     aliases: [auftraege]
   tpa:
-    description: Teleport-Anfrage an einen Spieler
-    usage: "/tpa <spieler> — dann /tpa annehmen oder /tpa ablehnen"
+    description: Teleport-Anfrage an einen Spieler (ich zu dir)
+    usage: "/tpa <spieler> — dann /tpaccept oder /tpadeny"
     aliases: [tpask]
+  tpahere:
+    description: Teleport-Anfrage an einen Spieler (du zu mir)
+    usage: /tpahere <spieler>
+  tpaccept:
+    description: Offene Teleport-Anfrage annehmen
+    usage: /tpaccept
+    aliases: [tpaannehmen]
+  tpadeny:
+    description: Offene Teleport-Anfrage ablehnen
+    usage: /tpadeny
+    aliases: [tpaablehnen]
+  tpaauto:
+    description: TPA-Anfragen automatisch annehmen (an/aus)
+    usage: /tpaauto
   gilde:
     description: Gilden-System
     usage: "/gilde gruenden|einladen|beitreten|verlassen|kasse|krieg|chat|liste"
@@ -114,8 +128,8 @@ commands:
     usage: "/invsee <spieler> [ender]"
     permission: doofie.invsee
   doofieitem:
-    description: Custom-Items vergeben (Admin) — Element-Ruestungen gibts NUR hierueber
-    usage: "/doofieitem give <spieler> <doener|speer|feuer_set|wasser_helm|...>"
+    description: Custom-Items vergeben (Admin)
+    usage: "/doofieitem give <spieler> <doener|speer>"
     permission: doofie.items
     aliases: [citem]
 

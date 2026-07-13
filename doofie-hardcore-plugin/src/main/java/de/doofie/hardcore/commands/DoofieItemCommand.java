@@ -14,23 +14,13 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * /doofieitem give <spieler> <doener|speer|element_teil|element_set>
- * z.B. feuer_set, wasser_helm, erde_brust, luft_schuhe.
+ * /doofieitem give <spieler> <doener|speer>
  * Admin-Command (Permission doofie.items, default op).
- * Die Element-Ruestungen gibt es NUR hierueber — kein Rezept!
+ * (Die frueheren Element-Ruestungen sind entfernt.)
  */
 public class DoofieItemCommand implements TabExecutor {
 
-    private static final List<String> ELEMENTE = List.of("feuer", "wasser", "erde", "luft");
-    private static final List<String> ITEMS = buildItems();
-
-    private static List<String> buildItems() {
-        List<String> items = new java.util.ArrayList<>(List.of("doener", "speer"));
-        for (String el : ELEMENTE)
-            for (String teil : List.of("set", "helm", "brust", "hose", "schuhe"))
-                items.add(el + "_" + teil);
-        return List.copyOf(items);
-    }
+    private static final List<String> ITEMS = List.of("doener", "speer");
 
     private final HardcorePlugin plugin;
 
@@ -44,7 +34,7 @@ public class DoofieItemCommand implements TabExecutor {
         }
         if (args.length < 3 || !args[0].equalsIgnoreCase("give")) {
             sender.sendMessage(Component.text(
-                "Nutzung: /doofieitem give <spieler> <doener|speer|feuer_set|wasser_helm|...>",
+                "Nutzung: /doofieitem give <spieler> <doener|speer>",
                 NamedTextColor.RED));
             return true;
         }
@@ -55,22 +45,14 @@ public class DoofieItemCommand implements TabExecutor {
         }
 
         String id = args[2].toLowerCase(Locale.ROOT);
-        // "<element>_set" expandiert zu allen 4 Ruestungsteilen
-        List<String> parts = id.endsWith("_set") && ELEMENTE.contains(id.substring(0, id.length() - 4))
-            ? List.of("helm", "brust", "hose", "schuhe").stream()
-                .map(teil -> id.substring(0, id.length() - 3) + teil).toList()
-            : List.of(id);
-
-        for (String part : parts) {
-            ItemStack item = plugin.customItems().byId(part);
-            if (item == null) {
-                sender.sendMessage(Component.text("Unbekanntes Item: " + part
-                    + " — moeglich: " + String.join(", ", ITEMS), NamedTextColor.RED));
-                return true;
-            }
-            target.getInventory().addItem(item).values()
-                .forEach(rest -> target.getWorld().dropItemNaturally(target.getLocation(), rest));
+        ItemStack item = plugin.customItems().byId(id);
+        if (item == null) {
+            sender.sendMessage(Component.text("Unbekanntes Item: " + id
+                + " — moeglich: " + String.join(", ", ITEMS), NamedTextColor.RED));
+            return true;
         }
+        target.getInventory().addItem(item).values()
+            .forEach(rest -> target.getWorld().dropItemNaturally(target.getLocation(), rest));
         sender.sendMessage(Component.text(target.getName() + " hat '" + id + "' erhalten.",
             NamedTextColor.GREEN));
         target.sendMessage(Component.text("Du hast ein legendaeres Item erhalten!", NamedTextColor.GOLD));
