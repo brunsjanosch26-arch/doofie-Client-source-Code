@@ -1,0 +1,37 @@
+name: DoofieLifesteal
+version: '${version}'
+main: de.doofie.lifesteal.LifestealPlugin
+api-version: '26.2'
+author: Doofie
+description: Lifesteal-Modus mit Custom Items — Herzen stehlen, craften, auszahlen und Freunde wiederbeleben
+
+commands:
+  herzen:
+    description: Zeigt deine (oder fremde) Herzen
+    usage: /herzen [spieler]
+    aliases: [hearts, hp]
+  auszahlen:
+    description: Eigene Herzen als Herz-Items auszahlen
+    usage: /auszahlen [anzahl]
+    aliases: [withdraw]
+  revive:
+    description: Eliminierten Spieler wiederbeleben (Revive-Beacon in der Hand noetig)
+    usage: /revive <spieler>
+    aliases: [wiederbeleben]
+  eliminiert:
+    description: Liste aller eliminierten Spieler
+    usage: /eliminiert
+    aliases: [eliminated]
+  lifestealitem:
+    description: Custom-Items vergeben (Admin)
+    usage: "/lifestealitem give <spieler> <herz|herz_fragment|revive_beacon|lifesteal_schwert> [anzahl]"
+    permission: doofie.lifesteal.items
+    aliases: [lsitem]
+
+permissions:
+  doofie.lifesteal.items:
+    description: Erlaubt /lifestealitem (Custom-Items vergeben)
+    default: op
+  doofie.lifesteal.admin:
+    description: Revive ohne Revive-Beacon, Herzen setzen
+    default: op
