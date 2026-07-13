@@ -12,7 +12,7 @@ Ruhe lässt, falls beide Plugins auf demselben Server laufen.
 | ❤ Herz | `lifesteal:herz` | Herz-Sprite aus `gui/icons.png` (ausgeschnitten) |
 | Herz-Fragment | `lifesteal:herz_fragment` | Halbes-Herz-Sprite aus `gui/icons.png` |
 | Revive-Beacon | `lifesteal:revive_beacon` | Nether-Stern-Textur |
-| Lifesteal-Schwert | `lifesteal:lifesteal_schwert` | Netherite-Schwert, rot eingefärbt |
+| Lifesteal-Schwert | `lifesteal:lifesteal_schwert` | **"Entangled Blade"** aus New Default+ (moderne Version, via Modrinth) inkl. Original-Model mit Hand-Transformationen |
 
 Ohne Pack sehen die Items nach ihrem Basis-Item aus (roter Farbstoff /
 Glitzer-Melone / Beacon / Netherite-Schwert), nichts ist kaputt.

@@ -43,6 +43,6 @@ Die fertige Jar liegt in `build/libs/doofie-lifesteal-1.0.0.jar` —
 einfach in den `plugins/`-Ordner des Paper-Servers (26.2) legen.
 
 Das Resource Pack liegt unter `resourcepack/DoofieLifesteal-Pack.zip`
-(Texturen aus NewDefault v1.82 übernommen: Herz-Sprites aus `gui/icons.png`
-ausgeschnitten, Nether-Stern für den Beacon, rot gefärbtes Netherite-Schwert).
+(Texturen aus NewDefault+ übernommen: Herz-Sprites aus `gui/icons.png`
+ausgeschnitten, Nether-Stern für den Beacon, "Entangled Blade" als Schwert).
 Ohne Pack funktioniert alles, die Items sehen nur nach ihrem Basis-Item aus.
