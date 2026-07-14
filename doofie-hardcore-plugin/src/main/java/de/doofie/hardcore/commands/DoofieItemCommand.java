@@ -20,7 +20,7 @@ import java.util.Locale;
  */
 public class DoofieItemCommand implements TabExecutor {
 
-    private static final List<String> ITEMS = List.of("doener", "speer");
+    private static final List<String> ITEMS = List.of("doener", "speer", "god_mace");
 
     private final HardcorePlugin plugin;
 

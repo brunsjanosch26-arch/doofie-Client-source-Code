@@ -81,6 +81,7 @@ public class CustomItems implements Listener {
         p.discoverRecipe(new NamespacedKey(plugin, "doener"));
         p.discoverRecipe(new NamespacedKey(plugin, "goetterspeer"));
         p.discoverRecipe(new NamespacedKey(plugin, "goetterspeer_koepfe"));
+        p.discoverRecipe(new NamespacedKey(plugin, "god_mace"));
     }
 
     @EventHandler
@@ -140,10 +141,27 @@ public class CustomItems implements Listener {
         return item;
     }
 
-    /** Liefert das Custom-Item zu einer ID ("doener", "speer"/"goetterspeer"). */
+    public ItemStack godMace() {
+        ItemStack item = tagged(Material.MACE, "god_mace",
+            "God Mace", NamedTextColor.GOLD,
+            List.of("Zwei Keulen, ein Speer, ein Beacon —",
+                "und der Himmel bekommt Angst.",
+                "Wucht VII · Durchbruch V · Windstoss III",
+                "Unzerstoerbar."));
+        ItemMeta meta = item.getItemMeta();
+        meta.addEnchant(Enchantment.DENSITY, 7, true);
+        meta.addEnchant(Enchantment.BREACH, 5, true);
+        meta.addEnchant(Enchantment.WIND_BURST, 3, true);
+        meta.setUnbreakable(true);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    /** Liefert das Custom-Item zu einer ID ("doener", "speer"/"goetterspeer", "god_mace"). */
     public ItemStack byId(String id) {
         if (id.equals("doener")) return doener();
         if (id.equals("speer") || id.equals("goetterspeer")) return goetterspeer();
+        if (id.equals("god_mace") || id.equals("mace")) return godMace();
         return null;
     }
 
@@ -196,6 +214,16 @@ public class CustomItems implements Listener {
         koepfe.setIngredient('D', Material.DIAMOND_BLOCK);
         koepfe.setIngredient('P', Material.NETHERITE_SPEAR);
         Bukkit.addRecipe(koepfe);
+
+        // God Mace:
+        //   Streitkolben | Streitkolben
+        //   Netherite-Speer | Beacon
+        ShapedRecipe mace = new ShapedRecipe(new NamespacedKey(plugin, "god_mace"), godMace());
+        mace.shape("MM", "SB");
+        mace.setIngredient('M', Material.MACE);
+        mace.setIngredient('S', Material.NETHERITE_SPEAR);
+        mace.setIngredient('B', Material.BEACON);
+        Bukkit.addRecipe(mace);
     }
 
     // ────────────────────────── Goetterspeer: Buffs + Auto-Blitz ──────────────────────────
