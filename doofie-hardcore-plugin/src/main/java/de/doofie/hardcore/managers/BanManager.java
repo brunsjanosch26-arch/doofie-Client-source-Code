@@ -38,7 +38,13 @@ public class BanManager {
         load();
     }
 
+    /** SMP-Modus: hardcore-bann=false schaltet Bann + Todes-Sperre komplett ab. */
+    private boolean hardcoreAktiv() {
+        return plugin.getConfig().getBoolean("hardcore-bann", true);
+    }
+
     public void ban(UUID player, double bounty, UUID killer) {
+        if (!hardcoreAktiv()) return;
         double aufschlag = plugin.getConfig().getDouble("freikauf-aufschlag", 0.05);
         Ban b = new Ban();
         b.cost = bounty * (1.0 + aufschlag);
@@ -57,7 +63,10 @@ public class BanManager {
 
     public void unban(UUID player) { banned.remove(player); }
 
-    public void markDead(UUID player) { dead.add(player); }
+    public void markDead(UUID player) {
+        if (!hardcoreAktiv()) return;
+        dead.add(player);
+    }
     public boolean isDead(UUID player) { return dead.contains(player); }
     public void revive(UUID player) { dead.remove(player); }
 

@@ -114,3 +114,6 @@ preise:
   COBBLESTONE: 0.05
   OBSIDIAN: 5.0
   AMETHYST_SHARD: 3.0
+
+# SMP-Modus: false = kein Bann/Todes-Sperre (fuer den doofie-smp-Server)
+hardcore-bann: true

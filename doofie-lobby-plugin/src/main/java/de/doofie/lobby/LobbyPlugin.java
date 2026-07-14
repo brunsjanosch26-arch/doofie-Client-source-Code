@@ -42,23 +42,23 @@ import java.util.List;
  */
 public class LobbyPlugin extends JavaPlugin implements Listener {
 
-    /** Anzeigename, Server-Name (velocity.toml), Icon, Beschreibung. */
-    private record Modus(String titel, String server, Material icon, String beschreibung) {}
+    /** Anzeigename, Server-Name (velocity.toml), exaroton-ID, Icon, Beschreibung. */
+    private record Modus(String titel, String server, String exarotonId, Material icon, String beschreibung) {}
 
     private static final List<Modus> MODI = List.of(
-        new Modus("Skyblock-Wars", "skyblock", Material.GRASS_BLOCK,
+        new Modus("Skyblock-Wars", "skyblock", "Qdj4Y8IcnMTNAUcV", Material.GRASS_BLOCK,
             "Himmelsinseln, Insel-Kern, Kern-Brecher!"),
-        new Modus("Boss-Raids", "bossraid", Material.WITHER_SKELETON_SKULL,
+        new Modus("Boss-Raids", "bossraid", "KhqjD665eH2TqZl2", Material.WITHER_SKELETON_SKULL,
             "Alle 2h ein Welt-Boss — wer macht Top-Schaden?"),
-        new Modus("Kingdoms", "kingdoms", Material.GOLDEN_HELMET,
+        new Modus("Kingdoms", "kingdoms", "DaUep6lu4B3Z9d8q", Material.GOLDEN_HELMET,
             "Koenigreiche, Claims und Kriegs-Fenster."),
-        new Modus("Kopfgeldjäger 2.0", "jaeger", Material.SPYGLASS,
+        new Modus("Kopfgeldjäger 2.0", "jaeger", "70wHXEJ4CRBeKE09", Material.SPYGLASS,
             "Jeder Kill macht dich wertvoller..."),
-        new Modus("Zombie-Apokalypse", "zombie", Material.ZOMBIE_HEAD,
+        new Modus("Zombie-Apokalypse", "zombie", "73GTtALKoxyJx2kT", Material.ZOMBIE_HEAD,
             "Nachts kommen die Horden. Blutmond alle 7 Tage!"),
-        new Modus("Chaos-Events", "chaos", Material.AMETHYST_SHARD,
+        new Modus("Chaos-Events", "chaos", "lxhKsPZ57twbtxAY", Material.AMETHYST_SHARD,
             "Alle 15 Minuten wuerfelt der Server."),
-        new Modus("Doofie-SMP", "smp", Material.OAK_LOG,
+        new Modus("Doofie-SMP", "smp", "jY7FAlQkUJJHYBY7", Material.OAK_LOG,
             "Klassisches Survival — bau dein Reich!"));
 
     private NamespacedKey kompassKey;
@@ -66,6 +66,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         kompassKey = new NamespacedKey(this, "modus_kompass");
         serverKey = new NamespacedKey(this, "ziel_server");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -198,12 +199,66 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
             .get(serverKey, PersistentDataType.STRING);
         if (server == null) return;
         p.closeInventory();
+
+        // Offline-Server automatisch per exaroton-API starten
+        Modus modus = MODI.stream().filter(m -> m.server().equals(server)).findFirst().orElse(null);
+        String token = getConfig().getString("exaroton-token", "");
+        if (modus != null && !token.isEmpty()) {
+            Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+                int status = exarotonStatus(token, modus.exarotonId());
+                if (status == 1) {
+                    Bukkit.getScheduler().runTask(this, () -> verbinde(p, server));
+                } else {
+                    exarotonStart(token, modus.exarotonId());
+                    Bukkit.getScheduler().runTask(this, () -> {
+                        p.sendMessage(Component.text("⏳ " + modus.titel()
+                            + " schlaeft gerade — ich habe ihn GEWECKT! "
+                            + "Versuch es in ~1 Minute nochmal.", NamedTextColor.GOLD));
+                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
+                    });
+                }
+            });
+        } else {
+            verbinde(p, server);
+        }
+    }
+
+    private void verbinde(Player p, String server) {
+        if (!p.isOnline()) return;
         p.sendMessage(Component.text("Verbinde mit " + server + "...", NamedTextColor.AQUA));
         p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f);
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Connect");
         out.writeUTF(server);
         p.sendPluginMessage(this, "BungeeCord", out.toByteArray());
+    }
+
+    /** exaroton-Status: 1=online, 0=aus, 2=startet, -1=Fehler. */
+    private int exarotonStatus(String token, String serverId) {
+        try {
+            var client = java.net.http.HttpClient.newHttpClient();
+            var req = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://api.exaroton.com/v1/servers/" + serverId + "/"))
+                .header("Authorization", "Bearer " + token)
+                .header("User-Agent", "doofie-lobby").build();
+            String body = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString()).body();
+            var status = com.google.gson.JsonParser.parseString(body)
+                .getAsJsonObject().getAsJsonObject("data").get("status");
+            return status.getAsInt();
+        } catch (Exception ex) {
+            return -1;
+        }
+    }
+
+    private void exarotonStart(String token, String serverId) {
+        try {
+            var client = java.net.http.HttpClient.newHttpClient();
+            var req = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://api.exaroton.com/v1/servers/" + serverId + "/start/"))
+                .header("Authorization", "Bearer " + token)
+                .header("User-Agent", "doofie-lobby").build();
+            client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+        } catch (Exception ignored) { }
     }
 
     // ────────────────────────── Lobby-Schutz ──────────────────────────

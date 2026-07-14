@@ -125,6 +125,7 @@ public final class HardcorePlugin extends JavaPlugin {
             getCommand(c).setExecutor(tpa);
             getCommand(c).setTabCompleter(tpa);
         }
+        new de.doofie.hardcore.commands.LobbyCommand(this).register();
         getCommand("gilde").setExecutor(new GildeCommand(this));
         getCommand("boerse").setExecutor(new BoerseCommand(this));
         getCommand("wette").setExecutor(new WetteCommand(this));

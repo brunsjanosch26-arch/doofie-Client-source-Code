@@ -133,6 +133,11 @@ commands:
     permission: doofie.items
     aliases: [citem]
 
+  lobby:
+    description: Zurueck in die Netzwerk-Lobby (nur im Doofie-Netzwerk)
+    usage: /lobby
+    aliases: [hub]
+
 permissions:
   doofie.invsee:
     description: Erlaubt /invsee
