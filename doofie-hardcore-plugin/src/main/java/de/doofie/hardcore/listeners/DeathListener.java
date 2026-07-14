@@ -192,6 +192,8 @@ public class DeathListener implements Listener {
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
+        // SMP-Modus: ganz normaler Survival-Respawn, kein Spectator-Ritual
+        if (!plugin.getConfig().getBoolean("hardcore-bann", true)) return;
         // Nach dem Respawn: Gebannte in den Spectator, alle anderen ueberleben
         // den Hardcore-Tod (Bann gibt es NUR ueber Kopfgeld).
         Bukkit.getScheduler().runTaskLater(plugin, () -> {

@@ -29,6 +29,14 @@ public class BanListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        // SMP-Modus: haengengebliebene Spectator zurueck in den Survival holen
+        if (!plugin.getConfig().getBoolean("hardcore-bann", true)) {
+            if (player.getGameMode() == GameMode.SPECTATOR && !player.isOp()) {
+                player.setGameMode(GameMode.SURVIVAL);
+                player.sendMessage(Component.text("Willkommen zurueck im Survival!", NamedTextColor.GREEN));
+            }
+            return;
+        }
         if (plugin.bans().isDead(player.getUniqueId())) {
             player.setGameMode(GameMode.SPECTATOR);
             player.sendMessage(Component.text("Du bist noch tot! /freikaufen bringt dich gratis zurueck.", NamedTextColor.YELLOW));
