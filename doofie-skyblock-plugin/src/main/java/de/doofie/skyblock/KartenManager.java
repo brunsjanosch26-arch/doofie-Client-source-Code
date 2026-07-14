@@ -101,10 +101,11 @@ public class KartenManager implements Listener {
         welt().setSpawnLocation(new Location(welt(), 0.5, 110, 0.5));
 
         if (marker.exists()) {
-            // Karte steht schon — nur die Kisten-Positionen wieder einsammeln
+            // Karte steht schon — Kisten registrieren und frisch befuellen
             sammleKisten();
+            fuelleLoot();
             karteFertig = true;
-            plugin.getLogger().info("Skyblock-Karte vorhanden — " + lootKisten.size() + " Loot-Kisten registriert.");
+            plugin.getLogger().info("Skyblock-Karte vorhanden — " + lootKisten.size() + " Loot-Kisten neu befuellt.");
         } else {
             baueKarte();
         }
@@ -169,23 +170,43 @@ public class KartenManager implements Listener {
         }
     }
 
-    /** Befuellt alle Loot-Kisten mit zufaelligem Loot. */
+    /**
+     * Befuellt alle Loot-Kisten: Bloecke, Verpflegung — und Ruestung/Waffen
+     * von Leder/Stein bis Diamant (Diamant ist selten, weil nur 1x im Pool).
+     */
     private void fuelleLoot() {
         List<ItemStack> pool = List.of(
-            new ItemStack(Material.COBBLESTONE, 32), new ItemStack(Material.OAK_LOG, 12),
-            new ItemStack(Material.BREAD, 8), new ItemStack(Material.IRON_INGOT, 5),
-            new ItemStack(Material.GOLD_INGOT, 3), new ItemStack(Material.DIAMOND, 2),
-            new ItemStack(Material.ENDER_PEARL, 2), new ItemStack(Material.WATER_BUCKET),
-            new ItemStack(Material.LAVA_BUCKET), new ItemStack(Material.OAK_SAPLING, 4),
-            new ItemStack(Material.MELON_SEEDS, 3), new ItemStack(Material.PUMPKIN_SEEDS, 3),
-            new ItemStack(Material.ICE, 2), new ItemStack(Material.STRING, 6),
-            new ItemStack(Material.ARROW, 12), new ItemStack(Material.EXPERIENCE_BOTTLE, 4));
+            // Bloecke (mehrfach im Pool = haeufig)
+            new ItemStack(Material.COBBLESTONE, 64), new ItemStack(Material.COBBLESTONE, 32),
+            new ItemStack(Material.OAK_PLANKS, 32), new ItemStack(Material.OAK_LOG, 16),
+            new ItemStack(Material.DIRT, 32), new ItemStack(Material.STONE, 32),
+            // Verpflegung & Nuetzliches
+            new ItemStack(Material.BREAD, 8), new ItemStack(Material.COOKED_BEEF, 6),
+            new ItemStack(Material.IRON_INGOT, 5), new ItemStack(Material.GOLD_INGOT, 3),
+            new ItemStack(Material.DIAMOND, 2), new ItemStack(Material.ENDER_PEARL, 2),
+            new ItemStack(Material.WATER_BUCKET), new ItemStack(Material.LAVA_BUCKET),
+            new ItemStack(Material.OAK_SAPLING, 4), new ItemStack(Material.MELON_SEEDS, 3),
+            new ItemStack(Material.PUMPKIN_SEEDS, 3), new ItemStack(Material.ICE, 2),
+            new ItemStack(Material.STRING, 6), new ItemStack(Material.ARROW, 16),
+            new ItemStack(Material.EXPERIENCE_BOTTLE, 4),
+            // Waffen: Stein haeufig, Eisen normal, Diamant selten
+            new ItemStack(Material.STONE_SWORD), new ItemStack(Material.STONE_AXE),
+            new ItemStack(Material.IRON_SWORD), new ItemStack(Material.IRON_AXE),
+            new ItemStack(Material.BOW), new ItemStack(Material.DIAMOND_SWORD),
+            // Ruestung: Leder/Kette haeufig, Eisen normal, Diamant selten
+            new ItemStack(Material.LEATHER_HELMET), new ItemStack(Material.LEATHER_CHESTPLATE),
+            new ItemStack(Material.LEATHER_LEGGINGS), new ItemStack(Material.LEATHER_BOOTS),
+            new ItemStack(Material.CHAINMAIL_CHESTPLATE), new ItemStack(Material.CHAINMAIL_LEGGINGS),
+            new ItemStack(Material.IRON_HELMET), new ItemStack(Material.IRON_CHESTPLATE),
+            new ItemStack(Material.IRON_LEGGINGS), new ItemStack(Material.IRON_BOOTS),
+            new ItemStack(Material.DIAMOND_HELMET), new ItemStack(Material.DIAMOND_CHESTPLATE),
+            new ItemStack(Material.DIAMOND_LEGGINGS), new ItemStack(Material.DIAMOND_BOOTS));
         var zufall = ThreadLocalRandom.current();
         for (Location ort : lootKisten) {
             if (!(ort.getBlock().getState() instanceof Chest kiste)) continue;
             var inv = kiste.getBlockInventory();
             inv.clear();
-            int anzahl = 4 + zufall.nextInt(4);
+            int anzahl = 5 + zufall.nextInt(4);
             for (int i = 0; i < anzahl; i++) {
                 inv.setItem(zufall.nextInt(inv.getSize()), pool.get(zufall.nextInt(pool.size())).clone());
             }
@@ -256,6 +277,13 @@ public class KartenManager implements Listener {
         p.teleport(spawn());
         if (!p.getInventory().contains(Material.COMPASS)) {
             p.getInventory().addItem(plugin.islands().inselKompass());
+        }
+        // Start-Kit: 3 Stacks Bloecke zum Bruecken bauen
+        if (!p.getInventory().contains(Material.COBBLESTONE)) {
+            p.getInventory().addItem(
+                new ItemStack(Material.COBBLESTONE, 64),
+                new ItemStack(Material.COBBLESTONE, 64),
+                new ItemStack(Material.OAK_PLANKS, 64));
         }
         p.sendMessage(Component.text("Willkommen bei Skyblock-Wars! 10 Inseln warten — "
             + "aber Achtung: Verlaesst der letzte Spieler den Server, wird ALLES zurueckgesetzt!",
