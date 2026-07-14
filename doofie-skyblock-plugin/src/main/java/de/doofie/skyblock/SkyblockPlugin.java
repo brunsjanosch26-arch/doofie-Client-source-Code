@@ -3,42 +3,47 @@ package de.doofie.skyblock;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * DOOFIE SKYBLOCK-WARS — Himmelsinseln mit Insel-Kern.
+ * DOOFIE SKYBLOCK-WARS — die 10-Insel-Karte mit Session-Reset.
  *
- * — Beim ersten Join bekommt jeder eine eigene Insel (Grid, 512 Bloecke
- *   Abstand, y=120) mit Insel-Kern (Lodestone) in der Mitte.
- * — Insel-Level steigt durch Bloecke platzieren auf der eigenen Insel.
- * — Wer in die Leere faellt, landet zuhause statt zu sterben.
+ * — Feste Karte: 5x die grosse Insel (aussen) + 5x die klassische
+ *   Skyblock-Insel (innen) im Ring um die Spawn-Plattform.
+ * — Alle Kisten sind mit Zufalls-Loot befuellt.
+ * — RESET: Verlaesst der letzte Spieler den Server (z.B. /lobby),
+ *   wird alles Zurueckgesetzt — abgebaut, platziert, gelootet.
  * — Custom Items (alle mit item_model 'skyblock:<id>'):
- *   INSEL-KOMPASS: Rechtsklick = heim teleportieren (3s Warmup).
- *   VOID-ANGEL: Rechtsklick = fischt zufaellige Beute aus der Leere (30s CD).
- *   KERN-BRECHER: einzige Spitzhacke, die FREMDE Insel-Kerne brechen kann —
- *   stiehlt 25% des Insel-Levels und droppt Diamanten.
+ *   INSEL-KOMPASS, VOID-ANGEL, KERN-BRECHER (Effizienz X).
  * — TPA-System: /tpa /tpahere /tpaccept /tpadeny /tpaauto — /lobby zurueck.
  */
 public class SkyblockPlugin extends JavaPlugin {
 
     private IslandManager islands;
+    private KartenManager karte;
 
     @Override
     public void onEnable() {
         getDataFolder().mkdirs();
         islands = new IslandManager(this);
+        karte = new KartenManager(this);
         getServer().getPluginManager().registerEvents(islands, this);
+        getServer().getPluginManager().registerEvents(karte, this);
         islands.start();
+        try {
+            karte.start();
+        } catch (Exception ex) {
+            getLogger().severe("Karte konnte nicht geladen werden: " + ex.getMessage());
+        }
         getCommand("insel").setExecutor(islands);
         getCommand("insel").setTabCompleter(islands);
         new TpaCommand(this, (von, zu) -> null).register();
         new LobbyCommand(this).register();
-        getLogger().info("Skyblock-Wars aktiv — ab in die Luft!");
-    }
-
-    @Override
-    public void onDisable() {
-        if (islands != null) islands.save();
+        getLogger().info("Skyblock-Wars aktiv — 10 Inseln, Reset beim Verlassen!");
     }
 
     public IslandManager islands() {
         return islands;
+    }
+
+    public KartenManager karte() {
+        return karte;
     }
 }

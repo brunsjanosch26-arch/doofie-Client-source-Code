@@ -105,10 +105,10 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         getLogger().info("Doofie-Lobby aktiv — " + MODI.size() + " Modi im Kompass, ewiger Tag, keine Mobs.");
     }
 
-    /** Void-Rettung: Wer faellt, landet wieder am Spawn. */
+    /** Void-Rettung: Wer unter y=-20 faellt, landet wieder am Spawn. */
     @EventHandler
     public void onVoid(org.bukkit.event.player.PlayerMoveEvent event) {
-        if (event.getTo().getY() < 50) {
+        if (event.getTo().getY() < -20) {
             Player p = event.getPlayer();
             p.teleport(p.getWorld().getSpawnLocation().clone().add(0, 1, 0));
             p.setFallDistance(0);
