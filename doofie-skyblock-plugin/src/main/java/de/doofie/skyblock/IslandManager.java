@@ -43,9 +43,9 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class IslandManager implements Listener, TabExecutor {
 
-    private static final int ABSTAND = 512;
+    private static final int ABSTAND = 256;
     private static final int Y = 120;
-    private static final int RADIUS = 64;
+    private static final int RADIUS = 100;
 
     private final SkyblockPlugin plugin;
     private final NamespacedKey itemKey;
@@ -115,7 +115,11 @@ public class IslandManager implements Listener, TabExecutor {
         return new Location(welt(), index * ABSTAND + 0.5, Y + 1, 0.5);
     }
 
-    /** Baut die Start-Insel: 9x9-Plattform, Baum-Ecke, Kiste, Kern. */
+    /**
+     * Baut die Start-Insel: 9x9-Plattform mit Kern und Kiste — plus
+     * 4 NEBEN-INSELN drumherum (Baum, Erze, Sand, Schatz), damit die
+     * Void-Welt nach Archipel aussieht und es was zu erbruecken gibt.
+     */
     private void baueInsel(int index) {
         Location mitte = inselMitte(index);
         World w = mitte.getWorld();
@@ -128,20 +132,87 @@ public class IslandManager implements Listener, TabExecutor {
         }
         // Insel-Kern in der Mitte
         w.getBlockAt(cx, Y + 1, cz).setType(Material.LODESTONE);
-        // Starterkiste
+        // Starterkiste — genug Bloecke, um die erste Nachbar-Insel zu erreichen
         Block kiste = w.getBlockAt(cx + 2, Y + 1, cz + 2);
         kiste.setType(Material.CHEST);
         if (kiste.getState() instanceof org.bukkit.block.Chest c) {
             c.getInventory().addItem(
-                new ItemStack(Material.OAK_SAPLING, 2),
+                new ItemStack(Material.COBBLESTONE, 64),
+                new ItemStack(Material.COBBLESTONE, 64),
+                new ItemStack(Material.DIRT, 32),
+                new ItemStack(Material.OAK_SAPLING, 3),
                 new ItemStack(Material.ICE, 2),
                 new ItemStack(Material.LAVA_BUCKET),
-                new ItemStack(Material.BREAD, 8),
+                new ItemStack(Material.WATER_BUCKET),
+                new ItemStack(Material.BREAD, 12),
                 inselKompass(),
                 voidAngel());
         }
         // Setzling-Ecke
         w.getBlockAt(cx - 3, Y + 1, cz - 3).setType(Material.OAK_SAPLING);
+
+        // 4 Neben-Inseln in zufaelligen Richtungen (35-55 Bloecke entfernt)
+        java.util.Random zufall = new java.util.Random(index * 7919L);
+        double startwinkel = zufall.nextDouble() * Math.PI * 2;
+        for (int i = 0; i < 4; i++) {
+            double winkel = startwinkel + i * Math.PI / 2 + zufall.nextDouble() * 0.6;
+            int abstand = 35 + zufall.nextInt(21);
+            int nx = cx + (int) (Math.cos(winkel) * abstand);
+            int nz = cz + (int) (Math.sin(winkel) * abstand);
+            int ny = Y + zufall.nextInt(9) - 4;
+            baueNebeninsel(w, nx, ny, nz, i, zufall);
+        }
+    }
+
+    /** Kleine Neben-Insel: 0=Baum, 1=Erze, 2=Sand, 3=Schatz. */
+    private void baueNebeninsel(World w, int cx, int cy, int cz, int typ, java.util.Random zufall) {
+        // 5x5-Plattform mit abgerundeten Ecken
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                if (Math.abs(dx) == 2 && Math.abs(dz) == 2) continue;
+                Material boden = switch (typ) {
+                    case 1 -> Material.STONE;
+                    case 2 -> Material.SAND;
+                    default -> Material.DIRT;
+                };
+                w.getBlockAt(cx + dx, cy - 1, cz + dz).setType(boden);
+                if (typ == 0 || typ == 3) {
+                    w.getBlockAt(cx + dx, cy, cz + dz).setType(Material.GRASS_BLOCK);
+                } else {
+                    w.getBlockAt(cx + dx, cy, cz + dz).setType(boden);
+                }
+            }
+        }
+        switch (typ) {
+            case 0 -> { // Baum-Insel: ausgewachsene Eiche
+                Block setzling = w.getBlockAt(cx, cy + 1, cz);
+                setzling.setType(Material.OAK_SAPLING);
+                w.generateTree(setzling.getLocation(), zufall, org.bukkit.TreeType.TREE);
+            }
+            case 1 -> { // Erz-Insel: Kohle + Eisen + 1 Diamant versteckt
+                w.getBlockAt(cx - 1, cy, cz).setType(Material.COAL_ORE);
+                w.getBlockAt(cx + 1, cy, cz - 1).setType(Material.COAL_ORE);
+                w.getBlockAt(cx, cy, cz + 1).setType(Material.IRON_ORE);
+                w.getBlockAt(cx + 1, cy, cz + 1).setType(Material.IRON_ORE);
+                w.getBlockAt(cx, cy - 1, cz).setType(Material.DIAMOND_ORE);
+            }
+            case 2 -> { // Sand-Insel: Kaktus + Zuckerrohr-Basis
+                w.getBlockAt(cx, cy + 1, cz).setType(Material.CACTUS);
+                w.getBlockAt(cx - 1, cy, cz + 1).setType(Material.CLAY);
+            }
+            default -> { // Schatz-Insel
+                Block kiste = w.getBlockAt(cx, cy + 1, cz);
+                kiste.setType(Material.CHEST);
+                if (kiste.getState() instanceof org.bukkit.block.Chest c) {
+                    c.getInventory().addItem(
+                        new ItemStack(Material.MELON_SEEDS, 2),
+                        new ItemStack(Material.PUMPKIN_SEEDS, 2),
+                        new ItemStack(Material.IRON_INGOT, 4),
+                        new ItemStack(Material.GOLD_INGOT, 2),
+                        new ItemStack(Material.ENDER_PEARL));
+                }
+            }
+        }
     }
 
     /** Insel des Spielers (erstellt sie beim ersten Mal). */
