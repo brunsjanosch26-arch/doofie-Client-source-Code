@@ -155,7 +155,7 @@ public class CustomItems implements Listener {
     public ItemStack godMace() {
         ItemStack item = tagged(Material.MACE, "god_mace",
             "God Mace", NamedTextColor.GOLD,
-            List.of("Drei Koepfe, zwei Keulen, ein Goetterspeer,",
+            List.of("Drei Koepfe, zwei Keulen, ein Speer,",
                 "ein Beacon — und der Himmel bekommt Angst.",
                 "Wucht VII · Durchbruch V · Windstoss III",
                 "Kein Fallschaden · Doppelsprung (2x Leertaste)",
@@ -227,15 +227,15 @@ public class CustomItems implements Listener {
         koepfe.setIngredient('P', Material.NETHERITE_SPEAR);
         Bukkit.addRecipe(koepfe);
 
-        // God Mace (Endgame!):
-        //   Spielerkopf  | Spielerkopf | Spielerkopf
-        //   Streitkolben | GOETTERSPEER | Streitkolben
-        //                | Beacon      |
+        // God Mace:
+        //   Spielerkopf  | Spielerkopf     | Spielerkopf
+        //   Streitkolben | Netherite-Speer | Streitkolben
+        //                | Beacon          |
         ShapedRecipe mace = new ShapedRecipe(new NamespacedKey(plugin, "god_mace"), godMace());
-        mace.shape("KKK", "MGM", " B ");
+        mace.shape("KKK", "MSM", " B ");
         mace.setIngredient('K', Material.PLAYER_HEAD);
         mace.setIngredient('M', Material.MACE);
-        mace.setIngredient('G', new org.bukkit.inventory.RecipeChoice.ExactChoice(goetterspeer()));
+        mace.setIngredient('S', Material.NETHERITE_SPEAR);
         mace.setIngredient('B', Material.BEACON);
         Bukkit.addRecipe(mace);
     }
