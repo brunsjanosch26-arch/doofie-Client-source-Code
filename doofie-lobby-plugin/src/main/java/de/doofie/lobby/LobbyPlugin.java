@@ -81,7 +81,33 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
             }
         }
         new SchemCommand(this).register();
+
+        // Void-Welt: falls am Spawn nichts steht, eine Plattform hinbauen
+        org.bukkit.World w = getServer().getWorlds().get(0);
+        org.bukkit.Location spawn = new org.bukkit.Location(w, 0.5, 101, 0.5);
+        if (w.getBlockAt(0, 100, 0).getType().isAir()) {
+            for (int dx = -12; dx <= 12; dx++) {
+                for (int dz = -12; dz <= 12; dz++) {
+                    if (dx * dx + dz * dz > 12 * 12) continue; // runde Plattform
+                    w.getBlockAt(dx, 100, dz).setType(
+                        (dx * dx + dz * dz > 10 * 10) ? Material.SEA_LANTERN : Material.SMOOTH_QUARTZ);
+                }
+            }
+            getLogger().info("Spawn-Plattform in der Void-Lobby gebaut.");
+        }
+        w.setSpawnLocation(spawn);
+
         getLogger().info("Doofie-Lobby aktiv — " + MODI.size() + " Modi im Kompass, ewiger Tag, keine Mobs.");
+    }
+
+    /** Void-Rettung: Wer faellt, landet wieder am Spawn. */
+    @EventHandler
+    public void onVoid(org.bukkit.event.player.PlayerMoveEvent event) {
+        if (event.getTo().getY() < 50) {
+            Player p = event.getPlayer();
+            p.teleport(p.getWorld().getSpawnLocation().clone().add(0, 1, 0));
+            p.setFallDistance(0);
+        }
     }
 
     /** Absolut nichts spawnt in der Lobby — auch keine Slimes aus Superflat-Chunks. */
