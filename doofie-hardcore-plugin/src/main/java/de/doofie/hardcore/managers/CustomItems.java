@@ -6,9 +6,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
@@ -16,8 +19,10 @@ import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,8 +33,10 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -61,6 +68,8 @@ public class CustomItems implements Listener {
     private final NamespacedKey itemKey;
     /** Goetterspeer: Blitz-Cooldown-Ende pro Spieler (ms) */
     private final Map<UUID, Long> blitzCooldown = new HashMap<>();
+    /** God Mace: Spieler, deren Doppelsprung gerade bereit ist */
+    private final Set<UUID> doppelsprungBereit = new HashSet<>();
 
     public CustomItems(HardcorePlugin plugin) {
         this.plugin = plugin;
@@ -74,6 +83,8 @@ public class CustomItems implements Listener {
         Bukkit.getOnlinePlayers().forEach(this::discoverRecipes);
         // Alle 3 Sekunden: Speer-Buffs pruefen (Effektdauer 5s, damit nichts flackert)
         Bukkit.getScheduler().runTaskTimer(plugin, this::applyItemEffects, 60L, 60L);
+        // Alle 10 Ticks: God-Mace-Doppelsprung scharf schalten
+        Bukkit.getScheduler().runTaskTimer(plugin, this::maceFlugCheck, 10L, 10L);
     }
 
     /** Schaltet die Custom-Rezepte im Rezeptbuch frei. */
@@ -266,6 +277,49 @@ public class CustomItems implements Listener {
         return a.getWorld().equals(b.getWorld())
             && a.getBlockX() >> 4 == b.getBlockX() >> 4
             && a.getBlockZ() >> 4 == b.getBlockZ() >> 4;
+    }
+
+    // ────────────────────────── God Mace: Doppelsprung + kein Fallschaden ──────────────────────────
+
+    private boolean traegtGodMace(Player p) {
+        return is(p.getInventory().getItemInMainHand(), "god_mace")
+            || is(p.getInventory().getItemInOffHand(), "god_mace");
+    }
+
+    /** Gibt Mace-Traegern am Boden die Flug-Erlaubnis (= Doppelsprung-Trigger). */
+    private void maceFlugCheck() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getGameMode() != GameMode.SURVIVAL && p.getGameMode() != GameMode.ADVENTURE) continue;
+            if (traegtGodMace(p)) {
+                if (p.isOnGround() && !p.getAllowFlight()) {
+                    p.setAllowFlight(true);
+                    doppelsprungBereit.add(p.getUniqueId());
+                }
+            } else if (doppelsprungBereit.remove(p.getUniqueId())) {
+                p.setAllowFlight(false);
+            }
+        }
+    }
+
+    /** Doppelt Leertaste = Doppelsprung (Flug-Toggle abfangen). */
+    @EventHandler
+    public void onDoppelsprung(PlayerToggleFlightEvent event) {
+        Player p = event.getPlayer();
+        if (!doppelsprungBereit.remove(p.getUniqueId())) return;
+        if (p.getGameMode() == GameMode.CREATIVE || p.getGameMode() == GameMode.SPECTATOR) return;
+        event.setCancelled(true);
+        p.setAllowFlight(false); // bis zur naechsten Landung
+        p.setVelocity(p.getLocation().getDirection().clone().multiply(0.8).setY(0.9));
+        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BREEZE_SHOOT, 1f, 1.4f);
+        p.getWorld().spawnParticle(Particle.CLOUD, p.getLocation(), 20, 0.3, 0.1, 0.3, 0.05);
+    }
+
+    /** Mit God Mace in der Hand gibt es keinen Fallschaden. */
+    @EventHandler
+    public void onMaceFall(EntityDamageEvent event) {
+        if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
+        if (!(event.getEntity() instanceof Player p)) return;
+        if (traegtGodMace(p)) event.setCancelled(true);
     }
 
     // ────────────────────────── Lunge ohne Hunger ──────────────────────────
