@@ -68,7 +68,27 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         serverKey = new NamespacedKey(this, "ziel_server");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
-        getLogger().info("Doofie-Lobby aktiv — " + MODI.size() + " Modi im Kompass.");
+
+        // Ewiger Tag + keine Mobs: Gameregeln setzen und Bestand entsorgen
+        for (org.bukkit.World w : getServer().getWorlds()) {
+            w.setGameRule(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE, false);
+            w.setGameRule(org.bukkit.GameRule.DO_WEATHER_CYCLE, false);
+            w.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
+            w.setTime(6000); // High Noon
+            w.setStorm(false);
+            for (org.bukkit.entity.Entity e : w.getEntities()) {
+                if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)) e.remove();
+            }
+        }
+        getLogger().info("Doofie-Lobby aktiv — " + MODI.size() + " Modi im Kompass, ewiger Tag, keine Mobs.");
+    }
+
+    /** Absolut nichts spawnt in der Lobby — auch keine Slimes aus Superflat-Chunks. */
+    @EventHandler
+    public void onSpawn(org.bukkit.event.entity.CreatureSpawnEvent event) {
+        if (event.getSpawnReason() != org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM) {
+            event.setCancelled(true);
+        }
     }
 
     // ────────────────────────── Kompass ──────────────────────────
