@@ -80,6 +80,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
                 if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)) e.remove();
             }
         }
+        new SchemCommand(this).register();
         getLogger().info("Doofie-Lobby aktiv — " + MODI.size() + " Modi im Kompass, ewiger Tag, keine Mobs.");
     }
 

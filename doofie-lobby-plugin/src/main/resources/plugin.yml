@@ -4,3 +4,15 @@ main: de.doofie.lobby.LobbyPlugin
 api-version: '26.2'
 author: Doofie
 description: Netzwerk-Lobby — Modus-Kompass mit GUI, schickt Spieler ueber Velocity auf die Spielmodi
+
+commands:
+  schemplatz:
+    description: WorldEdit-Schematic (.schem) an deiner Position platzieren (Admin)
+    usage: "/schemplatz <datei>"
+    permission: doofie.lobby.schem
+    aliases: [pasteschem]
+
+permissions:
+  doofie.lobby.schem:
+    description: Erlaubt /schemplatz
+    default: op
