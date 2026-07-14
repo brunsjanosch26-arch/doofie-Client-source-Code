@@ -57,7 +57,9 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         new Modus("Zombie-Apokalypse", "zombie", Material.ZOMBIE_HEAD,
             "Nachts kommen die Horden. Blutmond alle 7 Tage!"),
         new Modus("Chaos-Events", "chaos", Material.AMETHYST_SHARD,
-            "Alle 15 Minuten wuerfelt der Server."));
+            "Alle 15 Minuten wuerfelt der Server."),
+        new Modus("Doofie-SMP", "smp", Material.OAK_LOG,
+            "Klassisches Survival — bau dein Reich!"));
 
     private NamespacedKey kompassKey;
     private NamespacedKey serverKey;
@@ -159,7 +161,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
     private void oeffneMenu(Player p) {
         Inventory gui = Bukkit.createInventory(new ModusHolder(), 27,
             Component.text("Waehle deinen Modus!", NamedTextColor.DARK_AQUA, TextDecoration.BOLD));
-        int[] slots = {10, 11, 12, 14, 15, 16};
+        int[] slots = {10, 11, 12, 14, 15, 16, 13};
         for (int i = 0; i < MODI.size(); i++) {
             Modus m = MODI.get(i);
             ItemStack icon = new ItemStack(m.icon());

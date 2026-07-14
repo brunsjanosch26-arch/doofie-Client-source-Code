@@ -69,8 +69,12 @@ public class KartenManager implements Listener {
         return Bukkit.getWorlds().get(0);
     }
 
+    /** Spawn = oberster Block der Mittel-Insel (kein Quarz-Podest mehr). */
     public Location spawn() {
-        return new Location(welt(), 0.5, 101, 0.5);
+        World w = welt();
+        int y = w.getHighestBlockYAt(0, 0);
+        if (y <= w.getMinHeight()) y = 110; // Karte noch im Bau
+        return new Location(w, 0.5, y + 1, 0.5);
     }
 
     // ────────────────────────── Karte bauen ──────────────────────────
@@ -79,30 +83,22 @@ public class KartenManager implements Listener {
         SchematicLader gross = new SchematicLader(new File(plugin.getDataFolder(), "schematics/insel_gross.dschem"));
         SchematicLader klassisch = new SchematicLader(new File(plugin.getDataFolder(), "schematics/insel_klassisch.dschem"));
 
-        // 5 grosse Inseln aussen (Radius 320), 5 klassische innen (Radius 100)
+        // Mittel-Insel (= Spawn-Insel) + 4 klassische bei Radius 70 + 5 grosse bei Radius 200
+        platzierungen.add(new Platzierung(klassisch,
+            -klassisch.breite / 2, 90, -klassisch.laenge / 2));
+        for (int i = 0; i < 4; i++) {
+            double wk = Math.toRadians(45 + i * 90);
+            platzierungen.add(new Platzierung(klassisch,
+                (int) (Math.cos(wk) * 70) - klassisch.breite / 2, 90,
+                (int) (Math.sin(wk) * 70) - klassisch.laenge / 2));
+        }
         for (int i = 0; i < 5; i++) {
             double wg = Math.toRadians(i * 72);
             platzierungen.add(new Platzierung(gross,
-                (int) (Math.cos(wg) * 320) - gross.breite / 2, 60,
-                (int) (Math.sin(wg) * 320) - gross.laenge / 2));
-            double wk = Math.toRadians(i * 72 + 36);
-            platzierungen.add(new Platzierung(klassisch,
-                (int) (Math.cos(wk) * 100) - klassisch.breite / 2, 90,
-                (int) (Math.sin(wk) * 100) - klassisch.laenge / 2));
+                (int) (Math.cos(wg) * 200) - gross.breite / 2, 60,
+                (int) (Math.sin(wg) * 200) - gross.laenge / 2));
         }
-
-        // Spawn-Plattform (falls leer)
-        World w = welt();
-        if (w.getBlockAt(0, 100, 0).getType().isAir()) {
-            for (int dx = -8; dx <= 8; dx++) {
-                for (int dz = -8; dz <= 8; dz++) {
-                    if (dx * dx + dz * dz > 8 * 8) continue;
-                    w.getBlockAt(dx, 100, dz).setType(
-                        (dx * dx + dz * dz > 6 * 6) ? Material.SEA_LANTERN : Material.SMOOTH_QUARTZ);
-                }
-            }
-        }
-        w.setSpawnLocation(spawn());
+        welt().setSpawnLocation(new Location(welt(), 0.5, 110, 0.5));
 
         if (marker.exists()) {
             // Karte steht schon — nur die Kisten-Positionen wieder einsammeln
