@@ -126,6 +126,22 @@ public final class HardcorePlugin extends JavaPlugin {
             getCommand(c).setTabCompleter(tpa);
         }
         new de.doofie.hardcore.commands.LobbyCommand(this).register();
+
+        // SMP-Modus: Kopfgeld-Befehle komplett deaktivieren
+        if (!getConfig().getBoolean("kopfgeld-system", true)) {
+            org.bukkit.command.CommandExecutor deaktiviert = (sender, cmd, label, args) -> {
+                sender.sendMessage(net.kyori.adventure.text.Component.text(
+                    "Das Kopfgeld-System ist auf diesem Server deaktiviert.",
+                    net.kyori.adventure.text.format.NamedTextColor.RED));
+                return true;
+            };
+            for (String c : new String[]{"kopfgeld", "freikaufen", "jagd", "auftrag",
+                    "gerichtsduell", "schutz", "testament"}) {
+                getCommand(c).setExecutor(deaktiviert);
+                getCommand(c).setTabCompleter((sender, cmd, label, args) -> java.util.List.of());
+            }
+            getLogger().info("SMP-Modus: Kopfgeld-System deaktiviert — Koepfe droppen bei jedem PvP-Kill.");
+        }
         getCommand("gilde").setExecutor(new GildeCommand(this));
         getCommand("boerse").setExecutor(new BoerseCommand(this));
         getCommand("wette").setExecutor(new WetteCommand(this));

@@ -97,6 +97,22 @@ public class DeathListener implements Listener {
             return;
         }
 
+        // SMP-Modus (kopfgeld-system: false): kein Kopfgeld-Zeug, aber bei
+        // JEDEM Spieler-Kill droppt der Kopf des Opfers (fuers Gott-Item-Crafting)
+        if (!plugin.getConfig().getBoolean("kopfgeld-system", true)) {
+            if (killer != null && !killer.equals(victim)) {
+                ItemStack kopf = new ItemStack(Material.PLAYER_HEAD);
+                SkullMeta kopfMeta = (SkullMeta) kopf.getItemMeta();
+                kopfMeta.setOwningPlayer(victim);
+                kopfMeta.displayName(Component.text("Kopf von " + victim.getName(), NamedTextColor.GOLD));
+                kopf.setItemMeta(kopfMeta);
+                victim.getWorld().dropItemNaturally(victim.getLocation(), kopf);
+                killer.sendMessage(Component.text("Der Kopf von " + victim.getName()
+                    + " ist gedroppt — Crafting-Material!", NamedTextColor.GOLD));
+            }
+            return;
+        }
+
         double bounty = plugin.bounties().total(victim.getUniqueId());
 
         if (bounty > 0 && killer != null && !killer.equals(victim)) {

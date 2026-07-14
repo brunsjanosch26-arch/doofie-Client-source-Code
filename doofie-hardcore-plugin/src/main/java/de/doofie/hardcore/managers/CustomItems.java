@@ -139,14 +139,14 @@ public class CustomItems implements Listener {
         ItemStack item = tagged(Material.NETHERITE_SPEAR, "goetterspeer",
             "Götterspeer", NamedTextColor.LIGHT_PURPLE,
             List.of("Geschmiedet aus Sternenstaub und Groessenwahn.",
-                "Sharpness VI · Lunge VI · Unzerstoerbar",
+                "Sharpness VI · Lunge V (ohne Hunger) · Unzerstoerbar",
                 "In der Hand: Staerke II, Schnelligkeit II,",
                 "Resistenz I — und Zeus blitzt alle 10s den",
                 "naechsten Monster/Spieler im 20er-Umkreis",
                 "oder im selben Chunk weg (5 Herzen)."));
         ItemMeta meta = item.getItemMeta();
         meta.addEnchant(Enchantment.SHARPNESS, 6, true);
-        meta.addEnchant(Enchantment.LUNGE, 6, true);
+        meta.addEnchant(Enchantment.LUNGE, 5, true);
         meta.setUnbreakable(true);
         item.setItemMeta(meta);
         return item;
@@ -327,14 +327,18 @@ public class CustomItems implements Listener {
 
     // ────────────────────────── Lunge ohne Hunger ──────────────────────────
 
+    /** Lunge-Zeitfenster pro Spieler: solange aktiv, wird Hungerverlust geblockt. */
+    private final Map<UUID, Long> lungeSchutz = new HashMap<>();
+
     /**
-     * Die Lunge-Attacke kostet keinen Hunger mehr: Hunger, Saettigung und
-     * Erschoepfung werden vor dem Ansturm gemerkt und einen Tick spaeter
-     * wiederhergestellt.
+     * Die Lunge-Attacke kostet keinen Hunger mehr: Werte werden direkt
+     * wiederhergestellt UND fuer 3 Sekunden wird jeder Hungerverlust
+     * abgefangen (falls die Erschoepfung erst spaeter verrechnet wird).
      */
     @EventHandler
     public void onLunge(EntityLungeEvent event) {
         if (!(event.getEntity() instanceof Player p)) return;
+        lungeSchutz.put(p.getUniqueId(), System.currentTimeMillis() + 3_000);
         int food = p.getFoodLevel();
         float saturation = p.getSaturation();
         float exhaustion = p.getExhaustion();
@@ -344,6 +348,18 @@ public class CustomItems implements Listener {
             p.setSaturation(saturation);
             p.setExhaustion(exhaustion);
         });
+    }
+
+    /** Im Lunge-Fenster: Hunger darf nicht sinken. */
+    @EventHandler
+    public void onHungerNachLunge(org.bukkit.event.entity.FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player p)) return;
+        if (event.getFoodLevel() >= p.getFoodLevel()) return; // Essen etc. erlaubt
+        Long ende = lungeSchutz.get(p.getUniqueId());
+        if (ende != null && ende > System.currentTimeMillis()) {
+            event.setCancelled(true);
+            p.setExhaustion(0f);
+        }
     }
 
     // ────────────────────────── Doener-Buff ──────────────────────────

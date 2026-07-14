@@ -117,3 +117,6 @@ preise:
 
 # SMP-Modus: false = kein Bann/Todes-Sperre (fuer den doofie-smp-Server)
 hardcore-bann: true
+
+# SMP-Modus: false = kein Kopfgeld-System (Befehle aus), Kopf droppt bei jedem PvP-Kill
+kopfgeld-system: true
