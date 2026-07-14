@@ -69,13 +69,18 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        // Ewiger Tag + keine Mobs: Gameregeln setzen und Bestand entsorgen
+        // Ewiger Tag + keine Mobs + keepInventory: Gameregeln setzen, Bestand entsorgen
         for (org.bukkit.World w : getServer().getWorlds()) {
             w.setGameRule(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE, false);
             w.setGameRule(org.bukkit.GameRule.DO_WEATHER_CYCLE, false);
             w.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
-            w.setTime(6000); // High Noon
-            w.setStorm(false);
+            w.setGameRule(org.bukkit.GameRule.KEEP_INVENTORY, true);
+            try {
+                w.setTime(6000); // High Noon
+                w.setStorm(false);
+            } catch (IllegalArgumentException ignoriert) {
+                // 26.2-Void-Welten haben keine Welt-Uhr — dann ist eh immer Tag
+            }
             for (org.bukkit.entity.Entity e : w.getEntities()) {
                 if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)) e.remove();
             }
