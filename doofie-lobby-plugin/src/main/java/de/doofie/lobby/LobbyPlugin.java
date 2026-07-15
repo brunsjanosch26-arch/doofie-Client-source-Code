@@ -90,19 +90,9 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         }
         new SchemCommand(this).register();
 
-        // Void-Welt: falls am Spawn nichts steht, eine Plattform hinbauen
+        // Offizieller Welt-Spawn: die gebaute Lobby bei 387 / -23 / 137
         org.bukkit.World w = getServer().getWorlds().get(0);
-        org.bukkit.Location spawn = new org.bukkit.Location(w, 0.5, 101, 0.5);
-        if (w.getBlockAt(0, 100, 0).getType().isAir()) {
-            for (int dx = -12; dx <= 12; dx++) {
-                for (int dz = -12; dz <= 12; dz++) {
-                    if (dx * dx + dz * dz > 12 * 12) continue; // runde Plattform
-                    w.getBlockAt(dx, 100, dz).setType(
-                        (dx * dx + dz * dz > 10 * 10) ? Material.SEA_LANTERN : Material.SMOOTH_QUARTZ);
-                }
-            }
-            getLogger().info("Spawn-Plattform in der Void-Lobby gebaut.");
-        }
+        org.bukkit.Location spawn = new org.bukkit.Location(w, 387.5, -23, 137.5);
         w.setSpawnLocation(spawn);
 
         getLogger().info("Doofie-Lobby aktiv — " + MODI.size() + " Modi im Kompass, ewiger Tag, keine Mobs.");
@@ -144,6 +134,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
+        p.teleport(p.getWorld().getSpawnLocation().clone().add(0.5, 0, 0.5));
         p.getInventory().setItem(4, modusKompass());
         p.sendMessage(Component.text("Willkommen im Doofie-Netzwerk! ", NamedTextColor.AQUA)
             .append(Component.text("Rechtsklick auf den Kompass fuer die Modi.", NamedTextColor.GRAY)));

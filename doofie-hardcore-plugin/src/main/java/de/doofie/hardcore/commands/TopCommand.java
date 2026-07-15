@@ -33,6 +33,10 @@ public class TopCommand implements CommandExecutor {
             case "kills" -> show(sender, "Meiste Spieler-Kills", plugin.stats().kills(),
                 v -> v.intValue() + " Kills");
             case "kopfgelder", "bounties" -> {
+                if (!plugin.getConfig().getBoolean("kopfgeld-system", true)) {
+                    sender.sendMessage(Component.text("Das Kopfgeld-System ist auf diesem Server deaktiviert.", NamedTextColor.RED));
+                    return true;
+                }
                 sender.sendMessage(Component.text("── Hoechste Kopfgelder ──", NamedTextColor.DARK_RED));
                 plugin.bounties().all().keySet().stream()
                     .sorted(Comparator.comparingDouble((UUID u) -> plugin.bounties().total(u)).reversed())

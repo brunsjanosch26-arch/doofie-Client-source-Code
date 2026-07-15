@@ -54,29 +54,31 @@ public class SidebarManager {
     }
 
     private void update(Player p) {
+        boolean kopfgeld = plugin.getConfig().getBoolean("kopfgeld-system", true);
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = board.registerNewObjective("doofie", Criteria.DUMMY,
-            Component.text("BOUNTY SMP", NamedTextColor.GOLD, TextDecoration.BOLD));
+            Component.text(kopfgeld ? "BOUNTY SMP" : "DOOFIESMP", NamedTextColor.GOLD, TextDecoration.BOLD));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         UUID id = p.getUniqueId();
         var guild = plugin.guilds().byMember(id);
-        double bounty = plugin.bounties().total(id);
         EventType event = plugin.events().current();
 
-        String[] lines = {
-            "§7Geld: §6" + HardcorePlugin.dollar(plugin.economy().get(id)),
-            "§7Kills: §f" + plugin.stats().kills().getOrDefault(id, 0),
-            "§7Gilde: §b" + (guild != null ? guild.name : "-"),
-            bounty > 0
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        lines.add("§7Geld: §6" + HardcorePlugin.dollar(plugin.economy().get(id)));
+        lines.add("§7Kills: §f" + plugin.stats().kills().getOrDefault(id, 0));
+        lines.add("§7Gilde: §b" + (guild != null ? guild.name : "-"));
+        if (kopfgeld) {
+            double bounty = plugin.bounties().total(id);
+            lines.add(bounty > 0
                 ? "§4Kopfgeld auf dir: §c" + HardcorePlugin.dollar(bounty)
-                : "§7Kopfgeld auf dir: §a-",
-            "§7Joker: " + (plugin.bans().hasJoker(id) ? "§dverfuegbar" : "§8verbraucht"),
-            "§7Lotto-Pot: §e" + HardcorePlugin.dollar(plugin.lotto().pot()),
-            "§7Event: " + (event == EventType.NONE ? "§8-" : "§c" + event.title),
-        };
+                : "§7Kopfgeld auf dir: §a-");
+            lines.add("§7Joker: " + (plugin.bans().hasJoker(id) ? "§dverfuegbar" : "§8verbraucht"));
+        }
+        lines.add("§7Lotto-Pot: §e" + HardcorePlugin.dollar(plugin.lotto().pot()));
+        lines.add("§7Event: " + (event == EventType.NONE ? "§8-" : "§c" + event.title));
 
-        int score = lines.length;
+        int score = lines.size();
         for (String line : lines) {
             obj.getScore(line).setScore(score--);
         }

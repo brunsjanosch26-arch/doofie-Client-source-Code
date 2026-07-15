@@ -23,15 +23,26 @@ public class HilfeCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Nur fuer Spieler."); return true; }
 
+        boolean kopfgeld = plugin.getConfig().getBoolean("kopfgeld-system", true);
         List<Component> pages = new ArrayList<>();
-        pages.add(page("BOUNTY SMP",
-            "Willkommen im Handbuch!\n\nBlaettere durch die Seiten:\n\n2 Geld\n3 Tod & Freikauf\n4 Kopfgeld\n5 /ah & Shops\n6 Gilden\n7 Duelle & Wetten\n8 Events & Boerse\n9 Sonstiges\n\nViel Erfolg!"));
+        if (kopfgeld) {
+            pages.add(page("BOUNTY SMP",
+                "Willkommen im Handbuch!\n\nBlaettere durch die Seiten:\n\n2 Geld\n3 Tod & Freikauf\n4 Kopfgeld\n5 /ah & Shops\n6 Gilden\n7 Duelle & Wetten\n8 Events & Boerse\n9 Sonstiges\n\nViel Erfolg!"));
+        } else {
+            pages.add(page("DOOFIE SMP",
+                "Willkommen im Handbuch!\n\nBlaettere durch die Seiten:\n\n2 Geld\n3 PvP & Koepfe\n4 /ah & Shops\n5 Gilden\n6 Duelle & Wetten\n7 Events & Boerse\n8 Sonstiges\n\nViel Erfolg!"));
+        }
         pages.add(page("GELD",
             "Start: 500$\n\n/money - Guthaben\n/pay <name> <betrag>\n/sell - Verkaufsmenue: Items reinlegen, gruener Knopf!\n\nPreise siehst du im /sell-Menue und /ah.\n\n/daily - taegl. Belohnung\n/quests - Tagesauftraege\n/top geld - Rangliste"));
-        pages.add(page("TOD & FREIKAUF",
-            "JEDER Tod = Spectator!\n\nNormaler Tod:\n/freikaufen = GRATIS zurueck ins Leben.\n\nKopfgeld-Tod (von Spieler gekillt):\n/freikaufen joker = 1x im Leben gratis\n/freikaufen zahlen = Kopfgeld +5%\n\nFreunde helfen:\n/freikaufen <name>"));
-        pages.add(page("KOPFGELD",
-            "/kopfgeld <name> <betrag> - setzen (min. 100$)\n/kopfgeld liste\n/auftrag <name> <betrag> - ANONYM (+20%)\n\nKill mit Kopfgeld: Killer kassiert, Kopf droppt (10% wert), Opfer gebannt!\n\n/jagd <name> - Kompass-Jagd\n/schutz - 30min Bann-Schutz (2000$)\n/gerichtsduell - kaempf um deine Freiheit (1x!)"));
+        if (kopfgeld) {
+            pages.add(page("TOD & FREIKAUF",
+                "JEDER Tod = Spectator!\n\nNormaler Tod:\n/freikaufen = GRATIS zurueck ins Leben.\n\nKopfgeld-Tod (von Spieler gekillt):\n/freikaufen joker = 1x im Leben gratis\n/freikaufen zahlen = Kopfgeld +5%\n\nFreunde helfen:\n/freikaufen <name>"));
+            pages.add(page("KOPFGELD",
+                "/kopfgeld <name> <betrag> - setzen (min. 100$)\n/kopfgeld liste\n/auftrag <name> <betrag> - ANONYM (+20%)\n\nKill mit Kopfgeld: Killer kassiert, Kopf droppt (10% wert), Opfer gebannt!\n\n/jagd <name> - Kompass-Jagd\n/schutz - 30min Bann-Schutz (2000$)\n/gerichtsduell - kaempf um deine Freiheit (1x!)"));
+        } else {
+            pages.add(page("PVP & KOEPFE",
+                "Ganz normales Survival - Tod = normaler Respawn.\n\nABER: Killst du einen Spieler, droppt sein KOPF!\n\nKoepfe brauchst du fuer die Gott-Items:\n\nGoetterspeer: 3 Koepfe + Netherstern + Speer + Gold + Dias\n\nGod Mace: 3 Koepfe + 2 Keulen + Speer + Beacon"));
+        }
         pages.add(page("HANDEL",
             "/ah - Auktionshaus:\nKlick = 1 kaufen\nShift+Klick = Stack\n/ah sell <preis> - Item einstellen\n\nKistenshop bauen:\nSchild an Kiste:\nZeile 1: [shop]\nZeile 2: Preis\n\nAndere kaufen per Rechtsklick - auch wenn du offline bist!"));
         pages.add(page("GILDEN",
@@ -40,12 +51,17 @@ public class HilfeCommand implements CommandExecutor {
             "/duell <name> <einsatz>\nGegner: /duell annehmen\n\nGewinner kriegt ALLES. Flucht (ausloggen) = Niederlage!\n\nZuschauer: 30s nach Start\n/wette <name> <betrag>\n\nGewinner-Wetten teilen sich den Verlierer-Pool."));
         pages.add(page("EVENTS & BOERSE",
             "Zufaellige Events:\nBLUTMOND - Kopfgelder x2\nGOLDRAUSCH - /sell x2\nSAEUBERUNG - jeder Kill 200$\nSTREIK - /ah zu\n\n/events - was laeuft?\n\n/boerse - Aktienmarkt, Kurse alle 10min\n/boerse kaufen <firma> <anzahl>\n/lotto kaufen - stuendl. Ziehung!"));
-        pages.add(page("SONSTIGES",
-            "/tpa <name> - Teleport-Anfrage (3s stillstehen!)\n/rtp [overworld|nether|end] - Zufalls-Teleport, sicherer Ort, 5min Cooldown. Nur bereiste Dimensionen, gesperrt mit Kopfgeld!\n\n/testament <name> - Erbe: nach 7 Tagen Bann erbt er dein halbes Vermoegen\n\n/top geld|kills|kopfgelder\n/sidebar - Stats-Anzeige an/aus\n\n/hilfe - dieses Buch"));
+        if (kopfgeld) {
+            pages.add(page("SONSTIGES",
+                "/tpa <name> - Teleport-Anfrage (3s stillstehen!)\n/rtp [overworld|nether|end] - Zufalls-Teleport, sicherer Ort, 5min Cooldown. Nur bereiste Dimensionen, gesperrt mit Kopfgeld!\n\n/testament <name> - Erbe: nach 7 Tagen Bann erbt er dein halbes Vermoegen\n\n/top geld|kills|kopfgelder\n/sidebar - Stats-Anzeige an/aus\n\n/hilfe - dieses Buch"));
+        } else {
+            pages.add(page("SONSTIGES",
+                "/tpa <name> - Teleport-Anfrage\n/tpahere <name> - hol jemanden zu dir\n/tpaccept | /tpadeny | /tpaauto\n\n/rtp [overworld|nether|end] - Zufalls-Teleport, 5min Cooldown\n\n/top geld|kills\n/sidebar - Stats-Anzeige an/aus\n/lobby - zurueck zur Lobby\n\n/hilfe - dieses Buch"));
+        }
 
         Book book = Book.book(
-            Component.text("Bounty SMP Handbuch", NamedTextColor.GOLD),
-            Component.text("Bounty SMP"),
+            Component.text(kopfgeld ? "Bounty SMP Handbuch" : "Doofie SMP Handbuch", NamedTextColor.GOLD),
+            Component.text(kopfgeld ? "Bounty SMP" : "Doofie SMP"),
             pages);
         p.openBook(book);
         return true;

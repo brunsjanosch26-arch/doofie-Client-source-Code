@@ -28,8 +28,11 @@ public class WelcomeListener implements Listener {
             if (!player.isOnline()) return;
             double start = plugin.getConfig().getDouble("start-guthaben", 500.0);
 
+            boolean kopfgeld = plugin.getConfig().getBoolean("kopfgeld-system", true);
             player.sendMessage(Component.text("════════════════════════════════", NamedTextColor.DARK_RED));
-            player.sendMessage(Component.text("  Willkommen auf dem Bounty SMP!", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+            player.sendMessage(Component.text(kopfgeld
+                ? "  Willkommen auf dem Bounty SMP!"
+                : "  Willkommen auf dem DoofieSMP!", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
             player.sendMessage(Component.text("════════════════════════════════", NamedTextColor.DARK_RED));
             player.sendMessage(Component.empty());
             player.sendMessage(Component.text("So funktioniert der Server:", NamedTextColor.YELLOW));
@@ -40,13 +43,20 @@ public class WelcomeListener implements Listener {
             player.sendMessage(Component.text(" • /ah — Auktionshaus: kaufen per Klick (Shift+Klick = ganzer Stack)", NamedTextColor.GRAY));
             player.sendMessage(Component.text(" • /ah sell <preis> — eigenes Item im /ah anbieten", NamedTextColor.GRAY));
             player.sendMessage(Component.empty());
-            player.sendMessage(Component.text("KOPFGELD — die wichtigste Regel:", NamedTextColor.RED).decorate(TextDecoration.BOLD));
-            player.sendMessage(Component.text(" • /kopfgeld <spieler> <betrag> — Kopfgeld setzen (min. 100$)", NamedTextColor.GRAY));
-            player.sendMessage(Component.text(" • Stirbst du OHNE Kopfgeld: normaler Respawn, nichts passiert", NamedTextColor.GRAY));
-            player.sendMessage(Component.text(" • Wirst du MIT Kopfgeld von einem Spieler getoetet:", NamedTextColor.GRAY));
-            player.sendMessage(Component.text("   dein Kopf droppt, der Killer kassiert und DU BIST GEBANNT!", NamedTextColor.RED));
-            player.sendMessage(Component.text(" • Freikauf: /freikaufen — kostet das Kopfgeld +5%", NamedTextColor.GRAY));
-            player.sendMessage(Component.text("   (Freunde koennen dich mit /freikaufen <name> retten)", NamedTextColor.GRAY));
+            if (kopfgeld) {
+                player.sendMessage(Component.text("KOPFGELD — die wichtigste Regel:", NamedTextColor.RED).decorate(TextDecoration.BOLD));
+                player.sendMessage(Component.text(" • /kopfgeld <spieler> <betrag> — Kopfgeld setzen (min. 100$)", NamedTextColor.GRAY));
+                player.sendMessage(Component.text(" • Stirbst du OHNE Kopfgeld: normaler Respawn, nichts passiert", NamedTextColor.GRAY));
+                player.sendMessage(Component.text(" • Wirst du MIT Kopfgeld von einem Spieler getoetet:", NamedTextColor.GRAY));
+                player.sendMessage(Component.text("   dein Kopf droppt, der Killer kassiert und DU BIST GEBANNT!", NamedTextColor.RED));
+                player.sendMessage(Component.text(" • Freikauf: /freikaufen — kostet das Kopfgeld +5%", NamedTextColor.GRAY));
+                player.sendMessage(Component.text("   (Freunde koennen dich mit /freikaufen <name> retten)", NamedTextColor.GRAY));
+            } else {
+                player.sendMessage(Component.text("PVP & GOTT-ITEMS:", NamedTextColor.RED).decorate(TextDecoration.BOLD));
+                player.sendMessage(Component.text(" • Tod = ganz normaler Respawn", NamedTextColor.GRAY));
+                player.sendMessage(Component.text(" • Killst du einen Spieler, droppt sein KOPF", NamedTextColor.GRAY));
+                player.sendMessage(Component.text(" • Koepfe brauchst du fuer Goetterspeer & God Mace!", NamedTextColor.GRAY));
+            }
             player.sendMessage(Component.text("════════════════════════════════", NamedTextColor.DARK_RED));
             player.sendMessage(Component.text("Tippe /hilfe fuer das komplette Handbuch mit ALLEN Systemen!", NamedTextColor.GOLD));
         }, 40L);
