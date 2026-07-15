@@ -67,11 +67,13 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
     private enum Phase { WARTEN, COUNTDOWN, KAMPF, ENDE }
 
     private static final int BASIS_Y = 60;
-    private static final int SPAWN_X = 118;  // Insel-Zentren bei +/- SPAWN_X
-    private static final int NEBEN_Z = 140;  // Neben-Inseln bei z = +/- NEBEN_Z
 
     private Phase phase = Phase.WARTEN;
     private SchematicLader spawnInsel, mitte;
+    /** Dynamisches Layout — berechnet aus dem ECHTEN Terrain der Schematik
+     *  (das Inselterrain sitzt ausserhalb der Box-Mitte!). */
+    private int spawnX;   // Terrain-Zentren der Spawn-Inseln bei +/- spawnX
+    private int nebenZ;   // Neben-Inseln bei z = +/- nebenZ
     private boolean karteFertig;
     private final Set<Location> gesetzt = new HashSet<>();
     private final List<Location> lootKisten = new ArrayList<>();
@@ -94,6 +96,7 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
         try {
             spawnInsel = new SchematicLader(new File(getDataFolder(), "sw_spawn.dschem"));
             mitte = new SchematicLader(new File(getDataFolder(), "sw_mitte.dschem"));
+            berechneLayout();
             baueKarte();
         } catch (Exception ex) {
             getLogger().severe("Karte konnte nicht geladen werden: " + ex.getMessage());
@@ -105,13 +108,76 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
         return Bukkit.getWorlds().get(0);
     }
 
-    /** Spawn-Punkt: hoechster Block ueber dem Insel-Zentrum. */
-    private Location spawnOrt(boolean links) {
+    // ────────────────────────── Terrain-Analyse ──────────────────────────
+
+    /** Echte Terrain-Grenzen einer Schematik: [minX, maxX, minZ, maxZ, avgTop, maxTop]. */
+    private int[] terrain(SchematicLader s) {
+        int minX = s.breite, maxX = 0, minZ = s.laenge, maxZ = 0, maxTop = 0;
+        long summe = 0;
+        int spalten = 0;
+        for (int x = 0; x < s.breite; x++) {
+            for (int z = 0; z < s.laenge; z++) {
+                for (int y = s.hoehe - 1; y >= 0; y--) {
+                    if (s.blockAn(x, y, z) != null) {
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minZ = Math.min(minZ, z);
+                        maxZ = Math.max(maxZ, z);
+                        maxTop = Math.max(maxTop, y);
+                        summe += y;
+                        spalten++;
+                        break;
+                    }
+                }
+            }
+        }
+        int avgTop = spalten > 0 ? (int) (summe / spalten) : 0;
+        return new int[]{minX, maxX, minZ, maxZ, avgTop, maxTop};
+    }
+
+    private int[] inselTerrain, turmTerrain;
+    private int inselBasisY, turmBasisY;
+
+    /** Layout aus dem ECHTEN Terrain berechnen (Inseln sitzen ausserhalb der Box-Mitte). */
+    private void berechneLayout() {
+        inselTerrain = terrain(spawnInsel);
+        turmTerrain = terrain(mitte);
+        int inselHalbX = (inselTerrain[1] - inselTerrain[0]) / 2;
+        int inselHalbZ = (inselTerrain[3] - inselTerrain[2]) / 2;
+        int turmHalbX = (turmTerrain[1] - turmTerrain[0]) / 2;
+
+        spawnX = turmHalbX + 30 + inselHalbX;    // ~30 Bloecke Luecke zur Turmruine
+        nebenZ = inselHalbZ + 18;                // ~18 Bloecke Brueckweite
+
+        inselBasisY = BASIS_Y;
+        // Turm anheben: seine Spitze soll knapp UEBER der Insel-Oberflaeche liegen
+        int inselOberflaeche = BASIS_Y + inselTerrain[4];
+        turmBasisY = inselOberflaeche + 8 - turmTerrain[5];
+
+        getLogger().info("Layout: spawnX=" + spawnX + " nebenZ=" + nebenZ
+            + " inselOberflaeche=y" + inselOberflaeche + " turmBasis=y" + turmBasisY);
+    }
+
+    /** Spiralsuche nach einer Spalte mit Boden (fuer Spawn, Kiste, Haendler). */
+    private Location bodenNahe(int cx, int cz) {
         World w = welt();
-        int x = links ? -SPAWN_X : SPAWN_X;
-        int y = w.getHighestBlockYAt(x, 0);
-        if (y <= w.getMinHeight()) y = BASIS_Y + 100;
-        Location l = new Location(w, x + 0.5, y + 1, 0.5);
+        for (int radius = 0; radius <= 30; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != radius) continue;
+                    int y = w.getHighestBlockYAt(cx + dx, cz + dz);
+                    if (y > w.getMinHeight()) {
+                        return new Location(w, cx + dx + 0.5, y + 1, cz + dz + 0.5);
+                    }
+                }
+            }
+        }
+        return new Location(w, cx + 0.5, BASIS_Y + 100, cz + 0.5);
+    }
+
+    /** Spawn-Punkt: begehbarer Boden nahe dem Terrain-Zentrum der Insel. */
+    private Location spawnOrt(boolean links) {
+        Location l = bodenNahe(links ? -spawnX : spawnX, 0);
         l.setYaw(links ? -90 : 90); // Blick zum Gegner
         return l;
     }
@@ -130,14 +196,16 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
         List<Location> orte = new ArrayList<>();
         List<BlockData> daten = new ArrayList<>();
         World w = welt();
-        // Beide Spawn-Inseln (gegenueber)
+        // Beide Spawn-Inseln — so verschoben, dass das TERRAIN-Zentrum bei +/-spawnX liegt
+        int terrainMitteX = (inselTerrain[0] + inselTerrain[1]) / 2;
+        int terrainMitteZ = (inselTerrain[2] + inselTerrain[3]) / 2;
         for (int seite : new int[]{-1, 1}) {
-            int ox = seite * SPAWN_X - spawnInsel.breite / 2;
-            int oz = -spawnInsel.laenge / 2;
-            sammle(spawnInsel, w, ox, BASIS_Y, oz, orte, daten);
+            sammle(spawnInsel, w, seite * spawnX - terrainMitteX, inselBasisY, -terrainMitteZ, orte, daten);
         }
-        // Turmruine in der Mitte
-        sammle(mitte, w, -mitte.breite / 2, BASIS_Y, -mitte.laenge / 2, orte, daten);
+        // Turmruine mittig (Terrain-Zentrum auf 0/0), angehoben auf Insel-Niveau
+        int turmMitteX = (turmTerrain[0] + turmTerrain[1]) / 2;
+        int turmMitteZ = (turmTerrain[2] + turmTerrain[3]) / 2;
+        sammle(mitte, w, -turmMitteX, turmBasisY, -turmMitteZ, orte, daten);
 
         final int gesamt = orte.size();
         final int[] index = {0};
@@ -178,13 +246,14 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
         World w = welt();
         lootKisten.clear();
         spawner.clear();
+        int inselOberflaeche = BASIS_Y + inselTerrain[4];
 
         for (int seite : new int[]{-1, 1}) {
-            int cx = seite * SPAWN_X;
-            int oben = w.getHighestBlockYAt(cx, 0);
+            int cx = seite * spawnX;
 
-            // Start-Kiste neben dem Spawn
-            Block start = w.getBlockAt(cx, w.getHighestBlockYAt(cx, 4) + 1, 4);
+            // Start-Kiste auf festem Boden neben dem Spawn
+            Location kistenOrt = bodenNahe(cx, 5);
+            Block start = kistenOrt.getBlock();
             start.setType(Material.CHEST);
             if (start.getState() instanceof Chest c) {
                 c.getInventory().clear();
@@ -194,26 +263,26 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
                     new ItemStack(Material.COOKED_BEEF, 8));
             }
 
-            // Neben-Inseln: Eisen (z=-NEBEN_Z), Diamant (z=+NEBEN_Z) auf Spawn-Hoehe
+            // Neben-Inseln: Eisen (z=-nebenZ), Diamant (z=+nebenZ) auf Insel-Niveau
             for (int richtung : new int[]{-1, 1}) {
-                int cz = richtung * NEBEN_Z;
+                int cz = richtung * nebenZ;
                 boolean diamant = richtung > 0;
                 for (int dx = -2; dx <= 2; dx++) {
                     for (int dz = -2; dz <= 2; dz++) {
-                        w.getBlockAt(cx + dx, oben, cz + dz).setType(Material.STONE);
-                        w.getBlockAt(cx + dx, oben - 1, cz + dz).setType(Material.COBBLESTONE);
+                        w.getBlockAt(cx + dx, inselOberflaeche, cz + dz).setType(Material.STONE);
+                        w.getBlockAt(cx + dx, inselOberflaeche - 1, cz + dz).setType(Material.COBBLESTONE);
                     }
                 }
-                w.getBlockAt(cx, oben + 1, cz).setType(diamant ? Material.DIAMOND_BLOCK : Material.IRON_BLOCK);
-                spawner.add(new Location(w, cx + 0.5, oben + 2.2, cz + 0.5));
+                w.getBlockAt(cx, inselOberflaeche + 1, cz)
+                    .setType(diamant ? Material.DIAMOND_BLOCK : Material.IRON_BLOCK);
+                spawner.add(new Location(w, cx + 0.5, inselOberflaeche + 2.2, cz + 0.5));
             }
         }
 
-        // Loot-Kisten auf der Turmruine (verschiedene Ebenen)
+        // Loot-Kisten auf der Turmruine (verschiedene Ebenen, per Bodensuche)
         for (int[] pos : new int[][]{{0, 0}, {10, 10}, {-10, -8}, {8, -10}}) {
-            int y = w.getHighestBlockYAt(pos[0], pos[1]);
-            if (y <= w.getMinHeight()) continue;
-            Block k = w.getBlockAt(pos[0], y + 1, pos[1]);
+            Location ort = bodenNahe(pos[0], pos[1]);
+            Block k = ort.getBlock();
             k.setType(Material.CHEST);
             lootKisten.add(k.getLocation());
         }
@@ -256,9 +325,8 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
         }
         World w = welt();
         for (int seite : new int[]{-1, 1}) {
-            int cx = seite * SPAWN_X;
-            int y = w.getHighestBlockYAt(cx, -4);
-            Location ort = new Location(w, cx + 0.5, y + 1, -3.5);
+            int cx = seite * spawnX;
+            Location ort = bodenNahe(cx, -5);
             Villager v = (Villager) w.spawnEntity(ort, EntityType.VILLAGER);
             v.setProfession(Villager.Profession.WEAPONSMITH);
             v.setVillagerLevel(5);
