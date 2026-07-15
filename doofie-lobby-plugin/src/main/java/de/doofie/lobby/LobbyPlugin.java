@@ -48,8 +48,8 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
     private record Modus(String titel, String server, String exarotonId, Material icon, String beschreibung) {}
 
     private static final List<Modus> MODI = List.of(
-        new Modus("Skyblock-Wars", "skyblock", "Qdj4Y8IcnMTNAUcV", Material.GRASS_BLOCK,
-            "10 Inseln, Loot-Kisten — und alles resettet!"),
+        new Modus("SkyWars-Duell", "skyblock", "Qdj4Y8IcnMTNAUcV", Material.GRASS_BLOCK,
+            "1v1: Spawner farmen, Haendler, Mittel-Insel-Fight!"),
         new Modus("Kopfgeldjäger 2.0", "jaeger", "70wHXEJ4CRBeKE09", Material.SPYGLASS,
             "Jeder Kill macht dich wertvoller..."),
         new Modus("Zombie-Apokalypse", "zombie", "73GTtALKoxyJx2kT", Material.ZOMBIE_HEAD,
@@ -97,19 +97,29 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         }
         new SchemCommand(this).register();
 
-        // /duel <sword|uhc> — ab in die 1v1-Arena (max. 2 Spieler pro Server)
+        // /duel <sword|uhc> — direkt in die Arena; /duel annehmen|ablehnen als Antwort
         getCommand("duel").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player p)) return true;
-            Modus ziel = args.length > 0 ? DUELL.get(args[0].toLowerCase(Locale.ROOT)) : null;
+            String arg = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "";
+            if (arg.equals("annehmen") || arg.equals("accept")) {
+                duellAnnehmen(p);
+                return true;
+            }
+            if (arg.equals("ablehnen") || arg.equals("deny")) {
+                duellAblehnen(p);
+                return true;
+            }
+            Modus ziel = DUELL.get(arg);
             if (ziel == null) {
-                p.sendMessage(Component.text("⚔ Nutzung: /duel sword — oder — /duel uhc", NamedTextColor.RED));
+                p.sendMessage(Component.text("⚔ Schlage einen Spieler fuer ein Duell — oder: /duel sword | /duel uhc | /duel annehmen | /duel ablehnen",
+                    NamedTextColor.RED));
                 return true;
             }
             wakeUndVerbinde(p, ziel, ziel.server());
             return true;
         });
         getCommand("duel").setTabCompleter((sender, cmd, label, args) ->
-            args.length == 1 ? DUELL.keySet().stream()
+            args.length == 1 ? java.util.stream.Stream.of("sword", "uhc", "annehmen", "ablehnen")
                 .filter(k -> k.startsWith(args[0].toLowerCase(Locale.ROOT))).toList() : List.of());
         registriereDuellAntworten();
 
@@ -276,31 +286,39 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         ziel.playSound(ziel.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1.6f);
     }
 
+    private void duellAnnehmen(Player p) {
+        DuellAnfrage anfrage = anfragen.remove(p.getUniqueId());
+        if (anfrage == null || anfrage.ablauf() < System.currentTimeMillis()) {
+            p.sendMessage(Component.text("Keine offene Duell-Anfrage.", NamedTextColor.RED));
+            return;
+        }
+        Player gegner = Bukkit.getPlayer(anfrage.herausforderer());
+        if (gegner == null) {
+            p.sendMessage(Component.text("Der Herausforderer ist weg.", NamedTextColor.RED));
+            return;
+        }
+        starteDuell(gegner, p, anfrage.kit());
+    }
+
+    private void duellAblehnen(Player p) {
+        DuellAnfrage anfrage = anfragen.remove(p.getUniqueId());
+        if (anfrage != null) {
+            Player gegner = Bukkit.getPlayer(anfrage.herausforderer());
+            if (gegner != null) gegner.sendMessage(Component.text(
+                p.getName() + " hat dein Duell abgelehnt.", NamedTextColor.RED));
+            p.sendMessage(Component.text("Duell abgelehnt.", NamedTextColor.GRAY));
+        } else {
+            p.sendMessage(Component.text("Keine offene Duell-Anfrage.", NamedTextColor.RED));
+        }
+    }
+
     private void registriereDuellAntworten() {
         getCommand("duellannehmen").setExecutor((sender, cmd, label, args) -> {
-            if (!(sender instanceof Player p)) return true;
-            DuellAnfrage anfrage = anfragen.remove(p.getUniqueId());
-            if (anfrage == null || anfrage.ablauf() < System.currentTimeMillis()) {
-                p.sendMessage(Component.text("Keine offene Duell-Anfrage.", NamedTextColor.RED));
-                return true;
-            }
-            Player gegner = Bukkit.getPlayer(anfrage.herausforderer());
-            if (gegner == null) {
-                p.sendMessage(Component.text("Der Herausforderer ist weg.", NamedTextColor.RED));
-                return true;
-            }
-            starteDuell(gegner, p, anfrage.kit());
+            if (sender instanceof Player p) duellAnnehmen(p);
             return true;
         });
         getCommand("duellablehnen").setExecutor((sender, cmd, label, args) -> {
-            if (!(sender instanceof Player p)) return true;
-            DuellAnfrage anfrage = anfragen.remove(p.getUniqueId());
-            if (anfrage != null) {
-                Player gegner = Bukkit.getPlayer(anfrage.herausforderer());
-                if (gegner != null) gegner.sendMessage(Component.text(
-                    p.getName() + " hat dein Duell abgelehnt.", NamedTextColor.RED));
-                p.sendMessage(Component.text("Duell abgelehnt.", NamedTextColor.GRAY));
-            }
+            if (sender instanceof Player p) duellAblehnen(p);
             return true;
         });
     }

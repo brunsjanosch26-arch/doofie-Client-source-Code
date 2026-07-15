@@ -1,0 +1,12 @@
+name: DoofieSkywars
+version: '${version}'
+main: de.doofie.skywars.SkywarsPlugin
+api-version: '26.2'
+author: Doofie
+description: SkyWars-Duell (max. 2) — eigene Inseln, Eisen/Diamant-Spawner, Haendler, Mittel-Insel
+
+commands:
+  lobby:
+    description: Zurueck in die Netzwerk-Lobby
+    usage: /lobby
+    aliases: [hub, l]
