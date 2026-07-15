@@ -30,6 +30,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * DOOFIE LOBBY — die Schaltzentrale des Netzwerks.
@@ -47,11 +49,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
 
     private static final List<Modus> MODI = List.of(
         new Modus("Skyblock-Wars", "skyblock", "Qdj4Y8IcnMTNAUcV", Material.GRASS_BLOCK,
-            "Himmelsinseln, Insel-Kern, Kern-Brecher!"),
-        new Modus("Boss-Raids", "bossraid", "KhqjD665eH2TqZl2", Material.WITHER_SKELETON_SKULL,
-            "Alle 2h ein Welt-Boss — wer macht Top-Schaden?"),
-        new Modus("Kingdoms", "kingdoms", "DaUep6lu4B3Z9d8q", Material.GOLDEN_HELMET,
-            "Koenigreiche, Claims und Kriegs-Fenster."),
+            "10 Inseln, Loot-Kisten — und alles resettet!"),
         new Modus("Kopfgeldjäger 2.0", "jaeger", "70wHXEJ4CRBeKE09", Material.SPYGLASS,
             "Jeder Kill macht dich wertvoller..."),
         new Modus("Zombie-Apokalypse", "zombie", "73GTtALKoxyJx2kT", Material.ZOMBIE_HEAD,
@@ -59,7 +57,16 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         new Modus("Chaos-Events", "chaos", "lxhKsPZ57twbtxAY", Material.AMETHYST_SHARD,
             "Alle 15 Minuten wuerfelt der Server."),
         new Modus("Doofie-SMP", "smp", "jY7FAlQkUJJHYBY7", Material.OAK_LOG,
-            "Klassisches Survival — bau dein Reich!"));
+            "Klassisches Survival — bau dein Reich!"),
+        new Modus("Lifesteal", "lifesteal", "7a8tYvDeMn1wSVlH", Material.RED_DYE,
+            "Kill = Herz-Drop. 0 Herzen = Zuschauer!"));
+
+    /** Die 1v1-Duell-Server fuer /duel <kit>. */
+    private static final Map<String, Modus> DUELL = Map.of(
+        "sword", new Modus("OnlySword-Duell", "onlysword", "isHqT85sjXIgj4wG", Material.DIAMOND_SWORD,
+            "1v1 mit Diamant-Kit"),
+        "uhc", new Modus("UHC-Duell", "uhckit", "boC9Gur8yjQ5rC90", Material.GOLDEN_APPLE,
+            "1v1 mit UHC-Kit"));
 
     private NamespacedKey kompassKey;
     private NamespacedKey serverKey;
@@ -89,6 +96,21 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
             }
         }
         new SchemCommand(this).register();
+
+        // /duel <sword|uhc> — ab in die 1v1-Arena (max. 2 Spieler pro Server)
+        getCommand("duel").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+            Modus ziel = args.length > 0 ? DUELL.get(args[0].toLowerCase(Locale.ROOT)) : null;
+            if (ziel == null) {
+                p.sendMessage(Component.text("⚔ Nutzung: /duel sword — oder — /duel uhc", NamedTextColor.RED));
+                return true;
+            }
+            wakeUndVerbinde(p, ziel, ziel.server());
+            return true;
+        });
+        getCommand("duel").setTabCompleter((sender, cmd, label, args) ->
+            args.length == 1 ? DUELL.keySet().stream()
+                .filter(k -> k.startsWith(args[0].toLowerCase(Locale.ROOT))).toList() : List.of());
 
         // Offizieller Welt-Spawn: die gebaute Lobby bei 387 / -23 / 137
         org.bukkit.World w = getServer().getWorlds().get(0);
@@ -153,7 +175,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
     private void oeffneMenu(Player p) {
         Inventory gui = Bukkit.createInventory(new ModusHolder(), 27,
             Component.text("Waehle deinen Modus!", NamedTextColor.DARK_AQUA, TextDecoration.BOLD));
-        int[] slots = {10, 11, 12, 14, 15, 16, 13};
+        int[] slots = {10, 11, 12, 14, 15, 16};
         for (int i = 0; i < MODI.size(); i++) {
             Modus m = MODI.get(i);
             ItemStack icon = new ItemStack(m.icon());
@@ -190,9 +212,12 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
             .get(serverKey, PersistentDataType.STRING);
         if (server == null) return;
         p.closeInventory();
-
-        // Offline-Server automatisch per exaroton-API starten
         Modus modus = MODI.stream().filter(m -> m.server().equals(server)).findFirst().orElse(null);
+        wakeUndVerbinde(p, modus, server);
+    }
+
+    /** Verbindet — und weckt den Server vorher per exaroton-API, falls er schlaeft. */
+    private void wakeUndVerbinde(Player p, Modus modus, String server) {
         String token = getConfig().getString("exaroton-token", "");
         if (modus != null && !token.isEmpty()) {
             Bukkit.getScheduler().runTaskAsynchronously(this, () -> {

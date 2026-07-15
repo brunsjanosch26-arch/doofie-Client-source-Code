@@ -1,0 +1,12 @@
+name: DoofiePvp
+version: '${version}'
+main: de.doofie.pvp.PvpPlugin
+api-version: '26.2'
+author: Doofie
+description: 1v1-Duell-Arena (max. 2 Spieler) — Kit per Config (sword/uhc)
+
+commands:
+  lobby:
+    description: Zurueck in die Netzwerk-Lobby
+    usage: /lobby
+    aliases: [hub, l]

@@ -6,6 +6,10 @@ author: Doofie
 description: Netzwerk-Lobby — Modus-Kompass mit GUI, schickt Spieler ueber Velocity auf die Spielmodi
 
 commands:
+  duel:
+    description: 1v1-Duell — waehle dein Kit
+    usage: "/duel <sword|uhc>"
+    aliases: [duell, 1v1]
   schemplatz:
     description: WorldEdit-Schematic (.schem) an deiner Position platzieren (Admin)
     usage: "/schemplatz <datei>"

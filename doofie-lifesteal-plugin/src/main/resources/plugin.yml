@@ -45,6 +45,10 @@ commands:
   tpaauto:
     description: TPA-Anfragen automatisch annehmen (an/aus)
     usage: /tpaauto
+  lobby:
+    description: Zurueck in die Netzwerk-Lobby
+    usage: /lobby
+    aliases: [hub, l]
 
 permissions:
   doofie.lifesteal.items:

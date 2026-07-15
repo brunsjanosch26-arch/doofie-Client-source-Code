@@ -18,12 +18,13 @@ forwarding-secret-file = "forwarding.secret"
 # exaroton-Adressen deiner Server eintragen:
 lobby = "doofie-lobby.exaroton.me:25565"
 skyblock = "doofie-skyblock.exaroton.me:25565"
-bossraid = "doofie-bossraid.exaroton.me:25565"
-kingdoms = "doofie-kingdoms.exaroton.me:25565"
 jaeger = "doofie-jaeger.exaroton.me:25565"
 zombie = "doofie-zombie.exaroton.me:25565"
 chaos = "doofie-chaos.exaroton.me:25565"
 smp = "doofie-smp.exaroton.me:25565"
+lifesteal = "doofie-lifesteal.exaroton.me:25565"
+onlysword = "doofie-onlysword.exaroton.me:25565"
+uhckit = "doofie-uhckit.exaroton.me:25565"
 
 # Neue Spieler landen zuerst in der Lobby
 try = ["lobby"]
