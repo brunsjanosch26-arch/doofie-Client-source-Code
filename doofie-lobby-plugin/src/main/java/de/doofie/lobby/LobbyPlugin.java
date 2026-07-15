@@ -111,6 +111,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         getCommand("duel").setTabCompleter((sender, cmd, label, args) ->
             args.length == 1 ? DUELL.keySet().stream()
                 .filter(k -> k.startsWith(args[0].toLowerCase(Locale.ROOT))).toList() : List.of());
+        registriereDuellAntworten();
 
         // Offizieller Welt-Spawn: die gebaute Lobby bei 387 / -23 / 137
         org.bukkit.World w = getServer().getWorlds().get(0);
@@ -199,6 +200,155 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         public Inventory getInventory() {
             return null;
         }
+    }
+
+    // ────────────────────────── GommeHD-Duell: Schlagen -> Kit -> Anfrage ──────────────────────────
+
+    /** Kit-Auswahl-GUI nach dem Schlagen: merkt sich das Ziel. */
+    private static class DuellKitHolder implements InventoryHolder {
+        final java.util.UUID ziel;
+        DuellKitHolder(java.util.UUID ziel) { this.ziel = ziel; }
+        @Override
+        public Inventory getInventory() { return null; }
+    }
+
+    /** Offene Duell-Anfragen: Ziel -> (Herausforderer, Kit, Ablauf-Zeit). */
+    private record DuellAnfrage(java.util.UUID herausforderer, String kit, long ablauf) {}
+    private final java.util.Map<java.util.UUID, DuellAnfrage> anfragen = new java.util.HashMap<>();
+
+    /** Spieler schlaegt Spieler in der Lobby -> Kit-Auswahl oeffnen. */
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    public void onSchlag(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player angreifer)) return;
+        if (!(event.getEntity() instanceof Player ziel)) return;
+        event.setCancelled(true);
+        Inventory gui = Bukkit.createInventory(new DuellKitHolder(ziel.getUniqueId()), 9,
+            Component.text("⚔ Duell gegen " + ziel.getName() + " — Kit?",
+                NamedTextColor.DARK_RED, TextDecoration.BOLD));
+        gui.setItem(3, duellIcon(Material.DIAMOND_SWORD, "OnlySword",
+            "Volle Dia-Ruestung, Schwert, Steaks"));
+        gui.setItem(5, duellIcon(Material.GOLDEN_APPLE, "UHC",
+            "Eisen-Kit, Bogen, Golden Head, Eimer — keine Regen!"));
+        angreifer.openInventory(gui);
+        angreifer.playSound(angreifer.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.4f);
+    }
+
+    private ItemStack duellIcon(Material mat, String name, String beschreibung) {
+        ItemStack item = new ItemStack(mat);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text(name, NamedTextColor.AQUA, TextDecoration.BOLD)
+            .decoration(TextDecoration.ITALIC, false));
+        meta.lore(List.of(Component.text(beschreibung, NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false)));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @EventHandler
+    public void onKitWahl(InventoryClickEvent event) {
+        if (!(event.getInventory().getHolder() instanceof DuellKitHolder holder)) return;
+        event.setCancelled(true);
+        if (!(event.getWhoClicked() instanceof Player herausforderer)) return;
+        ItemStack item = event.getCurrentItem();
+        if (item == null || item.getType() == Material.AIR) return;
+        String kit = item.getType() == Material.GOLDEN_APPLE ? "uhc" : "sword";
+        herausforderer.closeInventory();
+
+        Player ziel = Bukkit.getPlayer(holder.ziel);
+        if (ziel == null) {
+            herausforderer.sendMessage(Component.text("Der Spieler ist nicht mehr da.", NamedTextColor.RED));
+            return;
+        }
+        anfragen.put(ziel.getUniqueId(), new DuellAnfrage(herausforderer.getUniqueId(), kit,
+            System.currentTimeMillis() + 30_000));
+        herausforderer.sendMessage(Component.text("⚔ Anfrage an " + ziel.getName()
+            + " gesendet (" + kit.toUpperCase() + ", 30s gueltig).", NamedTextColor.GREEN));
+        ziel.sendMessage(Component.text()
+            .append(Component.text("⚔ DUELL! ", NamedTextColor.DARK_RED, TextDecoration.BOLD))
+            .append(Component.text(herausforderer.getName() + " fordert dich heraus ("
+                + kit.toUpperCase() + "-Kit): ", NamedTextColor.GOLD))
+            .append(Component.text("[✔ ANNEHMEN]", NamedTextColor.GREEN, TextDecoration.BOLD)
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/duellannehmen")))
+            .append(Component.text("  "))
+            .append(Component.text("[✖ ABLEHNEN]", NamedTextColor.RED, TextDecoration.BOLD)
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/duellablehnen")))
+            .build());
+        ziel.playSound(ziel.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1.6f);
+    }
+
+    private void registriereDuellAntworten() {
+        getCommand("duellannehmen").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+            DuellAnfrage anfrage = anfragen.remove(p.getUniqueId());
+            if (anfrage == null || anfrage.ablauf() < System.currentTimeMillis()) {
+                p.sendMessage(Component.text("Keine offene Duell-Anfrage.", NamedTextColor.RED));
+                return true;
+            }
+            Player gegner = Bukkit.getPlayer(anfrage.herausforderer());
+            if (gegner == null) {
+                p.sendMessage(Component.text("Der Herausforderer ist weg.", NamedTextColor.RED));
+                return true;
+            }
+            starteDuell(gegner, p, anfrage.kit());
+            return true;
+        });
+        getCommand("duellablehnen").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+            DuellAnfrage anfrage = anfragen.remove(p.getUniqueId());
+            if (anfrage != null) {
+                Player gegner = Bukkit.getPlayer(anfrage.herausforderer());
+                if (gegner != null) gegner.sendMessage(Component.text(
+                    p.getName() + " hat dein Duell abgelehnt.", NamedTextColor.RED));
+                p.sendMessage(Component.text("Duell abgelehnt.", NamedTextColor.GRAY));
+            }
+            return true;
+        });
+    }
+
+    /** Weckt notfalls den Kit-Server und schickt beide rueber, sobald er online ist. */
+    private void starteDuell(Player a, Player b, String kit) {
+        Modus arena = DUELL.get(kit);
+        String token = getConfig().getString("exaroton-token", "");
+        for (Player p : List.of(a, b)) {
+            p.sendMessage(Component.text("⚔ Duell angenommen — Arena wird vorbereitet...", NamedTextColor.GOLD));
+        }
+        if (token.isEmpty()) {
+            verbinde(a, arena.server());
+            verbinde(b, arena.server());
+            return;
+        }
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            if (exarotonStatus(token, arena.exarotonId()) == 1) {
+                Bukkit.getScheduler().runTask(this, () -> {
+                    verbinde(a, arena.server());
+                    verbinde(b, arena.server());
+                });
+                return;
+            }
+            exarotonStart(token, arena.exarotonId());
+            Bukkit.getScheduler().runTask(this, () -> {
+                for (Player p : List.of(a, b)) {
+                    if (p.isOnline()) p.sendMessage(Component.text(
+                        "⏳ Die Arena wird geweckt — ihr werdet AUTOMATISCH verbunden (~1 Min)...",
+                        NamedTextColor.GOLD));
+                }
+            });
+            // Alle 5s pruefen, max. 3 Minuten
+            for (int versuch = 0; versuch < 36; versuch++) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    return;
+                }
+                if (exarotonStatus(token, arena.exarotonId()) == 1) {
+                    Bukkit.getScheduler().runTaskLater(this, () -> {
+                        if (a.isOnline()) verbinde(a, arena.server());
+                        if (b.isOnline()) verbinde(b, arena.server());
+                    }, 60L); // 3s Puffer, bis der Server wirklich annimmt
+                    return;
+                }
+            }
+        });
     }
 
     @EventHandler

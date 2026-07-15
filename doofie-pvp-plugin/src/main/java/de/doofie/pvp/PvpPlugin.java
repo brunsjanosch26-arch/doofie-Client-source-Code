@@ -1,5 +1,7 @@
 package de.doofie.pvp;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -10,68 +12,148 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
+import java.io.File;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
- * DOOFIE PVP-DUELL — 1v1-Arena-Server (max. 2 Spieler).
+ * DOOFIE 1vs1 (GommeHD-Style) — Void-Welt mit .litematic-Arena.
  *
- * Kit kommt aus der config.yml (kit: sword | uhc):
- *   SWORD: Diamant-Schwert + volle Diamant-Ruestung + Steaks
- *   UHC:   klassisches UHC-Endkit (Eisen-Ruestung, Schwert, Bogen,
- *          Gapples, Lava/Wasser-Eimer, Cobble) + KEINE natuerliche Regen
+ * — Die Arena (plugins/DoofiePvp/arena.dschem) wird beim ersten Start
+ *   in die leere Welt gesetzt; die Spieler spawnen an den beiden
+ *   gegenueberliegenden Enden, Blick aufeinander.
+ * — 2 Spieler online -> Kit sofort ins Inventar (essen/sortieren erlaubt),
+ *   3s-Countdown mit Bewegungs-Freeze, dann KAMPF.
+ * — Arena verlassen unmoeglich (Rueckteleport). Void-Sturz, /lobby
+ *   oder Disconnect im Kampf = der Gegner gewinnt.
+ * — Nach dem Duell gehen beide automatisch zurueck in die Lobby.
  *
- * Ablauf: Sobald 2 Spieler online sind, laeuft ein 5s-Countdown,
- * beide werden 40 Bloecke auseinander teleportiert und bekommen ihr Kit.
- * Tod oder Disconnect = der andere gewinnt; danach Auto-Reset und
- * (wenn beide bleiben) direkt die naechste Runde. /lobby fuehrt zurueck.
+ * Kits (nach GommeHD-Vorbild, config.yml 'kit: sword|uhc'):
+ *   SWORD: volle Diamant-Ruestung, Diamantschwert (Schaerfe I), Steaks.
+ *   UHC:   volle Eisen-Ruestung, Eisenschwert (Schaerfe I), Bogen + 32
+ *          Pfeile, Golden Head, Wasser- & Lava-Eimer, 32 Cobble, 8 Steaks,
+ *          Angel — natuerliche Regeneration AUS.
  */
 public class PvpPlugin extends JavaPlugin implements Listener {
 
-    private enum Phase { WARTEN, COUNTDOWN, KAMPF }
+    private enum Phase { WARTEN, COUNTDOWN, KAMPF, ENDE }
 
     private Phase phase = Phase.WARTEN;
+    private SchematicLader arena;
+    private int arenaMinX, arenaMinY, arenaMinZ; // Platzierungs-Ursprung
+    private Location spawnA, spawnB;
+    private final List<Location> frozen = new ArrayList<>(); // [0]=A, [1]=B
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         new LobbyCommand(this).register();
 
         World w = welt();
         w.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
         w.setGameRule(org.bukkit.GameRule.DO_WEATHER_CYCLE, false);
-        w.setGameRule(org.bukkit.GameRule.KEEP_INVENTORY, true);
+        w.setGameRule(org.bukkit.GameRule.DO_IMMEDIATE_RESPAWN, true);
         try {
             w.setTime(6000);
         } catch (IllegalArgumentException ignoriert) { }
-        // UHC kaempft ohne natuerliche Regeneration
         w.setGameRule(org.bukkit.GameRule.NATURAL_REGENERATION, !kit().equals("uhc"));
 
-        getLogger().info("PvP-Duell aktiv — Kit: " + kit().toUpperCase());
+        try {
+            arena = new SchematicLader(new File(getDataFolder(), "arena.dschem"));
+            arenaMinX = -arena.breite / 2;
+            arenaMinY = 100;
+            arenaMinZ = -arena.laenge / 2;
+            platzelfalls();
+            berechneSpawns();
+        } catch (Exception ex) {
+            getLogger().severe("Arena konnte nicht geladen werden: " + ex.getMessage());
+        }
+        getLogger().info("1vs1 aktiv — Kit: " + kit().toUpperCase() + ", Arena "
+            + (arena != null ? arena.breite + "x" + arena.hoehe + "x" + arena.laenge : "FEHLT"));
     }
 
     private String kit() {
-        return getConfig().getString("kit", "sword").toLowerCase();
+        return getConfig().getString("kit", "sword").toLowerCase(Locale.ROOT);
     }
 
     private World welt() {
         return Bukkit.getWorlds().get(0);
     }
 
-    private Location spawn() {
+    // ────────────────────────── Arena ──────────────────────────
+
+    /** Setzt die Arena einmalig in die Void-Welt (Marker-Datei). */
+    private void platzelfalls() {
+        File marker = new File(getDataFolder(), "arena-gebaut.marker");
+        if (marker.exists()) return;
         World w = welt();
-        return new Location(w, 0.5, w.getHighestBlockYAt(0, 0) + 1, 0.5);
+        int gesetzt = 0;
+        for (int y = 0; y < arena.hoehe; y++) {
+            for (int z = 0; z < arena.laenge; z++) {
+                for (int x = 0; x < arena.breite; x++) {
+                    BlockData bd = arena.blockAn(x, y, z);
+                    if (bd == null) continue;
+                    w.getBlockAt(arenaMinX + x, arenaMinY + y, arenaMinZ + z).setBlockData(bd, false);
+                    gesetzt++;
+                }
+            }
+        }
+        try {
+            marker.createNewFile();
+        } catch (Exception ignored) { }
+        getLogger().info("Arena platziert: " + gesetzt + " Bloecke.");
+    }
+
+    /** Spawns an den Enden der laengsten Achse, auf dem hoechsten Block. */
+    private void berechneSpawns() {
+        World w = welt();
+        boolean xAchse = arena.breite >= arena.laenge;
+        int mx = arenaMinX + arena.breite / 2, mz = arenaMinZ + arena.laenge / 2;
+        int abstand = (xAchse ? arena.breite : arena.laenge) / 2 - 4;
+
+        spawnA = findeBoden(w, xAchse ? mx - abstand : mx, xAchse ? mz : mz - abstand);
+        spawnB = findeBoden(w, xAchse ? mx + abstand : mx, xAchse ? mz : mz + abstand);
+        // Blick aufeinander
+        spawnA.setYaw(xAchse ? -90 : 180);
+        spawnB.setYaw(xAchse ? 90 : 0);
+    }
+
+    private Location findeBoden(World w, int x, int z) {
+        for (int y = arenaMinY + arena.hoehe; y >= arenaMinY; y--) {
+            if (!w.getBlockAt(x, y, z).getType().isAir()) {
+                return new Location(w, x + 0.5, y + 1, z + 0.5);
+            }
+        }
+        return new Location(w, x + 0.5, arenaMinY + arena.hoehe / 2.0, z + 0.5);
+    }
+
+    private boolean inArena(Location loc) {
+        return loc.getX() >= arenaMinX - 1 && loc.getX() <= arenaMinX + arena.breite + 1
+            && loc.getZ() >= arenaMinZ - 1 && loc.getZ() <= arenaMinZ + arena.laenge + 1;
     }
 
     // ────────────────────────── Ablauf ──────────────────────────
@@ -80,28 +162,31 @@ public class PvpPlugin extends JavaPlugin implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
         reset(p);
-        p.teleport(spawn());
-        p.sendMessage(Component.text("⚔ 1v1-DUELL (" + kit().toUpperCase() + "-Kit) — sobald dein Gegner da ist, geht es los!",
-            NamedTextColor.GOLD));
+        p.teleport(spawnA != null ? spawnA : welt().getSpawnLocation());
+        p.sendMessage(Component.text("⚔ 1vs1 (" + kit().toUpperCase()
+            + ") — sobald dein Gegner da ist: Kit, 3s Countdown, KAMPF!", NamedTextColor.GOLD));
         pruefeStart();
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        if (phase == Phase.KAMPF) {
-            // Flucht = Niederlage
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                if (!p.equals(event.getPlayer())) sieg(p, event.getPlayer().getName() + " ist gefluechtet");
-            }
-        }
-        phase = Phase.WARTEN;
     }
 
     private void pruefeStart() {
         if (phase != Phase.WARTEN) return;
-        if (Bukkit.getOnlinePlayers().size() < 2) return;
+        List<Player> spieler = new ArrayList<>(Bukkit.getOnlinePlayers());
+        if (spieler.size() < 2) return;
         phase = Phase.COUNTDOWN;
-        final int[] rest = {5};
+
+        Player a = spieler.get(0), b = spieler.get(1);
+        a.teleport(spawnA);
+        b.teleport(spawnB);
+        frozen.clear();
+        frozen.add(spawnA);
+        frozen.add(spawnB);
+        for (Player p : List.of(a, b)) {
+            reset(p);
+            gibKit(p);
+            p.sendMessage(Component.text("Kit ist da — du kannst schon essen und sortieren!", NamedTextColor.GREEN));
+        }
+
+        final int[] rest = {3};
         Bukkit.getScheduler().runTaskTimer(this, task -> {
             if (Bukkit.getOnlinePlayers().size() < 2) {
                 task.cancel();
@@ -112,71 +197,142 @@ public class PvpPlugin extends JavaPlugin implements Listener {
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.showTitle(Title.title(
                         Component.text(rest[0], NamedTextColor.GOLD, TextDecoration.BOLD),
-                        Component.text("Mach dich bereit!", NamedTextColor.GRAY),
+                        Component.empty(),
                         Title.Times.times(Duration.ZERO, Duration.ofMillis(900), Duration.ofMillis(100))));
-                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
+                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1.2f);
                 }
                 rest[0]--;
             } else {
                 task.cancel();
-                starteKampf();
+                phase = Phase.KAMPF;
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    p.showTitle(Title.title(
+                        Component.text("KAMPF!", NamedTextColor.RED, TextDecoration.BOLD),
+                        Component.empty(),
+                        Title.Times.times(Duration.ZERO, Duration.ofSeconds(1), Duration.ofMillis(300))));
+                    p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1.5f);
+                }
             }
-        }, 0L, 20L);
+        }, 20L, 20L);
     }
 
-    private void starteKampf() {
-        phase = Phase.KAMPF;
-        Player[] spieler = Bukkit.getOnlinePlayers().toArray(new Player[0]);
-        Location mitte = spawn();
-        for (int i = 0; i < 2 && i < spieler.length; i++) {
-            Player p = spieler[i];
-            reset(p);
-            int dx = i == 0 ? -20 : 20;
-            Location ort = mitte.clone().add(dx, 0, 0);
-            ort.setY(welt().getHighestBlockYAt(ort) + 1);
-            ort.setYaw(i == 0 ? -90 : 90); // einander zugewandt
-            p.teleport(ort);
-            gibKit(p);
-            p.showTitle(Title.title(
-                Component.text("KAMPF!", NamedTextColor.RED, TextDecoration.BOLD),
-                Component.text("Moege der Bessere gewinnen.", NamedTextColor.GRAY),
-                Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofMillis(500))));
-            p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1.4f);
+    /** Freeze im Countdown + Arena-Grenzen + Void = Niederlage. */
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        Player p = event.getPlayer();
+        if (phase == Phase.COUNTDOWN) {
+            // Position einfrieren, Kopf drehen erlaubt
+            if (event.getFrom().getX() != event.getTo().getX()
+                || event.getFrom().getZ() != event.getTo().getZ()) {
+                Location zurueck = event.getFrom().clone();
+                zurueck.setYaw(event.getTo().getYaw());
+                zurueck.setPitch(event.getTo().getPitch());
+                event.setTo(zurueck);
+            }
+            return;
+        }
+        if (arena == null) return;
+        // Void-Sturz = Niederlage
+        if (event.getTo().getY() < arenaMinY - 5) {
+            if (phase == Phase.KAMPF) {
+                niederlage(p, p.getName() + " ist in die Leere gestuerzt");
+            } else {
+                p.teleport(spawnA);
+            }
+            return;
+        }
+        // Arena nicht verlassen
+        if (!inArena(event.getTo())) {
+            event.setCancelled(true);
+        }
+    }
+
+    /** /lobby (oder /hub) im Kampf = Aufgabe. */
+    @EventHandler
+    public void onCommand(PlayerCommandPreprocessEvent event) {
+        String cmd = event.getMessage().substring(1).split(" ")[0].toLowerCase(Locale.ROOT);
+        if (phase == Phase.KAMPF && List.of("lobby", "hub", "l").contains(cmd)) {
+            niederlage(event.getPlayer(), event.getPlayer().getName() + " hat aufgegeben");
         }
     }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         event.getDrops().clear();
-        Player tot = event.getEntity();
-        Bukkit.getScheduler().runTaskLater(this, () -> {
-            if (tot.isOnline()) tot.spigot().respawn();
-        }, 1L);
-        if (phase != Phase.KAMPF) return;
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!p.equals(tot)) sieg(p, tot.getName() + " wurde erledigt");
+        if (phase == Phase.KAMPF) {
+            niederlage(event.getEntity(), event.getEntity().getName() + " wurde erledigt");
         }
     }
 
-    /** Kein Schaden ausserhalb des Kampfs (Wartephase/Countdown). */
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        if (phase == Phase.KAMPF || phase == Phase.COUNTDOWN) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (!p.equals(event.getPlayer())) {
+                    sieg(p, event.getPlayer().getName() + " hat den Kampf verlassen");
+                    return;
+                }
+            }
+        }
+        phase = Phase.WARTEN;
+    }
+
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
-        if (phase != Phase.KAMPF && event.getEntity() instanceof Player) {
-            event.setCancelled(true);
+        if (phase != Phase.KAMPF && event.getEntity() instanceof Player) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onHunger(FoodLevelChangeEvent event) {
+        if (phase != Phase.KAMPF) event.setCancelled(true);
+    }
+
+    /** Arena bleibt heil — nur UHC darf Cobble/Wasser/Lava setzen. */
+    @EventHandler
+    public void onBreak(BlockBreakEvent event) {
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlace(BlockPlaceEvent event) {
+        if (!kit().equals("uhc") || phase != Phase.KAMPF) event.setCancelled(true);
+    }
+
+    // ────────────────────────── Sieg & Reset ──────────────────────────
+
+    private void niederlage(Player verlierer, String grund) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!p.equals(verlierer)) {
+                sieg(p, grund);
+                return;
+            }
         }
+        phase = Phase.WARTEN;
     }
 
     private void sieg(Player gewinner, String grund) {
-        phase = Phase.WARTEN;
-        Bukkit.broadcast(Component.text("🏆 " + gewinner.getName() + " GEWINNT das Duell! (" + grund + ")",
+        if (phase == Phase.ENDE) return;
+        phase = Phase.ENDE;
+        Bukkit.broadcast(Component.text("🏆 " + gewinner.getName() + " GEWINNT! (" + grund + ")",
             NamedTextColor.GOLD, TextDecoration.BOLD));
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.showTitle(Title.title(
+                Component.text(p.equals(gewinner) ? "SIEG!" : "NIEDERLAGE",
+                    p.equals(gewinner) ? NamedTextColor.GOLD : NamedTextColor.RED, TextDecoration.BOLD),
+                Component.text(grund, NamedTextColor.GRAY),
+                Title.Times.times(Duration.ZERO, Duration.ofSeconds(4), Duration.ofSeconds(1))));
+        }
         gewinner.playSound(gewinner.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+        // Nach 5s: beide zurueck in die Lobby
         Bukkit.getScheduler().runTaskLater(this, () -> {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 reset(p);
-                p.teleport(spawn());
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                out.writeUTF("Connect");
+                out.writeUTF("lobby");
+                p.sendPluginMessage(this, "BungeeCord", out.toByteArray());
             }
-            pruefeStart(); // Rematch, wenn beide geblieben sind
+            phase = Phase.WARTEN;
         }, 100L);
     }
 
@@ -187,10 +343,11 @@ public class PvpPlugin extends JavaPlugin implements Listener {
         p.setFoodLevel(20);
         p.setSaturation(20f);
         p.setFireTicks(0);
+        p.setArrowsInBody(0);
         p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
     }
 
-    // ────────────────────────── Kits ──────────────────────────
+    // ────────────────────────── Kits (GommeHD-Vorbild) ──────────────────────────
 
     private void gibKit(Player p) {
         var inv = p.getInventory();
@@ -199,28 +356,47 @@ public class PvpPlugin extends JavaPlugin implements Listener {
             inv.setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
             inv.setLeggings(new ItemStack(Material.IRON_LEGGINGS));
             inv.setBoots(new ItemStack(Material.IRON_BOOTS));
-            inv.addItem(
-                new ItemStack(Material.DIAMOND_SWORD),
-                new ItemStack(Material.BOW),
-                new ItemStack(Material.IRON_AXE),
-                new ItemStack(Material.GOLDEN_APPLE, 8),
-                new ItemStack(Material.WATER_BUCKET),
-                new ItemStack(Material.LAVA_BUCKET),
-                new ItemStack(Material.COBBLESTONE, 64),
-                new ItemStack(Material.OAK_PLANKS, 32),
-                new ItemStack(Material.ARROW, 24),
-                new ItemStack(Material.COOKED_BEEF, 16));
+            ItemStack schwert = new ItemStack(Material.IRON_SWORD);
+            ItemMeta sm = schwert.getItemMeta();
+            sm.addEnchant(Enchantment.SHARPNESS, 1, true);
+            schwert.setItemMeta(sm);
+            // "Golden Head" — Goldapfel mit Regeneration II wie auf Gomme
+            ItemStack goldenHead = new ItemStack(Material.GOLDEN_APPLE);
+            ItemMeta gh = goldenHead.getItemMeta();
+            gh.displayName(Component.text("Golden Head", NamedTextColor.GOLD)
+                .decoration(TextDecoration.ITALIC, false));
+            goldenHead.setItemMeta(gh);
+            inv.setItem(0, schwert);
+            inv.setItem(1, new ItemStack(Material.BOW));
+            inv.setItem(2, goldenHead);
+            inv.setItem(3, new ItemStack(Material.WATER_BUCKET));
+            inv.setItem(4, new ItemStack(Material.LAVA_BUCKET));
+            inv.setItem(5, new ItemStack(Material.COBBLESTONE, 32));
+            inv.setItem(6, new ItemStack(Material.COOKED_BEEF, 8));
+            inv.setItem(7, new ItemStack(Material.FISHING_ROD));
+            inv.setItem(8, new ItemStack(Material.ARROW, 32));
         } else { // sword
-            ItemStack schwert = new ItemStack(Material.DIAMOND_SWORD);
-            var meta = schwert.getItemMeta();
-            meta.addEnchant(Enchantment.SHARPNESS, 1, true);
-            meta.setUnbreakable(true);
-            schwert.setItemMeta(meta);
             inv.setHelmet(new ItemStack(Material.DIAMOND_HELMET));
             inv.setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
             inv.setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
             inv.setBoots(new ItemStack(Material.DIAMOND_BOOTS));
-            inv.addItem(schwert, new ItemStack(Material.COOKED_BEEF, 32));
+            ItemStack schwert = new ItemStack(Material.DIAMOND_SWORD);
+            ItemMeta sm = schwert.getItemMeta();
+            sm.addEnchant(Enchantment.SHARPNESS, 1, true);
+            sm.setUnbreakable(true);
+            schwert.setItemMeta(sm);
+            inv.setItem(0, schwert);
+            inv.setItem(1, new ItemStack(Material.COOKED_BEEF, 64));
         }
+        // Gomme-Feeling: Absorption weg, volle Herzen
+        p.removePotionEffect(PotionEffectType.ABSORPTION);
+    }
+
+    /** Golden Head: beim Essen Regeneration II fuer 9 Sekunden. */
+    @EventHandler
+    public void onEat(org.bukkit.event.player.PlayerItemConsumeEvent event) {
+        if (event.getItem().getType() != Material.GOLDEN_APPLE) return;
+        if (!event.getItem().hasItemMeta() || !event.getItem().getItemMeta().hasDisplayName()) return;
+        event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 9 * 20, 1));
     }
 }

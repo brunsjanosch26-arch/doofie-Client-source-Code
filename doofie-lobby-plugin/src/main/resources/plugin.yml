@@ -10,6 +10,12 @@ commands:
     description: 1v1-Duell — waehle dein Kit
     usage: "/duel <sword|uhc>"
     aliases: [duell, 1v1]
+  duellannehmen:
+    description: Duell-Anfrage annehmen
+    usage: /duellannehmen
+  duellablehnen:
+    description: Duell-Anfrage ablehnen
+    usage: /duellablehnen
   schemplatz:
     description: WorldEdit-Schematic (.schem) an deiner Position platzieren (Admin)
     usage: "/schemplatz <datei>"
