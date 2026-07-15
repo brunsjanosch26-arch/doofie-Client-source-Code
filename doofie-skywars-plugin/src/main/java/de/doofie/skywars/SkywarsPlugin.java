@@ -286,9 +286,30 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
             k.setType(Material.CHEST);
             lootKisten.add(k.getLocation());
         }
+        sammleAlleContainer();
         fuelleLoot();
         spawneHaendler();
         w.setSpawnLocation(spawnOrt(true));
+    }
+
+    /** Findet ALLE Kisten & Faesser auf allen Inseln (Chunk-Scan des Kartenbereichs). */
+    private void sammleAlleContainer() {
+        World w = welt();
+        Set<Location> gefunden = new HashSet<>(lootKisten);
+        int maxX = spawnX + spawnInsel.breite / 2 + 16;
+        int maxZ = Math.max(nebenZ + 16, spawnInsel.laenge / 2 + 16);
+        for (int cx = -maxX >> 4; cx <= maxX >> 4; cx++) {
+            for (int cz = -maxZ >> 4; cz <= maxZ >> 4; cz++) {
+                for (var state : w.getChunkAt(cx, cz).getTileEntities()) {
+                    if (state instanceof org.bukkit.block.Container) {
+                        gefunden.add(state.getLocation());
+                    }
+                }
+            }
+        }
+        lootKisten.clear();
+        lootKisten.addAll(gefunden);
+        getLogger().info(lootKisten.size() + " Loot-Container auf der Karte gefunden.");
     }
 
     /** Random-Loot bis Diamant: Ruestung, Waffen, Schild, Eimer & Co. */
@@ -360,8 +381,67 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
             pm.addEnchant(Enchantment.POWER, 2, true);
             powerBogen.setItemMeta(pm);
             handel.add(handel(Material.DIAMOND, 10, powerBogen));
+            // UPGRADE: 12 Diamanten schalten verzauberte Trades frei
+            handel.add(handel(Material.DIAMOND, 12, upgradeStern()));
             v.setRecipes(handel);
         }
+    }
+
+    private ItemStack upgradeStern() {
+        ItemStack stern = new ItemStack(Material.NETHER_STAR);
+        ItemMeta meta = stern.getItemMeta();
+        meta.displayName(Component.text("HAENDLER-UPGRADE", NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD)
+            .decoration(TextDecoration.ITALIC, false));
+        meta.lore(List.of(Component.text("Schaltet VERZAUBERTES Gear frei!", NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false)));
+        stern.setItemMeta(meta);
+        return stern;
+    }
+
+    /** Upgrade gekauft? Dann bekommt DIESER Haendler die verzauberten Trades. */
+    @EventHandler
+    public void onTrade(io.papermc.paper.event.player.PlayerTradeEvent event) {
+        ItemStack ergebnis = event.getTrade().getResult();
+        if (ergebnis.getType() != Material.NETHER_STAR || !ergebnis.hasItemMeta()
+            || !ergebnis.getItemMeta().hasDisplayName()) return;
+        if (!(event.getVillager() instanceof Villager v)) return;
+        Player p = event.getPlayer();
+
+        // Verzauberte Tier-2-Trades setzen
+        List<MerchantRecipe> handel = new ArrayList<>();
+        handel.add(handel(Material.IRON_INGOT, 2, new ItemStack(Material.SANDSTONE, 16)));
+        handel.add(handel(Material.IRON_INGOT, 4, new ItemStack(Material.COOKED_BEEF, 6)));
+        handel.add(handel(Material.IRON_INGOT, 6, new ItemStack(Material.ARROW, 12)));
+        handel.add(handel(Material.DIAMOND, 3, new ItemStack(Material.GOLDEN_APPLE)));
+        handel.add(handel(Material.DIAMOND, 10, verzaubert(Material.DIAMOND_SWORD, Enchantment.SHARPNESS, 2)));
+        handel.add(handel(Material.DIAMOND, 7, verzaubert(Material.DIAMOND_HELMET, Enchantment.PROTECTION, 2)));
+        handel.add(handel(Material.DIAMOND, 11, verzaubert(Material.DIAMOND_CHESTPLATE, Enchantment.PROTECTION, 2)));
+        handel.add(handel(Material.DIAMOND, 9, verzaubert(Material.DIAMOND_LEGGINGS, Enchantment.PROTECTION, 2)));
+        handel.add(handel(Material.DIAMOND, 7, verzaubert(Material.DIAMOND_BOOTS, Enchantment.PROTECTION, 2)));
+        handel.add(handel(Material.DIAMOND, 12, verzaubert(Material.BOW, Enchantment.POWER, 3)));
+        v.setRecipes(handel);
+        v.customName(Component.text("Meister-Haendler", NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD));
+
+        // Der Stern selbst ist nur der Kaufbeleg — wieder einsammeln
+        Bukkit.getScheduler().runTask(this, () -> {
+            for (ItemStack item : p.getInventory().getContents()) {
+                if (item != null && item.getType() == Material.NETHER_STAR
+                    && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+                    p.getInventory().remove(item);
+                }
+            }
+        });
+        p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.7f);
+        p.sendMessage(Component.text("✨ Dein Haendler ist jetzt MEISTER-HAENDLER — verzaubertes Gear verfuegbar!",
+            NamedTextColor.LIGHT_PURPLE));
+    }
+
+    private ItemStack verzaubert(Material mat, Enchantment ench, int stufe) {
+        ItemStack item = new ItemStack(mat);
+        ItemMeta meta = item.getItemMeta();
+        meta.addEnchant(ench, stufe, true);
+        item.setItemMeta(meta);
+        return item;
     }
 
     private MerchantRecipe handel(Material waehrung, int preis, ItemStack ware) {
@@ -467,9 +547,9 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
         }
     }
 
+    /** Beim Tod droppt der KOMPLETTE Loot — und der Gegner gewinnt. */
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
-        event.getDrops().clear();
         if (phase == Phase.KAMPF) {
             niederlage(event.getEntity(), event.getEntity().getName() + " wurde erledigt");
         }
@@ -495,9 +575,13 @@ public class SkywarsPlugin extends JavaPlugin implements Listener {
         }, 20L);
     }
 
+    /** Fallschaden & Co. sind IMMER an — nur im Countdown/Siegerscreen nicht. */
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
-        if (phase != Phase.KAMPF && event.getEntity() instanceof Player) event.setCancelled(true);
+        if ((phase == Phase.COUNTDOWN || phase == Phase.ENDE)
+            && event.getEntity() instanceof Player) {
+            event.setCancelled(true);
+        }
     }
 
     /** Karte ist unzerstoerbar — nur selbst gesetzte Bloecke gehen weg. */

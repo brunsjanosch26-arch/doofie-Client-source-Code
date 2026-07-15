@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -88,6 +89,7 @@ public class PvpPlugin extends JavaPlugin implements Listener {
             arenaMinY = 100;
             arenaMinZ = -arena.laenge / 2;
             platzelfalls();
+            fuelleBoden();
             berechneSpawns();
         } catch (Exception ex) {
             getLogger().severe("Arena konnte nicht geladen werden: " + ex.getMessage());
@@ -128,27 +130,72 @@ public class PvpPlugin extends JavaPlugin implements Listener {
         getLogger().info("Arena platziert: " + gesetzt + " Bloecke.");
     }
 
-    /** Spawns an den Enden der laengsten Achse, auf dem hoechsten Block. */
-    private void berechneSpawns() {
+    /**
+     * Fehlt der Arena-INNENBODEN (z.B. Kolosseum, das auf Erdboden gebaut
+     * wurde), wird er zeilenweise zwischen den Aussenwaenden mit Sand gefuellt.
+     */
+    private void fuelleBoden() {
         World w = welt();
-        boolean xAchse = arena.breite >= arena.laenge;
+        int y = arenaMinY;
         int mx = arenaMinX + arena.breite / 2, mz = arenaMinZ + arena.laenge / 2;
-        int abstand = (xAchse ? arena.breite : arena.laenge) / 2 - 4;
-
-        spawnA = findeBoden(w, xAchse ? mx - abstand : mx, xAchse ? mz : mz - abstand);
-        spawnB = findeBoden(w, xAchse ? mx + abstand : mx, xAchse ? mz : mz + abstand);
-        // Blick aufeinander
-        spawnA.setYaw(xAchse ? -90 : 180);
-        spawnB.setYaw(xAchse ? 90 : 0);
-    }
-
-    private Location findeBoden(World w, int x, int z) {
-        for (int y = arenaMinY + arena.hoehe; y >= arenaMinY; y--) {
-            if (!w.getBlockAt(x, y, z).getType().isAir()) {
-                return new Location(w, x + 0.5, y + 1, z + 0.5);
+        if (!w.getBlockAt(mx, y, mz).getType().isAir()) return; // Boden vorhanden
+        int gefuellt = 0;
+        for (int z = 0; z < arena.laenge; z++) {
+            // erste/letzte feste Zelle der Zeile finden — dazwischen ist "innen"
+            int erster = -1, letzter = -1;
+            for (int x = 0; x < arena.breite; x++) {
+                if (!w.getBlockAt(arenaMinX + x, y, arenaMinZ + z).getType().isAir()) {
+                    if (erster < 0) erster = x;
+                    letzter = x;
+                }
+            }
+            for (int x = erster + 1; x < letzter; x++) {
+                Block b = w.getBlockAt(arenaMinX + x, y, arenaMinZ + z);
+                if (b.getType().isAir()) {
+                    b.setType(Material.SAND);
+                    gefuellt++;
+                }
             }
         }
-        return new Location(w, x + 0.5, arenaMinY + arena.hoehe / 2.0, z + 0.5);
+        if (gefuellt > 0) getLogger().info("Arena-Boden aufgefuellt: " + gefuellt + " Bloecke Sand.");
+    }
+
+    /**
+     * Spawns AUF DEM ARENABODEN (nicht auf der Tribuene): von der Mitte aus
+     * auf Bodenhoehe nach aussen laufen, bis die Wand kommt — 4 Bloecke davor.
+     */
+    private void berechneSpawns() {
+        World w = welt();
+        int mx = arenaMinX + arena.breite / 2, mz = arenaMinZ + arena.laenge / 2;
+        int bodenY = arenaMinY + 1; // stehen AUF der y0-Schicht
+
+        int distA = wandAbstand(w, mx, mz, -1, bodenY);
+        int distB = wandAbstand(w, mx, mz, 1, bodenY);
+        spawnA = new Location(w, mx - distA + 0.5, bodenY, mz + 0.5, -90, 0);
+        spawnB = new Location(w, mx + distB + 0.5, bodenY, mz + 0.5, 90, 0);
+        // Falls unter dem Spawn doch Luft ist: Saeule absenken bis Boden
+        for (Location s : List.of(spawnA, spawnB)) {
+            while (s.getY() > arenaMinY - 2
+                && w.getBlockAt(s.getBlockX(), s.getBlockY() - 1, s.getBlockZ()).getType().isAir()) {
+                s.subtract(0, 1, 0);
+            }
+        }
+        getLogger().info("Spawns auf dem Arenaboden: A=" + spawnA.getBlockX() + "/" + spawnA.getBlockY()
+            + " B=" + spawnB.getBlockX() + "/" + spawnB.getBlockY());
+    }
+
+    /** Wie weit von der Mitte bis zur Wand (Bloecke in Kopf-/Fusshoehe)? */
+    private int wandAbstand(World w, int mx, int mz, int richtung, int bodenY) {
+        int max = arena.breite / 2 - 1;
+        for (int d = 3; d <= max; d++) {
+            int x = mx + richtung * d;
+            for (int dy = 0; dy <= 4; dy++) {
+                if (!w.getBlockAt(x, bodenY + dy, mz).getType().isAir()) {
+                    return Math.max(3, d - 4);
+                }
+            }
+        }
+        return Math.max(3, max - 4);
     }
 
     private boolean inArena(Location loc) {
