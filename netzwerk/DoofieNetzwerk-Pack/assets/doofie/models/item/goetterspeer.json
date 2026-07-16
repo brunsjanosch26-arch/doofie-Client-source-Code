@@ -2462,40 +2462,6 @@
   ],
   "parent": "minecraft:item/spear_in_hand",
   "display": {
-    "thirdperson_righthand": {
-      "rotation": [
-        20,
-        270,
-        -40
-      ],
-      "translation": [
-        0,
-        2,
-        2
-      ],
-      "scale": [
-        1.7,
-        1.7,
-        0.85
-      ]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [
-        20,
-        -270,
-        40
-      ],
-      "translation": [
-        0,
-        2,
-        2
-      ],
-      "scale": [
-        1.7,
-        1.7,
-        0.85
-      ]
-    },
     "gui": {
       "rotation": [
         0,
