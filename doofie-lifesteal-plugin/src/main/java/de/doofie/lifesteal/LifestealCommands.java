@@ -19,7 +19,7 @@ import java.util.UUID;
  * Alle Lifesteal-Befehle:
  *   /herzen [spieler]        — Herzen anzeigen
  *   /auszahlen [anzahl]      — eigene Herzen als Herz-Items auszahlen (min. 1 bleibt)
- *   /revive <spieler>        — eliminierten Spieler zurueckholen (Revive-Beacon in der Hand)
+ *   /revive <spieler>        — eliminierten Spieler zurueckholen (nur Admins)
  *   /eliminiert              — Liste aller Eliminierten
  *   /lifestealitem give ...  — Admin: Custom-Items vergeben
  * Alle Befehle haben Tab-Vervollstaendigung.
@@ -27,8 +27,7 @@ import java.util.UUID;
 public class LifestealCommands implements TabExecutor {
 
     private static final List<String> ITEM_IDS = List.of(
-        LifestealItems.HERZ, LifestealItems.FRAGMENT,
-        LifestealItems.REVIVE_BEACON, LifestealItems.SCHWERT);
+        LifestealItems.HERZ, LifestealItems.FRAGMENT, LifestealItems.SCHWERT);
 
     private final LifestealPlugin plugin;
 
@@ -148,14 +147,10 @@ public class LifestealCommands implements TabExecutor {
                     p.sendMessage(Component.text(args[0] + " ist nicht eliminiert.", NamedTextColor.RED));
                     return true;
                 }
-                boolean admin = p.hasPermission("doofie.lifesteal.admin");
-                ItemStack hand = p.getInventory().getItemInMainHand();
-                boolean beacon = LifestealItems.REVIVE_BEACON.equals(plugin.getItems().idOf(hand));
-                if (!admin && !beacon) {
-                    p.sendMessage(Component.text("Du brauchst einen Revive-Beacon in der Hand!", NamedTextColor.RED));
+                if (!p.hasPermission("doofie.lifesteal.admin")) {
+                    p.sendMessage(Component.text("Nur Admins koennen Spieler wiederbeleben!", NamedTextColor.RED));
                     return true;
                 }
-                if (beacon) hand.subtract();
                 hearts.revive(ziel);
                 return true;
             }
@@ -177,7 +172,7 @@ public class LifestealCommands implements TabExecutor {
             case "lifestealitem" -> {
                 if (args.length < 3 || !args[0].equalsIgnoreCase("give")) {
                     sender.sendMessage(Component.text(
-                        "Nutzung: /lifestealitem give <spieler> <herz|herz_fragment|revive_beacon|lifesteal_schwert> [anzahl]",
+                        "Nutzung: /lifestealitem give <spieler> <herz|herz_fragment|lifesteal_schwert> [anzahl]",
                         NamedTextColor.RED));
                     return true;
                 }

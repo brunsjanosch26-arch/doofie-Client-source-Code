@@ -15,7 +15,7 @@ commands:
     usage: /auszahlen [anzahl]
     aliases: [withdraw]
   revive:
-    description: Eliminierten Spieler wiederbeleben (Revive-Beacon in der Hand noetig)
+    description: Eliminierten Spieler wiederbeleben (nur Admins)
     usage: /revive <spieler>
     aliases: [wiederbeleben]
   eliminiert:
@@ -24,7 +24,7 @@ commands:
     aliases: [eliminated]
   lifestealitem:
     description: Custom-Items vergeben (Admin)
-    usage: "/lifestealitem give <spieler> <herz|herz_fragment|revive_beacon|lifesteal_schwert> [anzahl]"
+    usage: "/lifestealitem give <spieler> <herz|herz_fragment|lifesteal_schwert> [anzahl]"
     permission: doofie.lifesteal.items
     aliases: [lsitem]
   tpa:
@@ -55,5 +55,5 @@ permissions:
     description: Erlaubt /lifestealitem (Custom-Items vergeben)
     default: op
   doofie.lifesteal.admin:
-    description: Revive ohne Revive-Beacon, Herzen setzen
+    description: /revive nutzen, Herzen setzen
     default: op

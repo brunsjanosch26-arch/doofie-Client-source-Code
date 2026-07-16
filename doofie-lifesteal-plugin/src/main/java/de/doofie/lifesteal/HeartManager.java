@@ -23,8 +23,7 @@ import java.util.UUID;
  *
  * — Start: 10 Herzen, Maximum: 20 Herzen.
  * — 0 Herzen = ELIMINIERT: Spieler wandert in den Zuschauer-Modus,
- *   bis ihn jemand mit einem Revive-Beacon per /revive zurueckholt
- *   (Wiedereinstieg mit 5 Herzen).
+ *   bis ihn ein Admin per /revive zurueckholt (Wiedereinstieg mit 5 Herzen).
  */
 public class HeartManager {
 
@@ -118,9 +117,9 @@ public class HeartManager {
         eliminiert.add(p.getUniqueId());
         save();
         p.setGameMode(GameMode.SPECTATOR);
-        p.sendMessage(Component.text("Du wurdest ELIMINIERT! Ein Freund kann dich mit", NamedTextColor.RED)
+        p.sendMessage(Component.text("Du wurdest ELIMINIERT! Ein Admin kann dich per", NamedTextColor.RED)
             .appendNewline()
-            .append(Component.text("einem Revive-Beacon per /revive " + p.getName() + " zurueckholen.", NamedTextColor.RED)));
+            .append(Component.text("/revive " + p.getName() + " zurueckholen.", NamedTextColor.RED)));
         Bukkit.broadcast(Component.text("☠ " + p.getName() + " hat alle Herzen verloren und ist jetzt Zuschauer!",
             NamedTextColor.DARK_RED));
         p.getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1f, 0.6f);

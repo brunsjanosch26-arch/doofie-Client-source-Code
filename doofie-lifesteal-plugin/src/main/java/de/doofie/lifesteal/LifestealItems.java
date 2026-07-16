@@ -36,11 +36,6 @@ import java.util.List;
  *   Zwischenprodukt. Rezept: 1 Totem der Unsterblichkeit umringt
  *   von 8 Redstone-Bloecken.
  *
- * — REVIVE-BEACON (craftbar, krank teuer):
- *   In der Hand halten und /revive <spieler> — holt einen eliminierten
- *   Spieler aus dem Zuschauer-Modus zurueck (wird verbraucht).
- *   Rezept: Beacon in der Mitte, 4 Herzen + 4 Netherite-Barren drumherum.
- *
  * — LIFESTEAL-SCHWERT (craftbar):
  *   Netherite-Schwert mit Schaerfe V, Unbreakable. Jeder Treffer auf
  *   Spieler oder Mobs heilt dich um 1 Herz.
@@ -53,7 +48,6 @@ public class LifestealItems implements Listener {
 
     public static final String HERZ = "herz";
     public static final String FRAGMENT = "herz_fragment";
-    public static final String REVIVE_BEACON = "revive_beacon";
     public static final String SCHWERT = "lifesteal_schwert";
 
     private final LifestealPlugin plugin;
@@ -73,7 +67,6 @@ public class LifestealItems implements Listener {
     private void discoverRecipes(Player p) {
         p.discoverRecipe(new NamespacedKey(plugin, HERZ));
         p.discoverRecipe(new NamespacedKey(plugin, FRAGMENT));
-        p.discoverRecipe(new NamespacedKey(plugin, REVIVE_BEACON));
         p.discoverRecipe(new NamespacedKey(plugin, SCHWERT));
     }
 
@@ -121,17 +114,6 @@ public class LifestealItems implements Listener {
             "1 Netherite-Barren = 1 Herz."));
     }
 
-    public ItemStack reviveBeacon() {
-        ItemStack item = tagged(Material.BEACON, REVIVE_BEACON, "Revive-Beacon", NamedTextColor.AQUA, List.of(
-            "In der Hand halten und /revive <spieler>:",
-            "holt einen eliminierten Spieler zurueck",
-            "(" + HeartManager.REVIVE_HERZEN + " Herzen). Wird dabei verbraucht."));
-        ItemMeta meta = item.getItemMeta();
-        meta.setEnchantmentGlintOverride(true);
-        item.setItemMeta(meta);
-        return item;
-    }
-
     public ItemStack schwert() {
         ItemStack item = tagged(Material.NETHERITE_SWORD, SCHWERT, "Lifesteal-Schwert", NamedTextColor.DARK_RED, List.of(
             "Jeder Treffer heilt dich um 1 Herz.",
@@ -147,7 +129,6 @@ public class LifestealItems implements Listener {
         return switch (id) {
             case HERZ -> herz();
             case FRAGMENT -> fragment();
-            case REVIVE_BEACON -> reviveBeacon();
             case SCHWERT -> schwert();
             default -> null;
         };
@@ -170,14 +151,6 @@ public class LifestealItems implements Listener {
         herz.setIngredient('D', Material.DIAMOND_BLOCK);
         herz.setIngredient('N', Material.NETHERITE_INGOT);
         Bukkit.addRecipe(herz);
-
-        // Revive-Beacon: Beacon + 4 Herzen + 4 Netherite-Barren
-        ShapedRecipe beacon = new ShapedRecipe(new NamespacedKey(plugin, REVIVE_BEACON), reviveBeacon());
-        beacon.shape("NHN", "HBH", "NHN");
-        beacon.setIngredient('N', Material.NETHERITE_INGOT);
-        beacon.setIngredient('H', new RecipeChoice.ExactChoice(herz()));
-        beacon.setIngredient('B', Material.BEACON);
-        Bukkit.addRecipe(beacon);
 
         // Lifesteal-Schwert: Herz / Netherite-Schwert / Totem
         ShapedRecipe schwert = new ShapedRecipe(new NamespacedKey(plugin, SCHWERT), schwert());
@@ -208,7 +181,12 @@ public class LifestealItems implements Listener {
                         + HeartManager.MAX_HERZEN + " Herzen!", NamedTextColor.RED));
                     return;
                 }
-                item.subtract();
+                if (item.getAmount() <= 1) {
+                    p.getInventory().setItemInMainHand(null);
+                } else {
+                    item.setAmount(item.getAmount() - 1);
+                    p.getInventory().setItemInMainHand(item);
+                }
                 hearts.addHerz(p.getUniqueId());
                 p.setHealth(Math.min(p.getHealth() + 2.0,
                     hearts.getHerzen(p.getUniqueId()) * 2.0));
@@ -216,14 +194,6 @@ public class LifestealItems implements Listener {
                 p.getWorld().spawnParticle(Particle.HEART, p.getLocation().add(0, 1.5, 0), 8, 0.4, 0.4, 0.4);
                 p.sendMessage(Component.text("❤ +1 Herz! Du hast jetzt "
                     + hearts.getHerzen(p.getUniqueId()) + " Herzen.", NamedTextColor.GREEN));
-            }
-            case REVIVE_BEACON -> {
-                event.setCancelled(true);
-                p.sendMessage(Component.text("Halte den Beacon fest und nutze /revive <spieler>.", NamedTextColor.AQUA));
-                p.sendMessage(Component.text("Eliminiert: " + String.join(", ",
-                    plugin.getHeartManager().getEliminierte().stream()
-                        .map(u -> String.valueOf(Bukkit.getOfflinePlayer(u).getName())).toList()),
-                    NamedTextColor.GRAY));
             }
             default -> { }
         }

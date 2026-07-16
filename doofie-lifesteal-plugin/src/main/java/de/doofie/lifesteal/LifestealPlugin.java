@@ -9,8 +9,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  *   — Start 10 Herzen, Maximum 20.
  *   — Kill durch Spieler: Opfer verliert 1 Herz, ein Herz-Item droppt.
  *     Rechtsklick auf das Herz = +1 Herz.
- *   — 0 Herzen: Zuschauer-Modus bis /revive (Revive-Beacon noetig).
- *   — Custom Items: Herz, Herz-Fragment, Revive-Beacon, Lifesteal-Schwert
+ *   — 0 Herzen: Zuschauer-Modus bis /revive (nur Admins).
+ *   — Custom Items: Herz, Herz-Fragment, Lifesteal-Schwert
  *     (alle mit item_model 'doofie:<id>' fuers Resource Pack).
  */
 public class LifestealPlugin extends JavaPlugin {
