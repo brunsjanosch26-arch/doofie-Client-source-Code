@@ -2,5 +2,6 @@
   "model": {
     "type": "minecraft:model",
     "model": "doofie:item/goetterspeer"
-  }
+  },
+  "swap_animation_scale": 1.95
 }

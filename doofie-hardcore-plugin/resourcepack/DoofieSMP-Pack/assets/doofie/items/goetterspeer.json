@@ -1,25 +1,7 @@
 {
   "model": {
-    "type": "minecraft:select",
-    "cases": [
-      {
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/netherite_spear"
-        },
-        "when": [
-          "gui",
-          "ground",
-          "fixed",
-          "on_shelf"
-        ]
-      }
-    ],
-    "fallback": {
-      "type": "minecraft:model",
-      "model": "minecraft:item/netherite_spear_in_hand"
-    },
-    "property": "minecraft:display_context"
+    "type": "minecraft:model",
+    "model": "doofie:item/goetterspeer"
   },
   "swap_animation_scale": 1.95
 }
