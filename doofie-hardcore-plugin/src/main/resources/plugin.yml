@@ -171,6 +171,11 @@ commands:
     description: Oeffnet den getragenen Rucksack (B-Taste im Doofie-Client)
     usage: /rucksackoeffnen
     aliases: [openbackpack]
+  items:
+    description: GUI mit allen Custom-Items (Doofie, Rucksaecke, Stellarity, Fabled Roots)
+    usage: /items
+    permission: doofie.items
+    aliases: [customitems]
 
 permissions:
   doofie.invsee:

@@ -9,6 +9,7 @@ import de.doofie.hardcore.commands.BackCommand;
 import de.doofie.hardcore.commands.ClaimCommand;
 import de.doofie.hardcore.commands.EntdeckenCommand;
 import de.doofie.hardcore.commands.HomeCommand;
+import de.doofie.hardcore.commands.ItemsCommand;
 import de.doofie.hardcore.commands.JagdCommand;
 import de.doofie.hardcore.commands.LottoCommand;
 import de.doofie.hardcore.commands.MoneyCommand;
@@ -139,6 +140,9 @@ public final class HardcorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(claim, this);
         getServer().getPluginManager().registerEvents(new de.doofie.hardcore.managers.StructureBossManager(this), this);
         new de.doofie.hardcore.managers.SeasonManager(this);
+        var itemsGui = new ItemsCommand(this);
+        getCommand("items").setExecutor(itemsGui);
+        getServer().getPluginManager().registerEvents(itemsGui, this);
         var wornBackpacks = new de.doofie.hardcore.managers.WornBackpackManager(this);
         getCommand("rucksack").setExecutor(wornBackpacks);
         getCommand("rucksackoeffnen").setExecutor(wornBackpacks);
