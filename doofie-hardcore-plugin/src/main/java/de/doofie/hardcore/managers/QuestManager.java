@@ -21,7 +21,7 @@ import java.util.UUID;
 /** Auftrags-Board: 3 taegliche Quests pro Spieler (Verkaufen / Mobs toeten). */
 public class QuestManager {
 
-    public enum Type { SELL, KILL_MOBS }
+    public enum Type { SELL, KILL_MOBS, DISCOVER }
 
     public static class Quest {
         public final Type type;
@@ -42,6 +42,7 @@ public class QuestManager {
             return switch (type) {
                 case SELL -> "Verkaufe " + target + " Items";
                 case KILL_MOBS -> "Toete " + target + " Monster";
+                case DISCOVER -> "Entdecke " + target + " Strukturen (/entdecken)";
             };
         }
     }
@@ -75,6 +76,8 @@ public class QuestManager {
         list.add(new Quest(Type.KILL_MOBS, killTarget, killTarget * 12, 0, false));
         int bigSell = 128 + random.nextInt(3) * 64;             // 128..256
         list.add(new Quest(Type.SELL, bigSell, bigSell * 2.0, 0, false));
+        int discoverTarget = 1 + random.nextInt(3);             // 1..3
+        list.add(new Quest(Type.DISCOVER, discoverTarget, discoverTarget * 300, 0, false));
         return list;
     }
 

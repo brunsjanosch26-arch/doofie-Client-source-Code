@@ -5,6 +5,10 @@ import de.doofie.hardcore.commands.BountyCommand;
 import de.doofie.hardcore.commands.DailyCommand;
 import de.doofie.hardcore.commands.DuellCommand;
 import de.doofie.hardcore.commands.FreikaufCommand;
+import de.doofie.hardcore.commands.BackCommand;
+import de.doofie.hardcore.commands.ClaimCommand;
+import de.doofie.hardcore.commands.EntdeckenCommand;
+import de.doofie.hardcore.commands.HomeCommand;
 import de.doofie.hardcore.commands.JagdCommand;
 import de.doofie.hardcore.commands.LottoCommand;
 import de.doofie.hardcore.commands.MoneyCommand;
@@ -120,6 +124,24 @@ public final class HardcorePlugin extends JavaPlugin {
         getCommand("duell").setExecutor(new DuellCommand(this));
         getCommand("schutz").setExecutor(new SchutzCommand(this));
         getCommand("quests").setExecutor(new QuestsCommand(this));
+        HomeCommand home = new HomeCommand(this);
+        for (String c : new String[]{"home", "sethome", "delhome"}) {
+            getCommand(c).setExecutor(home);
+        }
+        getCommand("entdecken").setExecutor(new EntdeckenCommand(this));
+        BackCommand back = new BackCommand(this);
+        getCommand("back").setExecutor(back);
+        getServer().getPluginManager().registerEvents(back, this);
+        ClaimCommand claim = new ClaimCommand(this);
+        for (String c : new String[]{"claim", "unclaim", "claiminfo"}) {
+            getCommand(c).setExecutor(claim);
+        }
+        getServer().getPluginManager().registerEvents(claim, this);
+        getServer().getPluginManager().registerEvents(new de.doofie.hardcore.managers.StructureBossManager(this), this);
+        new de.doofie.hardcore.managers.SeasonManager(this);
+        var wornBackpacks = new de.doofie.hardcore.managers.WornBackpackManager(this);
+        getCommand("rucksack").setExecutor(wornBackpacks);
+        getServer().getPluginManager().registerEvents(wornBackpacks, this);
         TpaCommand tpa = new TpaCommand(this);
         for (String c : new String[]{"tpa", "tpahere", "tpaccept", "tpadeny", "tpaauto"}) {
             getCommand(c).setExecutor(tpa);

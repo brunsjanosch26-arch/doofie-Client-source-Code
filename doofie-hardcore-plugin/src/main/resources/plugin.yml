@@ -138,6 +138,36 @@ commands:
     usage: /lobby
     aliases: [hub]
 
+  sethome:
+    description: Setzt dein Home an deiner aktuellen Position
+    usage: /sethome
+  home:
+    description: Teleportiert dich zu deinem Home
+    usage: /home
+  delhome:
+    description: Loescht dein Home
+    usage: /delhome
+  entdecken:
+    description: Kompass auf die naechste neue Struktur — Belohnung beim Erreichen
+    usage: /entdecken
+    aliases: [discover, explore]
+  back:
+    description: Einmalig zurueck zur letzten Todesstelle (gegen Gebuehr)
+    usage: /back
+  claim:
+    description: Diesen Chunk fuer deine Gilde claimen
+    usage: /claim
+  unclaim:
+    description: Gilden-Claim auf diesem Chunk aufgeben (nur Leiter)
+    usage: /unclaim
+  claiminfo:
+    description: Zeigt, wem dieser Chunk gehoert
+    usage: /claiminfo
+  rucksack:
+    description: Rucksack aus der Haupthand auf dem Ruecken tragen (oder abnehmen)
+    usage: /rucksack
+    aliases: [backpackwear]
+
 permissions:
   doofie.invsee:
     description: Erlaubt /invsee

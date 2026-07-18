@@ -30,6 +30,12 @@ public class StatsManager {
         return kills;
     }
 
+    /** Saison-Reset: alle Kill-Zaehler auf null. */
+    public void resetKills() {
+        kills.clear();
+        save();
+    }
+
     private void load() {
         if (!file.exists()) return;
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
