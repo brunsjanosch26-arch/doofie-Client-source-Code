@@ -1,0 +1,33 @@
+{
+	"model": {
+		"type": "range_dispatch",
+		"property": "custom_model_data",
+		"entries": [
+			{
+				"threshold": 810001,
+				"model": {
+					"type": "model",
+					"model": "item/backpackplus/gui/gui_fill"
+				}
+			},
+			{
+				"threshold": 810002,
+				"model": {
+					"type": "model",
+					"model": "item/backpackplus/gui/page_previous"
+				}
+			},
+			{
+				"threshold": 810003,
+				"model": {
+					"type": "model",
+					"model": "item/backpackplus/gui/page_next"
+				}
+			}
+		],
+		"fallback": {
+			"type": "model",
+			"model": "item/map"
+		}
+	}
+}

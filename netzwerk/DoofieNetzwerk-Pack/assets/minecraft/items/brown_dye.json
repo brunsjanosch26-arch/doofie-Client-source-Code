@@ -1,0 +1,33 @@
+{
+	"model": {
+		"type": "range_dispatch",
+		"property": "custom_model_data",
+		"entries": [
+			{
+				"threshold": 800003,
+				"model": {
+					"type": "model",
+					"model": "item/backpackplus/backpacks/backpack_tier_3"
+				}
+			},
+			{
+				"threshold": 800002,
+				"model": {
+					"type": "model",
+					"model": "item/backpackplus/backpacks/backpack_tier_2"
+				}
+			},
+			{
+				"threshold": 800001,
+				"model": {
+					"type": "model",
+					"model": "item/backpackplus/backpacks/backpack_tier_1"
+				}
+			}
+		],
+		"fallback": {
+			"type": "model",
+			"model": "item/brown_dye"
+		}
+	}
+}
