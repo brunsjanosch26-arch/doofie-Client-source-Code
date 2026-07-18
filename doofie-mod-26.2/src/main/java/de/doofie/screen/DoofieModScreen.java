@@ -1,6 +1,6 @@
 package de.doofie.screen;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -101,20 +101,20 @@ public class DoofieModScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics ctx, int mx, int my, float delta) {
-        super.render(ctx, mx, my, delta);
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+        super.extractRenderState(ctx, mx, my, delta);
 
         // Header
         ctx.fill(0, 0, width, 46, 0xD008111F);
         ctx.fill(0, 45, width, 46, 0xFF3D7FF0);
-        ctx.drawCenteredString(font, Component.literal("§b§lDoofie Client §r§7| Mods"), width / 2, 8, 0xFFFFFF);
-        ctx.drawCenteredString(font, Component.literal("§7Wähle welche Mods aktiv sein sollen · Neustart erforderlich"), width / 2, 24, 0xAAAAAA);
+        ctx.centeredText(font, Component.literal("§b§lDoofie Client §r§7| Mods"), width / 2, 8, 0xFFFFFF);
+        ctx.centeredText(font, Component.literal("§7Wähle welche Mods aktiv sein sollen · Neustart erforderlich"), width / 2, 24, 0xAAAAAA);
 
         // Footer
         ctx.fill(0, height - 32, width, height, 0xD008111F);
         ctx.fill(0, height - 33, width, height - 32, 0xFF3D7FF0);
         if (saved) {
-            ctx.drawCenteredString(font,
+            ctx.centeredText(font,
                 Component.literal("§e⚠ Gespeichert — Neustart erforderlich"), width / 2, height - 45, 0xFFFF55);
         }
     }
@@ -122,7 +122,7 @@ public class DoofieModScreen extends Screen {
     @Override
     public void onClose() {
         assert minecraft != null;
-        minecraft.setScreen(parent);
+        minecraft.setScreenAndShow(parent);
     }
 
     // Config at gameDir/doofieclient_mods.json (gleiches Format wie 1.21.11-Edition)

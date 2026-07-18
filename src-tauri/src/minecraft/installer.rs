@@ -875,6 +875,19 @@ pub async fn install_minecraft_version(
                 Err(e) => warn!("[BundledMods] Modrinth lookup failed for {}: {}", slug, e),
             }
         }
+        // 3) Doofie-Client-Mod fuer 26.x aus den Ressourcen installieren (B-Taste, Kampf-FX, ESC-Menue)
+        if version_id.starts_with("26.") {
+            if let Some(resource_dir) = crate::config::RESOURCE_DIR.get() {
+                let src = resource_dir.join("doofie-client-26.2.jar");
+                if src.exists() {
+                    let dst = profile_mods_path.join("doofie-client-26.2.jar");
+                    match std::fs::copy(&src, &dst) {
+                        Ok(_) => info!("[BundledMods] Installed doofie-client-26.2.jar"),
+                        Err(e) => warn!("[BundledMods] Failed to copy doofie-client-26.2.jar: {}", e),
+                    }
+                }
+            }
+        }
         info!("[BundledMods] Auto-update for MC {} done (NRC-only mods cleaned up)", version_id);
     }
     if modloader_enum != ModLoader::Vanilla && bundled_mods_compatible {
@@ -882,7 +895,7 @@ pub async fn install_minecraft_version(
         if let Ok(entries) = std::fs::read_dir(&profile_mods_path) {
             for entry in entries.flatten() {
                 let name = entry.file_name().to_string_lossy().to_string();
-                if name.contains("-bsmp-") {
+                if name.contains("-bsmp-") || name == "doofie-client-26.2.jar" {
                     let _ = std::fs::remove_file(entry.path());
                 }
             }

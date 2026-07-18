@@ -3,7 +3,8 @@ package de.doofie;
 import de.doofie.screen.DoofieModScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.minecraft.resources.Identifier;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
@@ -37,12 +38,12 @@ public class DoofieClientMod implements ClientModInitializer {
         });
 
         // B-Taste: getragenen Rucksack oeffnen (Server-Befehl /rucksackoeffnen)
-        var backpackKey = net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper.registerKeyBinding(
+        var backpackKey = net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper.registerKeyMapping(
             new net.minecraft.client.KeyMapping(
                 "key.doofie_client.rucksack",
                 com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM,
                 org.lwjgl.glfw.GLFW.GLFW_KEY_B,
-                "key.categories.doofie_client"));
+                net.minecraft.client.KeyMapping.Category.MISC));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             DoofieCombatFx.tick();
@@ -53,14 +54,15 @@ public class DoofieClientMod implements ClientModInitializer {
             }
         });
 
-        HudRenderCallback.EVENT.register((ctx, tickCounter) -> DoofieCombatFx.render(ctx));
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("doofie_client", "combat_fx"),
+            (ctx, delta) -> DoofieCombatFx.render(ctx));
 
         // ESC-Menü: "Give Feedback" → "Doofie Client"
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (!(screen instanceof PauseScreen)) return;
 
             List<Button> toReplace = new ArrayList<>();
-            for (var widget : Screens.getButtons(screen)) {
+            for (var widget : Screens.getWidgets(screen)) {
                 if (widget instanceof Button btn) {
                     String msg = btn.getMessage().getString();
                     if (msg.contains("Feedback") || msg.contains("feedback")) {
@@ -72,13 +74,13 @@ public class DoofieClientMod implements ClientModInitializer {
             for (Button old : toReplace) {
                 Button newBtn = Button.builder(
                     Component.literal("✦ Doofie Client"),
-                    b -> client.setScreen(new DoofieModScreen(screen))
+                    b -> client.setScreenAndShow(new DoofieModScreen(screen))
                 )
                 .bounds(old.getX(), old.getY(), old.getWidth(), old.getHeight())
                 .build();
 
-                Screens.getButtons(screen).remove(old);
-                Screens.getButtons(screen).add(newBtn);
+                Screens.getWidgets(screen).remove(old);
+                Screens.getWidgets(screen).add(newBtn);
             }
         });
     }

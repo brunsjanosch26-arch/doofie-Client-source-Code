@@ -1,7 +1,7 @@
 package de.doofie;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
@@ -32,7 +32,7 @@ public final class DoofieCombatFx {
         }
     }
 
-    public static void render(GuiGraphics ctx) {
+    public static void render(GuiGraphicsExtractor ctx) {
         Minecraft mc = Minecraft.getInstance();
         int sw = mc.getWindow().getGuiScaledWidth();
         int sh = mc.getWindow().getGuiScaledHeight();
