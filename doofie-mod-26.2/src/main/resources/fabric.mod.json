@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "doofie_client",
+  "version": "1.0.0+26.2",
+  "name": "Doofie Client",
+  "description": "In-game ESC menu und Kampf-FX fuer den Doofie Client (26.2 Edition)",
+  "authors": ["DoofieClient"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["de.doofie.DoofieClientMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": ">=26.0",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

@@ -78,8 +78,40 @@ public class WornBackpackManager implements CommandExecutor, Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Nur fuer Spieler."); return true; }
+        if (cmd.getName().equalsIgnoreCase("rucksackoeffnen")) {
+            openWornBackpack(p);
+            return true;
+        }
         openGui(p);
         return true;
+    }
+
+    /**
+     * Oeffnet den getragenen Rucksack (B-Taste im Doofie-Client): Der Rucksack wird
+     * fuer einen Tick in die Hand gelegt und ein Rechtsklick simuliert, damit
+     * BackpackPlus sein GUI oeffnet — danach kommt das Hand-Item zurueck.
+     */
+    private void openWornBackpack(Player p) {
+        ItemStack backpack = worn.get(p.getUniqueId());
+        if (backpack == null) {
+            // Fallback: Rucksack in der Hand? Dann den direkt oeffnen.
+            if (isBackpack(p.getInventory().getItemInMainHand())) {
+                simulateOpen(p, p.getInventory().getItemInMainHand());
+                return;
+            }
+            p.sendMessage(Component.text("Du traegst keinen Rucksack (/rucksack zum Anlegen).", NamedTextColor.RED));
+            return;
+        }
+        ItemStack original = p.getInventory().getItemInMainHand();
+        p.getInventory().setItemInMainHand(backpack);
+        simulateOpen(p, backpack);
+        Bukkit.getScheduler().runTask(plugin, () -> p.getInventory().setItemInMainHand(original));
+    }
+
+    private void simulateOpen(Player p, ItemStack item) {
+        PlayerInteractEvent fake = new PlayerInteractEvent(p, Action.RIGHT_CLICK_AIR, item, null,
+                org.bukkit.block.BlockFace.SELF, org.bukkit.inventory.EquipmentSlot.HAND);
+        Bukkit.getPluginManager().callEvent(fake);
     }
 
     private void openGui(Player p) {
@@ -188,17 +220,19 @@ public class WornBackpackManager implements CommandExecutor, Listener {
 
     private void spawnDisplay(Player p, ItemStack item) {
         removeDisplay(p.getUniqueId());
-        ItemDisplay display = p.getWorld().spawn(backLocation(p), ItemDisplay.class, d -> {
+        ItemDisplay display = p.getWorld().spawn(p.getLocation(), ItemDisplay.class, d -> {
             d.setItemStack(item);
             d.setBillboard(Display.Billboard.FIXED);
-            d.setTeleportDuration(2);
             d.setPersistent(false);
+            // Versatz nach unten/hinten relativ zur Display-Rotation — sitzt wie ein Cape am Ruecken
             d.setTransformation(new Transformation(
-                    new Vector3f(0f, 0f, 0f),
+                    new Vector3f(0f, -0.55f, 0.35f),
                     new AxisAngle4f(0f, 0f, 1f, 0f),
-                    new Vector3f(0.6f, 0.6f, 0.6f),
+                    new Vector3f(1.3f, 1.3f, 1.3f),
                     new AxisAngle4f(0f, 0f, 1f, 0f)));
         });
+        // Als Passagier angeheftet folgt es dem Spieler client-seitig ohne Nachziehen
+        p.addPassenger(display);
         displays.put(p.getUniqueId(), display);
     }
 
@@ -210,9 +244,9 @@ public class WornBackpackManager implements CommandExecutor, Listener {
     private Location backLocation(Player p) {
         float yaw = p.getBodyYaw();
         double rad = Math.toRadians(yaw);
-        double dx = Math.sin(rad) * 0.35;
-        double dz = -Math.cos(rad) * 0.35;
-        Location loc = p.getLocation().add(dx, 1.05, dz);
+        double dx = Math.sin(rad) * 0.42;
+        double dz = -Math.cos(rad) * 0.42;
+        Location loc = p.getLocation().add(dx, 0.95, dz);
         loc.setYaw(yaw);
         loc.setPitch(0);
         return loc;
@@ -222,12 +256,17 @@ public class WornBackpackManager implements CommandExecutor, Listener {
         for (Map.Entry<UUID, ItemDisplay> e : displays.entrySet()) {
             Player p = Bukkit.getPlayer(e.getKey());
             ItemDisplay d = e.getValue();
-            if (p == null || !p.isOnline() || !d.isValid()) continue;
-            if (!d.getWorld().equals(p.getWorld())) {
+            if (p == null || !p.isOnline()) continue;
+            if (!d.isValid() || !d.getWorld().equals(p.getWorld())) {
                 spawnDisplay(p, worn.get(e.getKey()));
                 continue;
             }
-            d.teleport(backLocation(p));
+            // Nach Teleport/Dimensionswechsel wird der Passagier abgeworfen — wieder anheften
+            if (!p.getPassengers().contains(d)) {
+                p.addPassenger(d);
+            }
+            // Nur die Drehung mitfuehren, Position macht das Riding von selbst
+            d.setRotation(p.getBodyYaw() + 180f, 0f);
         }
     }
 

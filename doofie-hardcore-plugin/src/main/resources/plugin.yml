@@ -167,6 +167,10 @@ commands:
     description: Rucksack aus der Haupthand auf dem Ruecken tragen (oder abnehmen)
     usage: /rucksack
     aliases: [backpackwear]
+  rucksackoeffnen:
+    description: Oeffnet den getragenen Rucksack (B-Taste im Doofie-Client)
+    usage: /rucksackoeffnen
+    aliases: [openbackpack]
 
 permissions:
   doofie.invsee:

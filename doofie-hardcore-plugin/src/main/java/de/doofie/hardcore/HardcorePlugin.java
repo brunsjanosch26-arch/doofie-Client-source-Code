@@ -141,7 +141,9 @@ public final class HardcorePlugin extends JavaPlugin {
         new de.doofie.hardcore.managers.SeasonManager(this);
         var wornBackpacks = new de.doofie.hardcore.managers.WornBackpackManager(this);
         getCommand("rucksack").setExecutor(wornBackpacks);
+        getCommand("rucksackoeffnen").setExecutor(wornBackpacks);
         getServer().getPluginManager().registerEvents(wornBackpacks, this);
+        getServer().getPluginManager().registerEvents(new de.doofie.hardcore.managers.BackpackUpgradeManager(this), this);
         TpaCommand tpa = new TpaCommand(this);
         for (String c : new String[]{"tpa", "tpahere", "tpaccept", "tpadeny", "tpaauto"}) {
             getCommand(c).setExecutor(tpa);
