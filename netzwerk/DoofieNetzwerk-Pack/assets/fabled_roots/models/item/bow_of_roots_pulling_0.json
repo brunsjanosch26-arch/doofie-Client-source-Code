@@ -1,0 +1,6 @@
+{
+  "parent": "fabled_roots:item/bow_of_roots",
+  "textures": {
+    "layer0": "fabled_roots:item/bow_of_roots_pulling_0"
+  }
+}

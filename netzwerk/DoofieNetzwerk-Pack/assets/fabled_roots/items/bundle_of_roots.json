@@ -1,0 +1,96 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "on_false": {
+            "type": "minecraft:composite",
+            "models": [
+              {
+                "type": "minecraft:model",
+                "model": "fabled_roots:item/bundle_of_roots",
+                "tints": [
+                  {
+                    "type": "minecraft:dye",
+                    "default": [
+                      0.7,
+                      0.75,
+                      0.78
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "minecraft:model",
+                "model": "fabled_roots:item/bundle_of_roots_overlay"
+              }
+            ]
+          },
+          "on_true": {
+            "type": "minecraft:composite",
+            "models": [
+              {
+                "type": "minecraft:model",
+                "model": "fabled_roots:item/bundle_of_roots_open_back"
+              },
+              {
+                "type": "minecraft:bundle/selected_item"
+              },
+              {
+                "type": "minecraft:composite",
+                "models": [
+                  {
+                    "type": "minecraft:model",
+                    "model": "fabled_roots:item/bundle_of_roots_open_front",
+                    "tints": [
+                      {
+                        "type": "minecraft:dye",
+                        "default": [
+                          0.7,
+                          0.75,
+                          0.78
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "minecraft:model",
+                    "model": "fabled_roots:item/bundle_of_roots_open_front_overlay"
+                  }
+                ]
+              }
+            ]
+          },
+          "property": "minecraft:bundle/has_selected_item"
+        },
+        "when": "gui"
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:composite",
+      "models": [
+        {
+          "type": "minecraft:model",
+          "model": "fabled_roots:item/bundle_of_roots",
+          "tints": [
+            {
+              "type": "minecraft:dye",
+              "default": [
+                0.7,
+                0.75,
+                0.78
+              ]
+            }
+          ]
+        },
+        {
+          "type": "minecraft:model",
+          "model": "fabled_roots:item/bundle_of_roots_overlay"
+        }
+      ]
+    },
+    "property": "minecraft:display_context"
+  }
+}

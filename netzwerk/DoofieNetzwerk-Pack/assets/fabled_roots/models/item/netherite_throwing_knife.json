@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "fabled_roots:item/netherite_throwing_knife"
+  },
+  "display": {
+    "ground": {
+      "rotation": [
+        0,
+        90,
+        -30
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

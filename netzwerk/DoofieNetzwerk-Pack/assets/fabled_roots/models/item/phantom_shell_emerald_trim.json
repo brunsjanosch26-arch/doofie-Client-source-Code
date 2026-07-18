@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "fabled_roots:item/phantom_shell",
+    "layer1": "minecraft:trims/items/helmet_trim_emerald"
+  }
+}

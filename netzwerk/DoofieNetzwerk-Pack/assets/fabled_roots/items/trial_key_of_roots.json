@@ -1,0 +1,11 @@
+{
+  "model": {
+    "type": "minecraft:composite",
+    "models": [
+      {
+        "type": "minecraft:model",
+        "model": "fabled_roots:item/trial_key_of_roots"
+      }
+    ]
+  }
+}

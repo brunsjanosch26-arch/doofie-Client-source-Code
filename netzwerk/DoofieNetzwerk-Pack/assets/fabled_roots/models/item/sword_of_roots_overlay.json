@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "fabled_roots:item/sword_of_roots_overlay"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "horse_body": [
+      {
+        "texture": "fabled_roots:horse_armor_of_roots",
+        "dyeable": {
+          "color_when_undyed": [
+            0.7,
+            0.75,
+            0.78
+          ]
+        }
+      },
+      {
+        "texture": "fabled_roots:golden_horse_armor_of_roots_overlay"
+      }
+    ]
+  }
+}

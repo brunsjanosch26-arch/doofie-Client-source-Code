@@ -1,0 +1,25 @@
+{
+  "model": {
+    "type": "minecraft:composite",
+    "models": [
+      {
+        "type": "minecraft:model",
+        "model": "fabled_roots:item/horse_armor_of_roots",
+        "tints": [
+          {
+            "type": "minecraft:dye",
+            "default": [
+              0.7,
+              0.75,
+              0.78
+            ]
+          }
+        ]
+      },
+      {
+        "type": "minecraft:model",
+        "model": "fabled_roots:item/golden_horse_armor_of_roots_overlay"
+      }
+    ]
+  }
+}

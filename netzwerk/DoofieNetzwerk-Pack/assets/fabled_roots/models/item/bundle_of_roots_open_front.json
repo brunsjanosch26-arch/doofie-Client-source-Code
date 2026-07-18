@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/template_bundle_open_front",
+  "textures": {
+    "layer0": "fabled_roots:item/bundle_of_roots_open_front"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "fabled_roots:item/diamond_rapier"
+  }
+}

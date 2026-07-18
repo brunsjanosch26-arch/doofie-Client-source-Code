@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "fabled_roots:item/chestplate_of_roots",
+    "layer1": "minecraft:trims/items/chestplate_trim_iron_darker"
+  }
+}

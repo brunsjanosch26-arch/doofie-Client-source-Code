@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "fabled_roots:item/reinforced_boots_of_roots",
+    "layer1": "minecraft:trims/items/boots_trim_redstone"
+  }
+}

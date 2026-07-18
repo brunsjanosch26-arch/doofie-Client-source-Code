@@ -1,0 +1,9 @@
+{
+	"sources": [
+		{
+			"type": "directory",
+			"source": "particle_custom",
+			"prefix": "particle_custom/"
+		}
+	]
+}

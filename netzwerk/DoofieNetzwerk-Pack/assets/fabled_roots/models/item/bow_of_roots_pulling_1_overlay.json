@@ -1,0 +1,6 @@
+{
+  "parent": "fabled_roots:item/bow_of_roots_overlay",
+  "textures": {
+    "layer0": "fabled_roots:item/bow_of_roots_pulling_1_overlay"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "fabled_roots:creaking_shell"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "fabled_roots:creaking_shell"
+      }
+    ]
+  }
+}

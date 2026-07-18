@@ -1,0 +1,40 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "fabled_roots:reinforced_armor_of_roots",
+        "dyeable": {
+          "color_when_undyed": [
+            0.7,
+            0.75,
+            0.78
+          ]
+        }
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "fabled_roots:reinforced_armor_of_roots",
+        "dyeable": {
+          "color_when_undyed": [
+            0.7,
+            0.75,
+            0.78
+          ]
+        }
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "fabled_roots:reinforced_armor_of_roots",
+        "dyeable": {
+          "color_when_undyed": [
+            0.7,
+            0.75,
+            0.78
+          ]
+        }
+      }
+    ]
+  }
+}

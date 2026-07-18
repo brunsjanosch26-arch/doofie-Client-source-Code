@@ -1,0 +1,6 @@
+{
+	"parent": "fabled_roots:item/template_villager_hat",
+	"textures": {
+	  "layer0": "fabled_roots:item/villager_hat_cartographer"
+	}
+}

@@ -1,0 +1,15 @@
+{
+    "model": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_true": {
+        "type": "minecraft:model",
+        "model": "fabled_roots:item/tooting_endling_horn"
+      },
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "fabled_roots:item/endling_horn"
+      }
+    }
+  }
+  
