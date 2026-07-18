@@ -25,6 +25,8 @@ public class DoofieClientMod implements ClientModInitializer {
     public static final String MOD_ID = "doofie_client";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    private boolean useWasPressed = false;
+
     @Override
     public void onInitializeClient() {
         LOGGER.info("[Doofie Client] geladen (26.2 Edition)!");
@@ -52,6 +54,17 @@ public class DoofieClientMod implements ClientModInitializer {
                     client.player.connection.sendCommand("rucksackoeffnen");
                 }
             }
+            // Rechtsklick mit leerer Hand = getragenen Rucksack oeffnen
+            // (Vanilla sendet dafuer kein Paket, deshalb erkennt es der Client selbst)
+            boolean usePressed = client.options.keyUse.isDown();
+            if (usePressed && !useWasPressed
+                    && client.player != null && client.gui.screen() == null
+                    && client.player.getMainHandItem().isEmpty()
+                    && client.hitResult != null
+                    && client.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+                client.player.connection.sendCommand("rucksackoeffnen");
+            }
+            useWasPressed = usePressed;
         });
 
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("doofie_client", "combat_fx"),
