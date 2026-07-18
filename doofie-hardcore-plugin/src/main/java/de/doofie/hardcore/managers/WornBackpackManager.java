@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,9 +15,17 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
@@ -29,11 +38,22 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Rucksack-Rueckenslot: /rucksack traegt den Rucksack aus der Haupthand
- * sichtbar auf dem Ruecken — Brustplatte bleibt gleichzeitig nutzbar.
- * Nochmal /rucksack nimmt ihn wieder in die Hand.
+ * Rucksack-Rueckenslot:
+ * — /rucksack oeffnet ein Ausruestungs-GUI mit einem Slot; Rucksack reinlegen = tragen
+ * — Shift-Rechtsklick mit Rucksack in der Hand = direkt aufsetzen/abnehmen
+ * Der getragene Rucksack ist sichtbar auf dem Ruecken; Brustplatte bleibt frei.
  */
 public class WornBackpackManager implements CommandExecutor, Listener {
+
+    private static final int SLOT = 4; // Mitte der ersten Reihe
+
+    /** Marker, damit nur unsere GUI-Klicks behandelt werden. */
+    private class BackpackGuiHolder implements InventoryHolder {
+        final UUID owner;
+        Inventory inventory;
+        BackpackGuiHolder(UUID owner) { this.owner = owner; }
+        @Override public Inventory getInventory() { return inventory; }
+    }
 
     private final HardcorePlugin plugin;
     private final File file;
@@ -44,43 +64,126 @@ public class WornBackpackManager implements CommandExecutor, Listener {
         this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "getragene-rucksaecke.yml");
         load();
-        // Position jede Tick-Runde nachfuehren (teleportDuration glaettet die Bewegung)
         Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 2L, 2L);
     }
 
-    /** BackpackPlus-Items erkennen (PersistentData im backpackplus-Namespace). */
     private boolean isBackpack(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return false;
         return item.getItemMeta().getPersistentDataContainer().getKeys().stream()
                 .anyMatch(k -> k.getNamespace().equalsIgnoreCase("backpackplus"));
     }
 
+    // ===== GUI =====
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Nur fuer Spieler."); return true; }
-        UUID id = p.getUniqueId();
-
-        if (worn.containsKey(id)) {
-            ItemStack item = worn.remove(id);
-            removeDisplay(id);
-            save();
-            var leftover = p.getInventory().addItem(item);
-            leftover.values().forEach(rest -> p.getWorld().dropItemNaturally(p.getLocation(), rest));
-            p.sendMessage(Component.text("Rucksack abgenommen.", NamedTextColor.YELLOW));
-            return true;
-        }
-
-        ItemStack hand = p.getInventory().getItemInMainHand();
-        if (!isBackpack(hand)) {
-            p.sendMessage(Component.text("Nimm einen Rucksack in die Haupthand — /rucksack traegt ihn auf dem Ruecken.", NamedTextColor.RED));
-            return true;
-        }
-        worn.put(id, hand.clone());
-        p.getInventory().setItemInMainHand(null);
-        spawnDisplay(p, worn.get(id));
-        save();
-        p.sendMessage(Component.text("Rucksack aufgesetzt! Nochmal /rucksack, um ihn abzunehmen.", NamedTextColor.GREEN));
+        openGui(p);
         return true;
+    }
+
+    private void openGui(Player p) {
+        BackpackGuiHolder holder = new BackpackGuiHolder(p.getUniqueId());
+        Inventory inv = Bukkit.createInventory(holder, 9,
+                Component.text("Ruecken-Ausruestung", NamedTextColor.DARK_AQUA));
+        holder.inventory = inv;
+        ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta fm = filler.getItemMeta();
+        fm.displayName(Component.text(" "));
+        filler.setItemMeta(fm);
+        for (int i = 0; i < 9; i++) {
+            if (i != SLOT) inv.setItem(i, filler);
+        }
+        ItemStack current = worn.get(p.getUniqueId());
+        if (current != null) inv.setItem(SLOT, current);
+        p.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onClick(InventoryClickEvent event) {
+        if (!(event.getInventory().getHolder() instanceof BackpackGuiHolder holder)) return;
+        if (!(event.getWhoClicked() instanceof Player p)) return;
+
+        // Klicks im eigenen Inventar: nur Shift-Klicks von Rucksaecken in den Slot umleiten
+        if (event.getClickedInventory() != event.getInventory()) {
+            if (event.isShiftClick()) {
+                event.setCancelled(true);
+                ItemStack item = event.getCurrentItem();
+                if (isBackpack(item) && event.getInventory().getItem(SLOT) == null) {
+                    event.getInventory().setItem(SLOT, item.clone());
+                    event.setCurrentItem(null);
+                }
+            }
+            return;
+        }
+
+        // Klicks in der GUI: nur der Rucksack-Slot ist benutzbar
+        if (event.getSlot() != SLOT) {
+            event.setCancelled(true);
+            return;
+        }
+        ItemStack cursor = event.getCursor();
+        if (cursor != null && !cursor.getType().isAir() && !isBackpack(cursor)) {
+            event.setCancelled(true);
+            p.sendMessage(Component.text("In diesen Slot passt nur ein Rucksack!", NamedTextColor.RED));
+        }
+    }
+
+    @EventHandler
+    public void onDrag(InventoryDragEvent event) {
+        if (!(event.getInventory().getHolder() instanceof BackpackGuiHolder)) return;
+        for (int raw : event.getRawSlots()) {
+            if (raw < 9 && raw != SLOT) { event.setCancelled(true); return; }
+            if (raw == SLOT && !isBackpack(event.getOldCursor())) { event.setCancelled(true); return; }
+        }
+    }
+
+    @EventHandler
+    public void onClose(InventoryCloseEvent event) {
+        if (!(event.getInventory().getHolder() instanceof BackpackGuiHolder holder)) return;
+        if (!(event.getPlayer() instanceof Player p)) return;
+        ItemStack inSlot = event.getInventory().getItem(SLOT);
+        applyWorn(p, (inSlot != null && isBackpack(inSlot)) ? inSlot.clone() : null);
+        // Nicht-Rucksack-Items (falls doch eins durchrutscht) zurueckgeben
+        if (inSlot != null && !isBackpack(inSlot)) {
+            p.getInventory().addItem(inSlot).values()
+                    .forEach(rest -> p.getWorld().dropItemNaturally(p.getLocation(), rest));
+        }
+    }
+
+    // ===== Shift-Rechtsklick als Schnellzugriff =====
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Player p = event.getPlayer();
+        if (!p.isSneaking()) return;
+        ItemStack hand = p.getInventory().getItemInMainHand();
+        if (!isBackpack(hand)) return;
+        if (worn.containsKey(p.getUniqueId())) {
+            p.sendMessage(Component.text("Du traegst schon einen Rucksack (/rucksack zum Verwalten).", NamedTextColor.RED));
+            return;
+        }
+        event.setCancelled(true); // verhindert gleichzeitiges Oeffnen des Rucksacks
+        applyWorn(p, hand.clone());
+        p.getInventory().setItemInMainHand(null);
+        p.sendMessage(Component.text("Rucksack aufgesetzt! /rucksack zum Abnehmen.", NamedTextColor.GREEN));
+    }
+
+    // ===== Kernlogik =====
+
+    private void applyWorn(Player p, ItemStack item) {
+        UUID id = p.getUniqueId();
+        if (item == null) {
+            if (worn.remove(id) != null) {
+                removeDisplay(id);
+                save();
+            }
+            return;
+        }
+        worn.put(id, item);
+        spawnDisplay(p, item);
+        save();
     }
 
     private void spawnDisplay(Player p, ItemStack item) {
@@ -104,11 +207,9 @@ public class WornBackpackManager implements CommandExecutor, Listener {
         if (d != null && d.isValid()) d.remove();
     }
 
-    /** Position knapp hinter dem Ruecken, Blickrichtung nach aussen. */
     private Location backLocation(Player p) {
         float yaw = p.getBodyYaw();
         double rad = Math.toRadians(yaw);
-        // Blickvektor = (-sin, 0, cos); dahinter = Gegenrichtung
         double dx = Math.sin(rad) * 0.35;
         double dz = -Math.cos(rad) * 0.35;
         Location loc = p.getLocation().add(dx, 1.05, dz);
