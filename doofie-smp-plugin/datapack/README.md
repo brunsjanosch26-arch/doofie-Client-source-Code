@@ -73,3 +73,14 @@ Blöcke vom Spawn); `minecraft:desert_pyramid` nicht mehr lokalisierbar ✓
 - Kein Resourcepack nötig: alle portierten Packs nutzen ausschließlich Vanilla-Blöcke.
 - Deployment auf den exaroton-SMP steht noch aus (alle 6 Zips nach `world/datapacks/`
   + Neustart; Achtung: wirkt nur auf neue Chunks). Nutzer wollte noch nicht deployen.
+
+## Phase 4 (2026-07-18): 10 weitere Packs (Ordner phase4/)
+
+Offiziell 26.2: Dungeons and Taverns 5.3.0, Explorify 1.6.5, ATi Structures 1.4.5,
+Geophilic 3.6, Stellarity 5.5.3 (+ stellarity-x-nullscape-Kompat), Fabled Roots 2.7.
+Selbst portiert (1.21.x -> 26.2): Luki's Grand Capitals 1.1.3, Vaults of Abandon 3.4.6,
+Hearths 1.0.5, Unnamed Desert 2.0.3 — Portierung: Overlays ins Root-data gemerged,
+random_patch -> simple_block+count/random_offset, below_trunk_provider ergaenzt,
+rule_based_state_provider-Rename, kaputte voa-Tags optional / tote Funktionen entfernt.
+Texturen von Stellarity-RP 5.5.2, DnT und Fabled Roots stecken im DoofieNetzwerk-Pack.
+Luki's ersetzt die Vanilla-Doerfer (Hauptstaedte); Stellarity ersetzt End City/Stronghold.
