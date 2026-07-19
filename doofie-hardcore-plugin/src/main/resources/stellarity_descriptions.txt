@@ -1,0 +1,146 @@
+stellarity:item/armor/champion/boots|Set-Teil der Champion-Rüstung (Dragon-Wrath-Set): Erfüllt dich mit dem "Zorn des Drachen" — Kombo-Treffer verursachen stetig steigenden Schaden.
+stellarity:item/armor/champion/chestplate|Set-Teil der Champion-Rüstung (Dragon-Wrath-Set): Erfüllt dich mit dem "Zorn des Drachen" — Kombo-Treffer verursachen stetig steigenden Schaden.
+stellarity:item/armor/champion/helmet|Set-Teil der Champion-Rüstung (Dragon-Wrath-Set): Erfüllt dich mit dem "Zorn des Drachen" — Kombo-Treffer verursachen stetig steigenden Schaden.
+stellarity:item/armor/champion/leggings|Set-Teil der Champion-Rüstung (Dragon-Wrath-Set): Erfüllt dich mit dem "Zorn des Drachen" — Kombo-Treffer verursachen stetig steigenden Schaden.
+stellarity:item/armor/elytra/dragon_wings|Brustplatte — Robuste Waagen bieten angemessenen Schutz, auf Kosten der Fluggeschwindigkeit.
+stellarity:item/armor/elytra/empress_wings|Elytra-Ersatz: hervorragende Fluggeschwindigkeit und Wendigkeit, hinterlässt eine regenbogenfarbene Flugspur.
+stellarity:item/armor/elytra/phantom_wings|Elytra-Ersatz mit schwacher Flugleistung — die günstigste, aber schlechteste Elytra-Alternative.
+stellarity:item/armor/floral/boots|Set-Teil der Blumenrüstung: Ein getroffener Gegner bekommt eine Blume über dem Kopf, die kurz danach explodiert; im hohen Gras kannst du dich unsichtbar machen.
+stellarity:item/armor/floral/chestplate|Set-Teil der Blumenrüstung (+25% Pfeilgeschwindigkeit als Set-Bonus): Ein getroffener Gegner bekommt eine Blume über dem Kopf, die kurz danach explodiert; im hohen Gras kannst du dich unsichtbar machen.
+stellarity:item/armor/floral/helmet|Set-Teil der Blumenrüstung: Ein getroffener Gegner bekommt eine Blume über dem Kopf, die kurz danach explodiert; im hohen Gras kannst du dich unsichtbar machen.
+stellarity:item/armor/floral/leggings|Set-Teil der Blumenrüstung (+10% Pfeilschaden als Set-Bonus): Ein getroffener Gegner bekommt eine Blume über dem Kopf, die kurz danach explodiert; im hohen Gras kannst du dich unsichtbar machen.
+stellarity:item/armor/hallowed/boots|Stiefel — Ermöglicht es dir Attacken abzuwehren, wobei jeder Schaden und Rückstoß eliminiert wird.
+stellarity:item/armor/hallowed/chestplate|Brustplatte — Ermöglicht es dir Attacken abzuwehren, wobei jeder Schaden und Rückstoß eliminiert wird.
+stellarity:item/armor/hallowed/helmet|Helm — Ermöglicht es dir Attacken abzuwehren, wobei jeder Schaden und Rückstoß eliminiert wird.
+stellarity:item/armor/hallowed/leggings|Hose — Ermöglicht es dir Attacken abzuwehren, wobei jeder Schaden und Rückstoß eliminiert wird.
+stellarity:item/armor/reinforced_horse_armor|Verstärkte Pferderüstung mit mehr Schutz als normale Diamant-Pferderüstung.
+stellarity:item/armor/shulker/boots|Set-Teil der Shulker-Rüstung: Shulker-Geschosse jagen automatisch Angreifer, und du nimmst weniger Schaden, wenn du umzingelt bist.
+stellarity:item/armor/shulker/chestplate|Set-Teil der Shulker-Rüstung (Set-Bonus: Immunität gegen Schwäche): Shulker-Geschosse jagen automatisch Angreifer, und du nimmst weniger Schaden, wenn du umzingelt bist.
+stellarity:item/armor/shulker/helmet|Set-Teil der Shulker-Rüstung: Shulker-Geschosse jagen automatisch Angreifer, und du nimmst weniger Schaden, wenn du umzingelt bist.
+stellarity:item/armor/shulker/leggings|Set-Teil der Shulker-Rüstung (Set-Bonus: Immunität gegen Levitation): Shulker-Geschosse jagen automatisch Angreifer, und du nimmst weniger Schaden, wenn du umzingelt bist.
+stellarity:item/endonomicon/book|Dein persönliches Stellarity-Rezeptbuch — zeigt alle Altar-Rezepte, die du bereits freigeschaltet hast.
+stellarity:item/explorer_map/chapel_of_light|Schatzkarte, die dich zu einer Kapelle des Lichts führt (End-Struktur mit Loot und Bossgegner Empress of Light).
+stellarity:item/explorer_map/end_city|Schatzkarte, die dich zu einer nahen Endstadt mit Elytra- und Shulker-Loot führt.
+stellarity:item/explorer_map/floating_treasure|Schatzkarte, die dich zu einer schwebenden Schatzinsel in der Leere führt.
+stellarity:item/explorer_map/village|Schatzkarte, die dich zu einem nahen Dorf führt.
+stellarity:item/food/candied_chorus_fruit|Nahrung (4 Hunger, 2.4 Sättigung), auch bei vollem Hunger essbar. Gibt beim Essen: Schnelligkeit (0:14).
+stellarity:item/food/chorus_juice|Erfrischendes Getränk aus Chorusfrüchten (rein geschmacklich, ohne besonderen Effekt).
+stellarity:item/food/chorus_pie|Nahrung (8 Hunger, 4.8 Sättigung).
+stellarity:item/food/chorus_stew|Nahrung (6 Hunger, 7.2 Sättigung).
+stellarity:item/food/enderman_flesh|Nahrung (4 Hunger, 0.8 Sättigung). Gibt beim Essen: Hunger (0:42).
+stellarity:item/food/fish/amethyst_budfish|Seltener Fisch zum Essen oder Verkaufen, gefangen beim Void Fishing.
+stellarity:item/food/fish/bubblefish|Fisch zum Essen oder Verkaufen, gefangen beim Void Fishing.
+stellarity:item/food/fish/crimson_tigerfish|Nahrung (1 Hunger, 0.2 Sättigung). Gibt beim Essen: Hunger (0:30), Gift (0:20).
+stellarity:item/food/fish/crystal_heartfish|Erhöht beim Verzehr deine maximalen Leben dauerhaft um 1 Herz (bis zu 5 zusätzliche Herzen insgesamt).
+stellarity:item/food/fish/ender_koi|Nahrung (1 Hunger, 0.6 Sättigung).
+stellarity:item/food/fish/flarefin_koi|Nahrung (2 Hunger, 1.2 Sättigung), auch bei vollem Hunger essbar. Gibt beim Essen: Feuerresistenz (0:16).
+stellarity:item/food/fish/fleshy_piranha|Nahrung (1 Hunger, 0.2 Sättigung). Gibt beim Essen: Hunger (0:30), Gift (0:20).
+stellarity:item/food/fish/frost_minnow|Nahrung (1 Hunger, 0.2 Sättigung). Gibt beim Essen: Verlangsamung (0:20).
+stellarity:item/food/fish/goosh|Fisch, der in Rezepten wie ein Slimeball verwendet werden kann.
+stellarity:item/food/fish/overgrown_cod|Nahrung (1 Hunger, 0.2 Sättigung). Gibt beim Essen: Verlangsamung IV (0:04).
+stellarity:item/food/fish/potassifish|Entwickler-Item: seltener Spaß-Fisch ohne besondere Wirkung.
+stellarity:item/food/fish/prismite|Nahrung (3 Hunger, 1.8 Sättigung). Gibt beim Essen: Regeneration II (0:05).
+stellarity:item/food/fish/pufferfish|Fisch mit Paper-Server-Insider-Flavourtext, ansonsten wie ein normaler Kugelfisch essbar.
+stellarity:item/food/fried_chorus_fruit|Nahrung (7 Hunger, 11.2 Sättigung), auch bei vollem Hunger essbar.
+stellarity:item/food/frozen_carpaccio|Nahrung (7 Hunger, 8.4 Sättigung), auch bei vollem Hunger essbar.
+stellarity:item/food/golden_chorus_fruit|Nahrung (6 Hunger, 14.4 Sättigung), auch bei vollem Hunger essbar.
+stellarity:item/food/grilled_enderman_flesh|Nahrung (6 Hunger, 9.6 Sättigung).
+stellarity:item/food/loaf_of_plenty|Nahrung (5 Hunger, 6 Sättigung), auch bei vollem Hunger essbar.
+stellarity:item/food/pho|Nahrung (13 Hunger, 20 Sättigung), auch bei vollem Hunger essbar. Gibt beim Essen: Regeneration (0:32), Stärke (2:30), Absorption (2:30).
+stellarity:item/food/prismatic_sushi|Nahrung (4 Hunger, 2.4 Sättigung), auch bei vollem Hunger essbar. Gibt beim Essen: Gesundheitssteigerung (0:40).
+stellarity:item/food/shepherds_pie|Nahrung (20 Hunger, 20 Sättigung), auch bei vollem Hunger essbar. Gibt beim Essen: Sofortige Heilung III (0:00), Regeneration II (1:04).
+stellarity:item/food/shulker_body|Essbares Shulker-Fleisch, schmeckt angeblich wie Muscheln.
+stellarity:item/food/sushi|Nahrung (4 Hunger, 2.4 Sättigung).
+stellarity:item/food/suspicious_stew/absorption|Verdächtiger Eintopf, der beim Essen den Absorption-Effekt gibt.
+stellarity:item/food/suspicious_stew/levitation|Verdächtiger Eintopf, der beim Essen den Levitation-Effekt gibt.
+stellarity:item/food/suspicious_stew/strength|Verdächtiger Eintopf, der beim Essen den Stärke-Effekt gibt.
+stellarity:item/ingredients/ender_egg|Von Endermen gelegtes Ei — Zutat für Altar-Rezepte.
+stellarity:item/keys/gilded_purpur_key|Öffnet unheilvolle Tresore in Endsiedlungen.
+stellarity:item/keys/purpur_key|Öffnet Tresore in Endsiedlungen.
+stellarity:item/keys/winged_key|Öffnet den Elytren-Tresor in Endsiedlungen.
+stellarity:item/material/chorus_petal|Zartes Crafting-Material aus Chorusblüten.
+stellarity:item/material/chorus_plating|Wird zur Verstärkung der Netherit Rüstung verwendet.
+stellarity:item/material/empty_enchanted_book|Leeres verzaubertes Buch ohne Verzauberung — wird für ein Spezialrezept am Altar der Verfluchten benötigt.
+stellarity:item/material/enderite_shard|Enthält einen Bruchteil des Unbekannten.
+stellarity:item/material/enderite_smithing_template|Schmiedevorlage für die Enderit-Aufwertung von Netherit-Ausrüstung — nutzbar nur am Altar der Verfluchten.
+stellarity:item/material/hallowed_ingot|Crafting-Material für Stellarity-Rezepte am Altar oder Schmiedetisch.
+stellarity:item/material/sand_rune|Crafting-Material für Stellarity-Rezepte am Altar oder Schmiedetisch.
+stellarity:item/material/starlight_soot|Wirf es in einen Wasserkessel, um damit vorübergehend Gegenstände umzuwandeln.
+stellarity:item/music_disc/deviants_light_music_box|Musikplatte, benötigt ein zusätzliches Musik-Addon zum Abspielen.
+stellarity:item/music_disc/fires_of_hokkai|Musikplatte, benötigt ein zusätzliches Musik-Addon zum Abspielen.
+stellarity:item/music_disc/precipice_stereo|Musikplatte, benötigt ein zusätzliches Musik-Addon zum Abspielen.
+stellarity:item/potion/amarene|Spezialtrank mit einzigartigem Effekt (Beschreibung fehlt im Sprachpaket).
+stellarity:item/potion/blind_rage_potion|Trank: gibt Stärke III (0:15), Dunkelheit (0:15).
+stellarity:item/potion/blind_rage_potion_ext|Trank: gibt Stärke III (0:23), Dunkelheit (0:23).
+stellarity:item/potion/endurance_potion|Trank: gibt Resistenz (2:00).
+stellarity:item/potion/endurance_potion_ext|Trank: gibt Resistenz (4:00).
+stellarity:item/potion/endurance_potion_ii|Trank: gibt Resistenz II (1:00).
+stellarity:item/potion/entanglement_potion|Wurftrank: gibt Verlangsamung V (0:11).
+stellarity:item/potion/entanglement_potion_ext|Wurftrank: gibt Verlangsamung V (0:14).
+stellarity:item/potion/entanglement_potion_ii|Wurftrank: gibt Verlangsamung VI (0:08).
+stellarity:item/potion/frost_cloud_potion|Verweiltrank: gibt Verlangsamung 100 (0:06).
+stellarity:item/potion/hellfire_treader_potion|Trank: gibt Schnelligkeit (4:00), Feuerresistenz (4:00).
+stellarity:item/potion/hellfire_treader_potion_ext|Trank: gibt Schnelligkeit (8:00), Feuerresistenz (8:00).
+stellarity:item/potion/hellfire_treader_potion_ii|Trank: gibt Schnelligkeit II (2:00), Feuerresistenz (2:00).
+stellarity:item/potion/lifeforce_potion|Trank: gibt Gesundheitssteigerung (3:00).
+stellarity:item/potion/lifeforce_potion_ext|Trank: gibt Gesundheitssteigerung (6:00).
+stellarity:item/potion/lifeforce_potion_ii|Trank: gibt Gesundheitssteigerung II (1:30).
+stellarity:item/potion/luck_potion|Trank mit dem Effekt "Glück".
+stellarity:item/potion/poseidons_nectar|Trank: gibt Machtkonduktor (6:30), Absorption (6:30), Delfinsgunst (6:30).
+stellarity:item/potion/red_potion|Mysteriöser roter Trank mit unbekanntem Effekt (Flavourtext).
+stellarity:item/potion/regeneraga|Trank: gibt Sofortige Heilung II (0:00), Regeneration III (0:07).
+stellarity:item/potion/regeneraga_ext|Trank: gibt Sofortige Heilung II (0:00), Regeneration III (0:11).
+stellarity:item/potion/regeneraga_ii|Trank: gibt Sofortige Heilung II (0:00), Regeneration V (0:04).
+stellarity:item/potion/royal_jelly|Nahrung (6 Hunger, 3.6 Sättigung), auch bei vollem Hunger essbar. Gibt beim Essen: Absorption (0:03).
+stellarity:item/potion/royal_jelly_ii|Nahrung (6 Hunger, 3.6 Sättigung), auch bei vollem Hunger essbar. Gibt beim Essen: Absorption II (0:02).
+stellarity:item/potion/spelunker_potion|Trank: gibt Nachtsicht (3:00), Eile (3:00).
+stellarity:item/potion/spelunker_potion_ext|Trank: gibt Nachtsicht (6:00), Eile (6:00).
+stellarity:item/potion/spelunker_potion_ii|Trank: gibt Nachtsicht (1:30), Eile II (1:30).
+stellarity:item/spawn_egg/flesh_piglin|Spawn-Ei, beschwört: Fleisch-Piglin.
+stellarity:item/spawn_egg/voided_silverfish|Spawn-Ei, beschwört: Voided Silverfish.
+stellarity:item/spawn_egg/voided_skeleton|Spawn-Ei, beschwört: Leerenskelett.
+stellarity:item/spawn_egg/voided_slime|Spawn-Ei, beschwört: Leerenschleim.
+stellarity:item/spawn_egg/voided_zombie|Spawn-Ei, beschwört: Leerenzombie.
+stellarity:item/spellbook/book_of_conveyance|Wirft einen langsamen Funken, der dich zum ersten Block teleportiert, den er trifft Neige deinen Kopf, um es zu lenken (mit Abklingzeit).
+stellarity:item/spellbook/book_of_jinx|Verschießt eine wachsende Wolke, die die Verteidigung von allem, was darin gefangen ist, vorübergehend verringert (mit Abklingzeit).
+stellarity:item/spellbook/book_of_light|Rechtsklicke, um eine freundliche Aura zu beschwören, die allen Spielern in der Nähe Heilung und Schadensreduzierung gewährt (mit Abklingzeit).
+stellarity:item/spellbook/book_of_obstruct|Sends up a tough shulker wall to make an getaway (mit Abklingzeit).
+stellarity:item/spellbook/book_of_return|Teleportiert dich zu deinem Spawnpunkt (mit Abklingzeit).
+stellarity:item/spellbook/book_of_updraft|Rechtsklicke, um dich mit einem leichten Windstoß nach oben zu drücken, sodass du für eine kurze Zeit frei gleiten kannst (mit Abklingzeit).
+stellarity:item/tool/fisher_of_voids|Leerenfischen ist etwas schneller.
+stellarity:item/tool/shulker_axe|Donator-Werkzeug: Axt aus Shulker-Material mit netheritähnlichen Werten.
+stellarity:item/tool/shulker_hoe|Donator-Werkzeug: Hacke aus Shulker-Material mit netheritähnlichen Werten.
+stellarity:item/tool/shulker_pickaxe|Donator-Werkzeug: Spitzhacke aus Shulker-Material mit netheritähnlichen Werten.
+stellarity:item/tool/shulker_shovel|Donator-Werkzeug: Schaufel aus Shulker-Material mit netheritähnlichen Werten.
+stellarity:item/tool/shulker_spear|Donator-Waffe: Speer aus Shulker-Material mit hoher Reichweite.
+stellarity:item/tool/shulker_sword|Donator-Waffe: Schwert aus Shulker-Material, mehr Schaden als Netherit, aber langsamer.
+stellarity:item/trinket/bell_flower|Donator-Trinket mit einzigartigem passivem Effekt (Beschreibung fehlt im Sprachpaket).
+stellarity:item/trinket/copper_elektra_shield|Schleiche, um einen elektrisierenden Dash hinzulegen! Kann alle 8 Sekunden bis zu 3 Dashes aufladen Dritter Dash braucht länger zum aufladen Das Dashen durch Kreaturen halbiert die Aufladezeit.
+stellarity:item/trinket/crest_of_the_end|Das Blockieren von Schaden verleiht deinem nächsten Vergeltungsangriff zusätzliche Kraft.
+stellarity:item/trinket/decayed_clover|Trinket: erhöht die Loot-Qualität und dein Glück beim Void Fishing.
+stellarity:item/trinket/duskberry|Verbessert Geschwindigkeit, Sicht und Kraft solange du sie hältst — Verzehr oder Einpflanzen kann üble Nebenwirkungen haben.
+stellarity:item/trinket/endermans_hand|Trinket mit Enderman-Bezug (genauer Effekt nicht im Sprachpaket dokumentiert).
+stellarity:item/trinket/life_crystal|Stillstehen regeneriert die Gesundheit schnell.
+stellarity:item/trinket/prismatic_pearl|Seltenes Trinket mit einzigartigem Effekt (Beschreibung fehlt im Sprachpaket).
+stellarity:item/trinket/prismatic_shield|Seltenes Schild-Trinket mit einzigartigem Effekt (Beschreibung fehlt im Sprachpaket).
+stellarity:item/trinket/radiant_jewel|Seltenes Crafting-/Trinket-Item ohne dokumentierten Effekt im Sprachpaket.
+stellarity:item/trinket/satchel_of_voids|Right click on the ground to draw a sigil that allows you to access Altar of The Accursed from anywhere in the world Place in a vertical item frame attached to create your own permanent copy of the Altar.
+stellarity:item/trinket/soaring_insignia|Verleiht unendliches Fliegen, aber mit begrenzter Geschwindig- und Beweglichkeit Schaue nach oben order unten, während du schleichst, um auf- bzw. abzusteigen.
+stellarity:item/trinket/starstruck_shield|Sterne werden fallen, nachdem Schaden blockiert wurde.
+stellarity:item/trinket/void_pendant|Kann mit jedem Edelstein auf dem Altar der Verfluchten durchdrungen werden.
+stellarity:item/weapon/ancient_wooden_sword|Joke-Item (Referenz auf die alte "Indev"-Minecraft-Version): unzerstörbar, feuerfest, nur 3 Angriffsschaden aber absurd hohe Angriffsgeschwindigkeit (+2133).
+stellarity:item/weapon/call_of_the_void|Schießt Leerenpfeile, die die HP des Gegners verringern und beim Aufprall zersplittern.
+stellarity:item/weapon/dragonblade|Ein furchterregendes Schwert mit einer überirdischen Schlagkraft! 'Es kam von der Kante des Endes' Tɪᴘᴘ: Sᴄʜʟᴀɢᴇ sɪᴇ ɪɴ ᴅɪᴇ Wäɴᴅᴇ.
+stellarity:item/weapon/fluffy_hammer|Donator-Hammer mit 14 Angriffsschaden bei sehr langsamer Angriffsgeschwindigkeit (-3.8) — Rechtsklick-"Ladeanimation" (kein echtes Essen) deutet auf einen Lade-Angriff hin, genaue Wirkung nicht im Sprachpaket beschrieben.
+stellarity:item/weapon/harvester|Entwickler-Schwert mit der Spezialverzauberung "Soul Harvest" (Seelenernte) — genaue Wirkung nicht im Sprachpaket beschrieben.
+stellarity:item/weapon/kaleidoscope|Leitet Energie aus dem Kern der Sonne Schlage Feinde, um die gespeicherte Energie in einer mächtigen Entladung auf einmal freizusetzen.
+stellarity:item/weapon/prismatic_punch|Schießt prismatische Explosionen, die mehrere Male explodieren und Kreaturen in ein prismatisches Inferno versetzen.
+stellarity:item/weapon/prismember|Schleiche, um einen feurigen Wirbel aufzuladen, der alle Kreaturen in der Nähe entzündet und sie in ein prismatisches Inferno versetzt.
+stellarity:item/weapon/sandstorm_trident|Donator-Dreizack (5 Angriffsschaden) mit der Spezialverzauberung "Mighty Wind" (Sandsturm-Effekt) — genaue Wirkung nicht im Sprachpaket beschrieben.
+stellarity:item/weapon/sharanga|Spektralpfeile bewegen sich in einer geraden Linie und verursachen erhöhten Schaden.
+stellarity:item/weapon/slayer_crossbow|Verschießt hochgradig schädliche Energieblitze mit unendlicher Durchschlagskraft, aber begrenzter Reichweite.
+stellarity:item/weapon/spectral_fury|Überladene Schüsse verwandeln Spektralpfeile in Irrlichter, die Kreaturen aufspüren und angreifen.
+stellarity:item/weapon/starless_scythe|Ein Teil des zugefügten Schadens wird in Heilung umgewandelt Kann mehrere Kreaturen mit einem Schlag beschädigen.
+stellarity:item/weapon/stellar_striker|Entwickler-Schwert (7 Angriffsschaden, erhöhte Reichweite) mit unbeschriebenem Spezialeffekt.
+stellarity:item/weapon/tamaris|Entwickler-Schwert (6 Angriffsschaden) mit unbeschriebenem Spezialeffekt.
+stellarity:item/weapon/the_beginning_and_the_end|Entwickler-Dolch-Set: Hauptteil "Der Anfang" (4 Angriffsschaden) + Nebenhand-Gegenstück "Das Ende" (+1 Angriffsschaden im Offhand) mit unbeschriebenem Spezialeffekt.

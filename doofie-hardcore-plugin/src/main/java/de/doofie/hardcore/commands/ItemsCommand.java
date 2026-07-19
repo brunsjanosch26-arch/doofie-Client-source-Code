@@ -25,7 +25,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -49,6 +51,8 @@ public class ItemsCommand implements CommandExecutor, Listener {
     /** Anzeige-Items in fester Reihenfolge (lazy erzeugt beim ersten /items). */
     private List<ItemStack> catalog = null;
     private final List<String> lootIds = new ArrayList<>();
+    private final Map<String, String> stellarityDescriptions = new HashMap<>();
+    private final Map<String, String> stellarityRecipes = new HashMap<>();
 
     public ItemsCommand(HardcorePlugin plugin) {
         this.plugin = plugin;
@@ -62,6 +66,37 @@ public class ItemsCommand implements CommandExecutor, Listener {
         } catch (Exception e) {
             plugin.getLogger().warning("customitems.txt nicht lesbar: " + e.getMessage());
         }
+        loadIdTextMap("stellarity_descriptions.txt", stellarityDescriptions);
+        loadIdTextMap("stellarity_recipes.txt", stellarityRecipes);
+    }
+
+    private void loadIdTextMap(String resource, Map<String, String> target) {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(
+                plugin.getResource(resource), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = r.readLine()) != null) {
+                int sep = line.indexOf('|');
+                if (sep > 0) target.put(line.substring(0, sep), line.substring(sep + 1));
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning(resource + " nicht lesbar: " + e.getMessage());
+        }
+    }
+
+    /** Bricht einen Beschreibungstext in ~40 Zeichen breite Lore-Zeilen um. */
+    private List<Component> wrapDescription(String text) {
+        List<Component> lines = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (String word : text.split(" ")) {
+            if (current.length() + word.length() + 1 > 40 && current.length() > 0) {
+                lines.add(Component.text(current.toString(), NamedTextColor.GRAY));
+                current.setLength(0);
+            }
+            if (current.length() > 0) current.append(' ');
+            current.append(word);
+        }
+        if (current.length() > 0) lines.add(Component.text(current.toString(), NamedTextColor.GRAY));
+        return lines;
     }
 
     private List<ItemStack> catalog(Player p) {
@@ -93,7 +128,26 @@ public class ItemsCommand implements CommandExecutor, Listener {
                 Collection<ItemStack> loot = table.populateLoot(random, ctx);
                 for (ItemStack item : loot) {
                     if (item != null && !item.getType().isAir()) {
-                        list.add(item.clone());
+                        ItemStack display = item.clone();
+                        String desc = stellarityDescriptions.get(id);
+                        String recipe = stellarityRecipes.get(id);
+                        if (desc != null || recipe != null) {
+                            ItemMeta meta = display.getItemMeta();
+                            List<Component> lore = new ArrayList<>();
+                            if (meta.hasLore()) lore.addAll(meta.lore());
+                            if (desc != null) {
+                                lore.add(Component.text("", NamedTextColor.GRAY));
+                                lore.addAll(wrapDescription(desc));
+                            }
+                            if (recipe != null) {
+                                lore.add(Component.text("", NamedTextColor.GRAY));
+                                lore.add(Component.text("Rezept (Altar der Verfluchten):", NamedTextColor.LIGHT_PURPLE));
+                                lore.addAll(wrapDescription(recipe));
+                            }
+                            meta.lore(lore);
+                            display.setItemMeta(meta);
+                        }
+                        list.add(display);
                         break; // ein Anzeige-Item pro Tabelle
                     }
                 }

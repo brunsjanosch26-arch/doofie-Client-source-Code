@@ -1,0 +1,25 @@
+stellarity:item/armor/hallowed/helmet|1x Enderit-Schmiedevorlage + 4x Heiliger Barren + 1x Netherit-Helm
+stellarity:item/armor/hallowed/chestplate|1x Enderit-Schmiedevorlage + 4x Heiliger Barren + 1x Netherit-Brustplatte
+stellarity:item/armor/hallowed/leggings|1x Enderit-Schmiedevorlage + 1x Netherit-Hose + 4x Heiliger Barren
+stellarity:item/armor/hallowed/boots|1x Enderit-Schmiedevorlage + 1x Netherit-Stiefel + 4x Heiliger Barren
+stellarity:item/armor/champion/helmet|1x Enderit-Schmiedevorlage + 4x Chorus-Überzug + 1x Netherit-Helm
+stellarity:item/armor/champion/chestplate|1x Enderit-Schmiedevorlage + 1x Netherit-Brustplatte + 4x Chorus-Überzug
+stellarity:item/armor/champion/leggings|1x Enderit-Schmiedevorlage + 1x Netherit-Hose + 4x Chorus-Überzug
+stellarity:item/armor/champion/boots|1x Enderit-Schmiedevorlage + 1x Netherit-Stiefel + 4x Chorus-Überzug
+stellarity:item/armor/shulker/helmet|1x Enderit-Schmiedevorlage + 4x Shulkerpanzer + 1x Netherit-Helm
+stellarity:item/armor/shulker/chestplate|1x Enderit-Schmiedevorlage + 4x Shulkerpanzer + 1x Netherit-Brustplatte
+stellarity:item/armor/shulker/leggings|1x Enderit-Schmiedevorlage + 1x Netherit-Hose + 4x Shulkerpanzer
+stellarity:item/armor/shulker/boots|1x Enderit-Schmiedevorlage + 1x Netherit-Stiefel + 4x Shulkerpanzer
+stellarity:item/armor/floral/helmet|1x Enderit-Schmiedevorlage + 8x Kirschblätter + 1x Netherit-Helm
+stellarity:item/armor/floral/chestplate|1x Enderit-Schmiedevorlage + 1x Netherit-Brustplatte + 8x Kirschblätter
+stellarity:item/armor/floral/leggings|1x Enderit-Schmiedevorlage + 1x Netherit-Hose + 8x Kirschblätter
+stellarity:item/armor/floral/boots|1x Enderit-Schmiedevorlage + 1x Netherit-Stiefel + 8x Kirschblätter
+stellarity:item/trinket/crest_of_the_end|1x Enderit-Schmiedevorlage + 1x Schild + 1x Netherit-Barren
+stellarity:item/tool/shulker_pickaxe|1x Enderit-Schmiedevorlage + 4x Shulkerpanzer + 1x Netherit-Spitzhacke
+stellarity:item/tool/shulker_axe|1x Enderit-Schmiedevorlage + 1x Netherit-Axt + 4x Shulkerpanzer
+stellarity:item/tool/shulker_shovel|1x Enderit-Schmiedevorlage + 4x Shulkerpanzer + 1x Netherit-Schaufel
+stellarity:item/tool/shulker_hoe|1x Enderit-Schmiedevorlage + 1x Netherit-Hacke + 4x Shulkerpanzer
+stellarity:item/tool/shulker_sword|1x Enderit-Schmiedevorlage + 4x Shulkerpanzer + 1x Netherit-Schwert
+stellarity:item/weapon/spectral_fury|1x Enderit-Schmiedevorlage + 3x Diamant + 8x Phantommembran + 1x Sharanga (Waffe)
+stellarity:item/weapon/tamaris|1x Enderit-Schmiedevorlage + 1x Netherit-Schwert + 8x Enderitscherbe + 1x Witherskelett-Schädel
+stellarity:item/tool/shulker_spear|1x Enderit-Schmiedevorlage + 4x Shulkerpanzer + 1x Netherit-Speer
