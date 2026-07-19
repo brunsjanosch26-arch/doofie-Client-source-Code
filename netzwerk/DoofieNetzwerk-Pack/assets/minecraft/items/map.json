@@ -23,6 +23,13 @@
 					"type": "model",
 					"model": "item/backpackplus/gui/page_next"
 				}
+			},
+			{
+				"threshold": 1450403,
+				"model": {
+					"type": "model",
+					"model": "incendium:item/scroll_of_returning"
+				}
 			}
 		],
 		"fallback": {
