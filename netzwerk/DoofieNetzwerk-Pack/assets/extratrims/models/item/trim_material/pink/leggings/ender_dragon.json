@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "tatearmor:item/ender_dragon/leggings",
+    "layer1": "minecraft:trims/items/leggings_trim_extratrims_pink"
+  }
+}

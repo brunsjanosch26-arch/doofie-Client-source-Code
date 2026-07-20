@@ -12,5 +12,7 @@
     "item.minecraft.splash_potion.effect.dnt_wither": "Splash Potion of Decay",
     "item.minecraft.tipped_arrow.effect.dnt_levitation": "Arrow of Levitation",
     "item.minecraft.tipped_arrow.effect.dnt_nausea": "Arrow of Dizziness",
-    "item.minecraft.tipped_arrow.effect.dnt_wither": "Arrow of Decay"
+    "item.minecraft.tipped_arrow.effect.dnt_wither": "Arrow of Decay",
+    "item.minecraft.smithing_template.armor_trim.additions_slot_description": "Add ingot, crystal, etc...",
+    "item.minecraft.smithing_template.armor_trim.ingredients": "Ingots, Crystals, Etc..."
 }
