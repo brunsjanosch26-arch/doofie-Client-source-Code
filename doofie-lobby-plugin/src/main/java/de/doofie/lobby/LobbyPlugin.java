@@ -141,9 +141,12 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
         }
     }
 
-    /** Absolut nichts spawnt in der Lobby — auch keine Slimes aus Superflat-Chunks. */
+    /** Absolut nichts spawnt in der Lobby — auch keine Slimes aus Superflat-Chunks.
+     *  Armor Stands sind ausgenommen: die werden gezielt per /summon als Deko
+     *  platziert (SpawnReason.COMMAND), sind harmlos (keine KI) und sollen bleiben. */
     @EventHandler
     public void onSpawn(org.bukkit.event.entity.CreatureSpawnEvent event) {
+        if (event.getEntityType() == org.bukkit.entity.EntityType.ARMOR_STAND) return;
         if (event.getSpawnReason() != org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM) {
             event.setCancelled(true);
         }
