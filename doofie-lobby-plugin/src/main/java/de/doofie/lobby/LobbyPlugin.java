@@ -92,7 +92,9 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
                 // 26.2-Void-Welten haben keine Welt-Uhr — dann ist eh immer Tag
             }
             for (org.bukkit.entity.Entity e : w.getEntities()) {
-                if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)) e.remove();
+                if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)
+                    && e.getType() != org.bukkit.entity.EntityType.ARMOR_STAND
+                    && !e.hasMetadata("NPC")) e.remove();
             }
         }
         new SchemCommand(this).register();
