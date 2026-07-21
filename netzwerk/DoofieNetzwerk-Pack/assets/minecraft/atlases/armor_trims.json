@@ -74,7 +74,25 @@
         "extratrims:trims/entity/humanoid/crystal",
         "extratrims:trims/entity/humanoid_leggings/crystal",
         "extratrims:trims/entity/humanoid/dragon",
-        "extratrims:trims/entity/humanoid_leggings/dragon"
+        "extratrims:trims/entity/humanoid_leggings/dragon",
+        "trimsexpanded:trims/entity/humanoid/danger",
+        "trimsexpanded:trims/entity/humanoid_leggings/danger",
+        "trimsexpanded:trims/entity/humanoid/drip",
+        "trimsexpanded:trims/entity/humanoid_leggings/drip",
+        "trimsexpanded:trims/entity/humanoid/heart",
+        "trimsexpanded:trims/entity/humanoid_leggings/heart",
+        "trimsexpanded:trims/entity/humanoid/margin",
+        "trimsexpanded:trims/entity/humanoid_leggings/margin",
+        "trimsexpanded:trims/entity/humanoid/plated",
+        "trimsexpanded:trims/entity/humanoid_leggings/plated",
+        "trimsexpanded:trims/entity/humanoid/pride",
+        "trimsexpanded:trims/entity/humanoid_leggings/pride",
+        "trimsexpanded:trims/entity/humanoid/shell",
+        "trimsexpanded:trims/entity/humanoid_leggings/shell",
+        "trimsexpanded:trims/entity/humanoid/suspicious",
+        "trimsexpanded:trims/entity/humanoid_leggings/suspicious",
+        "trimsexpanded:trims/entity/humanoid/verdant",
+        "trimsexpanded:trims/entity/humanoid_leggings/verdant"
       ],
       "palette_key": "minecraft:trims/color_palettes/trim_palette",
       "permutations": {
@@ -146,7 +164,23 @@
         "extratrims_toast": "extratrims:trims/color_palettes/toast",
         "extratrims_turtle": "extratrims:trims/color_palettes/turtle",
         "chorus": "stellarity:trims/color_palettes/chorus",
-        "enderite": "stellarity:trims/color_palettes/enderite"
+        "enderite": "stellarity:trims/color_palettes/enderite",
+        "trimsexpanded_amberpotato": "trimsexpanded:trims/color_palettes/amberpotato",
+        "trimsexpanded_armadillo": "trimsexpanded:trims/color_palettes/armadillo",
+        "trimsexpanded_breeze": "trimsexpanded:trims/color_palettes/breeze",
+        "trimsexpanded_chorus": "trimsexpanded:trims/color_palettes/chorus",
+        "trimsexpanded_coal": "trimsexpanded:trims/color_palettes/coal",
+        "trimsexpanded_dragon": "trimsexpanded:trims/color_palettes/dragon",
+        "trimsexpanded_echo": "trimsexpanded:trims/color_palettes/echo",
+        "trimsexpanded_ender": "trimsexpanded:trims/color_palettes/ender",
+        "trimsexpanded_flame": "trimsexpanded:trims/color_palettes/flame",
+        "trimsexpanded_glowstone": "trimsexpanded:trims/color_palettes/glowstone",
+        "trimsexpanded_leather": "trimsexpanded:trims/color_palettes/leather",
+        "trimsexpanded_netherbrick": "trimsexpanded:trims/color_palettes/netherbrick",
+        "trimsexpanded_prismarine": "trimsexpanded:trims/color_palettes/prismarine",
+        "trimsexpanded_rabbit": "trimsexpanded:trims/color_palettes/rabbit",
+        "trimsexpanded_rainbow": "trimsexpanded:trims/color_palettes/rainbow",
+        "trimsexpanded_slime": "trimsexpanded:trims/color_palettes/slime"
       }
     }
   ]

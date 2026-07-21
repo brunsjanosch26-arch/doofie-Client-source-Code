@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "trimsexpanded:item/danger_armor_trim_smithing_template"
+  }
+}
