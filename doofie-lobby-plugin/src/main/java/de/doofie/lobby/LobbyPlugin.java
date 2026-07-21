@@ -236,6 +236,7 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
     public void onSchlag(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player angreifer)) return;
         if (!(event.getEntity() instanceof Player ziel)) return;
+        if (event.getEntity().hasMetadata("NPC")) return;
         event.setCancelled(true);
         Inventory gui = Bukkit.createInventory(new DuellKitHolder(ziel.getUniqueId()), 9,
             Component.text("⚔ Duell gegen " + ziel.getName() + " — Kit?",
@@ -458,7 +459,13 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player) event.setCancelled(true);
+        if (event.getEntity() instanceof Player || event.getEntity().hasMetadata("NPC")) event.setCancelled(true);
+    }
+
+    /** Doofie501-NPC (Citizens): Rechtsklick oeffnet dasselbe Modus-Menu wie der Kompass. */
+    @EventHandler
+    public void onNpcRightClick(net.citizensnpcs.api.event.NPCRightClickEvent event) {
+        oeffneMenu(event.getClicker());
     }
 
     @EventHandler
@@ -478,6 +485,17 @@ public class LobbyPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
+        if (!istBaumeister(event.getPlayer())) event.setCancelled(true);
+    }
+
+    /** Schilder in der Lobby sind read-only: weder beschriebene noch leere Schilder duerfen bearbeitet werden. */
+    @EventHandler
+    public void onSignOpen(org.bukkit.event.player.PlayerSignOpenEvent event) {
+        if (!istBaumeister(event.getPlayer())) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onSignChange(org.bukkit.event.block.SignChangeEvent event) {
         if (!istBaumeister(event.getPlayer())) event.setCancelled(true);
     }
 }
